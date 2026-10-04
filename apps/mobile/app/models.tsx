@@ -301,7 +301,10 @@ export default function Models() {
     activeCredential?.reasoning
       ? thinkingLevelLabel(activeCredential?.thinkingLevel ?? "medium", t)
       : null;
+  // A default on server credentials is not the user's key, even for the same model, so saving
+  // the key must stay possible.
   const isActive =
+    me?.hostCredentialProvider !== selected?.provider &&
     me?.defaultProvider === selected?.provider &&
     me?.defaultModel === (isOpenAiCompatible ? modelId.trim() : selected?.id);
   const acceptsKey = selected?.auth !== "oauth";
