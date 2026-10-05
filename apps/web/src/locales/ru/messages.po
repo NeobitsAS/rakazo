@@ -25,6 +25,30 @@ msgstr "Учётные данные сервера используются, п�
 msgid "Use server credentials"
 msgstr "Использовать учётные данные сервера"
 
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "This server isn't set up to use its own {source} credentials. To enable it, set PI_DEFAULT_CREDENTIALS=host with PI_DEFAULT_PROVIDER and PI_DEFAULT_MODEL on the server."
+msgstr "Этот сервер не настроен на использование собственных учётных данных {source}. Чтобы включить, задайте на сервере PI_DEFAULT_CREDENTIALS=host вместе с PI_DEFAULT_PROVIDER и PI_DEFAULT_MODEL."
+
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "This server has no usable {source} credentials."
+msgstr "У этого сервера нет действующих учётных данных {source}."
+
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "This server's {source} credentials aren't allowed to use {modelLabel}."
+msgstr "Учётным данным {source} этого сервера не разрешено использовать {modelLabel}."
+
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "{modelLabel} isn't available to this server's {source} credentials."
+msgstr "Модель {modelLabel} недоступна для учётных данных {source} этого сервера."
+
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "Check again"
+msgstr "Проверить снова"
+
+#: src/pages/Onboarding.tsx
+msgid "Could not check the server's credentials"
+msgstr "Не удалось проверить учётные данные сервера"
+
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "Uses this server's own {hostCredentialSource} credentials to access {selectedProviderName}."
 msgstr "Использует собственные учётные данные {hostCredentialSource} этого сервера для доступа к {selectedProviderName}."

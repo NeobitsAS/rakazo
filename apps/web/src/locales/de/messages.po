@@ -25,6 +25,30 @@ msgstr "Die Server-Zugangsdaten bleiben in Gebrauch, bis ein Schlüssel verbunde
 msgid "Use server credentials"
 msgstr "Server-Zugangsdaten verwenden"
 
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "This server isn't set up to use its own {source} credentials. To enable it, set PI_DEFAULT_CREDENTIALS=host with PI_DEFAULT_PROVIDER and PI_DEFAULT_MODEL on the server."
+msgstr "Dieser Server ist nicht dafür eingerichtet, seine eigenen {source}-Zugangsdaten zu verwenden. Zum Aktivieren auf dem Server PI_DEFAULT_CREDENTIALS=host zusammen mit PI_DEFAULT_PROVIDER und PI_DEFAULT_MODEL setzen."
+
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "This server has no usable {source} credentials."
+msgstr "Dieser Server hat keine nutzbaren {source}-Zugangsdaten."
+
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "This server's {source} credentials aren't allowed to use {modelLabel}."
+msgstr "Die {source}-Zugangsdaten dieses Servers dürfen {modelLabel} nicht verwenden."
+
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "{modelLabel} isn't available to this server's {source} credentials."
+msgstr "{modelLabel} ist für die {source}-Zugangsdaten dieses Servers nicht verfügbar."
+
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "Check again"
+msgstr "Erneut prüfen"
+
+#: src/pages/Onboarding.tsx
+msgid "Could not check the server's credentials"
+msgstr "Die Zugangsdaten des Servers konnten nicht geprüft werden"
+
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "Uses this server's own {hostCredentialSource} credentials to access {selectedProviderName}."
 msgstr "Verwendet die eigenen {hostCredentialSource}-Zugangsdaten dieses Servers für den Zugriff auf {selectedProviderName}."

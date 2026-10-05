@@ -1,6 +1,7 @@
 import { getSupportedThinkingLevels } from "@earendil-works/pi-ai";
 import { builtinModels } from "@earendil-works/pi-ai/providers/all";
 import type { ModelOAuthSignInMode, ThinkingLevel } from "@rakazo/contracts";
+import { supportedHostCredentialSource } from "./deployment-model.js";
 import { supplementPiModels } from "./pi-current-models.js";
 import { LOCAL_PROVIDER_ID, registerLocalProvider } from "./pi-local-provider.js";
 import { SUBSCRIPTION_SIGN_IN_PROVIDERS } from "./pi-oauth.js";
@@ -25,6 +26,7 @@ export type PiCatalogEntry = {
   reasoning?: boolean;
   thinkingLevels?: ThinkingLevel[];
   placeholder?: boolean;
+  hostCredentialSource?: string;
 };
 
 export function listPiCatalog(): PiCatalogEntry[] {
@@ -53,6 +55,7 @@ function buildPiCatalog(): PiCatalogEntry[] {
     });
     const providerModels = provider.getModels();
     const modelIds = providerModels.map((model) => model.id);
+    const hostCredentialSource = supportedHostCredentialSource(provider.id);
     for (const model of providerModels) {
       const thinkingLevels = getSupportedThinkingLevels(model) as ThinkingLevel[];
       entries.push({
@@ -72,6 +75,7 @@ function buildPiCatalog(): PiCatalogEntry[] {
         // Compatibility metadata does not prove a model is served by a user's
         // endpoint. Keep each custom connection scoped to its entered model ID.
         ...(provider.id === OPENAI_COMPATIBLE_PROVIDER_ID ? { placeholder: true } : {}),
+        ...(hostCredentialSource ? { hostCredentialSource } : {}),
       });
     }
   }

@@ -25,6 +25,30 @@ msgstr "在连接密钥之前，将继续使用服务器凭据。"
 msgid "Use server credentials"
 msgstr "使用服务器凭据"
 
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "This server isn't set up to use its own {source} credentials. To enable it, set PI_DEFAULT_CREDENTIALS=host with PI_DEFAULT_PROVIDER and PI_DEFAULT_MODEL on the server."
+msgstr "此服务器未设置为使用自己的 {source} 凭据。要启用，请在服务器上设置 PI_DEFAULT_CREDENTIALS=host，并同时设置 PI_DEFAULT_PROVIDER 和 PI_DEFAULT_MODEL。"
+
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "This server has no usable {source} credentials."
+msgstr "此服务器没有可用的 {source} 凭据。"
+
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "This server's {source} credentials aren't allowed to use {modelLabel}."
+msgstr "此服务器的 {source} 凭据无权使用 {modelLabel}。"
+
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "{modelLabel} isn't available to this server's {source} credentials."
+msgstr "此服务器的 {source} 凭据无法使用 {modelLabel}。"
+
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "Check again"
+msgstr "重新检查"
+
+#: src/pages/Onboarding.tsx
+msgid "Could not check the server's credentials"
+msgstr "无法检查服务器的凭据"
+
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "Uses this server's own {hostCredentialSource} credentials to access {selectedProviderName}."
 msgstr "使用此服务器自己的 {hostCredentialSource} 凭据访问 {selectedProviderName}。"
