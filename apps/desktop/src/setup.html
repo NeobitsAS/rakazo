@@ -85,6 +85,27 @@
             autocomplete="off"
             placeholder="https://rakazo.example.com"
           />
+          <details id="tunnel" class="tunnel">
+            <summary class="tunnel-summary">Connect through a tunnel</summary>
+            <label class="field-label" for="tunnel-command">Connection command</label>
+            <input
+              id="tunnel-command"
+              class="field"
+              type="text"
+              spellcheck="false"
+              autocomplete="off"
+              placeholder="aws ssm start-session --target i-… --document-name AWS-StartPortForwardingSessionToRemoteHost …"
+            />
+            <label class="field-label" for="tunnel-sign-in">Sign-in command</label>
+            <input
+              id="tunnel-sign-in"
+              class="field"
+              type="text"
+              spellcheck="false"
+              autocomplete="off"
+              placeholder="aws sso login --profile …"
+            />
+          </details>
         </section>
 
         <p id="status" class="status" role="status" aria-live="polite"></p>

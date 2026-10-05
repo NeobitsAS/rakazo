@@ -2,9 +2,19 @@ import { copyFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-// tsc only emits the TypeScript sources; the preload bridges and the setup
-// window's static assets have to be copied into dist alongside them.
-const STATIC_FILES = ["preload.cjs", "setup-preload.cjs", "setup.html", "setup.css", "setup.js"];
+// tsc only emits the TypeScript sources; the preload bridges and the static assets
+// of the setup window and the connection pill have to be copied into dist alongside them.
+const STATIC_FILES = [
+  "preload.cjs",
+  "setup-preload.cjs",
+  "setup.html",
+  "setup.css",
+  "setup.js",
+  "pill-preload.cjs",
+  "pill.html",
+  "pill.css",
+  "pill.js",
+];
 const TOKENS_FILE = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   "../../../packages/ui-tokens/src/tokens.css",

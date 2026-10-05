@@ -160,6 +160,24 @@ html[data-platform="darwin"] .titlebar {
   font-size: 13px;
 }
 
+.tunnel {
+  margin-top: 14px;
+}
+
+.tunnel-summary {
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--muted-foreground);
+}
+
+.tunnel[open] .tunnel-summary {
+  margin-bottom: 12px;
+}
+
+.tunnel .field + .field-label {
+  margin-top: 12px;
+}
+
 .field:focus-visible {
   outline: 2px solid var(--ring);
   outline-offset: 1px;
