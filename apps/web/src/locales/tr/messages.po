@@ -17,6 +17,18 @@ msgstr ""
 msgid " (unread)"
 msgstr " (okunmadı)"
 
+#: src/pages/ModelSettingsOverlay.tsx
+msgid "Server credentials stay in use until you connect a key."
+msgstr "Bir anahtar bağlayana kadar sunucu kimlik bilgileri kullanılmaya devam eder."
+
+#: src/pages/ModelSettingsOverlay.tsx
+msgid "Use server credentials"
+msgstr "Sunucu kimlik bilgilerini kullan"
+
+#: src/pages/ModelSettingsOverlay.tsx
+msgid "Uses this server's own {hostCredentialSource} credentials to access {selectedProviderName}."
+msgstr "{selectedProviderName} erişimi için bu sunucunun kendi {hostCredentialSource} kimlik bilgilerini kullanır."
+
 #. placeholder {0}: group.entries.length
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "{0, plural, one {# model} other {# models}}"

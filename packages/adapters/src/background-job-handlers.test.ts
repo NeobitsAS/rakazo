@@ -82,6 +82,7 @@ describe("createBackgroundJobHandlers", () => {
       secretStore,
       memoryProviders,
       deploymentModelKey: "openrouter-key",
+      deploymentModelConfigured: true,
     });
 
     await handlers["history.compact"]({ threadId: "thread-1" });
@@ -93,6 +94,7 @@ describe("createBackgroundJobHandlers", () => {
         jobs,
         memoryProviders,
         deploymentModelKey: "openrouter-key",
+        deploymentModelConfigured: true,
         resolveModel,
       },
       "thread-1",
@@ -108,6 +110,7 @@ describe("createBackgroundJobHandlers", () => {
     const executor = createRunExecutor({
       prisma,
       deploymentModelKey: "deployment-key",
+      deploymentModelConfigured: true,
     } as Parameters<typeof createRunExecutor>[0]);
 
     await expect(

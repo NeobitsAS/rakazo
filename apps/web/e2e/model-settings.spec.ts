@@ -408,6 +408,53 @@ test("model settings connect, replace, and cancel provider authentication", asyn
   await expect(page.getByRole("button", { name: /Scripted/ })).not.toContainText("Connected");
 });
 
+test("a deployment default on server credentials says so and keeps an own key optional", async ({
+  page,
+}, testInfo) => {
+  const stamp = Date.now();
+  await signup(page, `server-credentials-${stamp}@rakazo.test`, "password12", `Server ${stamp}`);
+  await completeOnboarding(page);
+  // The E2E deployment runs on a scripted model, so present the active default as one that
+  // authenticates from the host, the way an Amazon Bedrock deployment on an AWS role does.
+  await page.route("**/rpc/me", async (route) => {
+    const response = await route.fetch();
+    const body = (await response.json()) as { json: Record<string, unknown> };
+    await route.fulfill({
+      response,
+      json: {
+        ...body,
+        json: {
+          ...body.json,
+          defaultProvider: "amazon-bedrock",
+          defaultModel: "eu.anthropic.claude-haiku-4-5-20251001-v1:0",
+          hostCredentialProvider: "amazon-bedrock",
+          hostCredentialSource: "AWS IAM",
+        },
+      },
+    });
+  });
+  await openUserSettings(page, "models");
+
+  const serverNote = page.getByText(
+    "Uses this server's own AWS IAM credentials to access Amazon Bedrock.",
+  );
+  const useServerCredentials = page.getByRole("switch", { name: "Use server credentials" });
+  await expect(useServerCredentials).toBeChecked();
+  await expect(serverNote).toBeVisible();
+  await expect(page.getByRole("button", { name: "Connect API key" })).toBeHidden();
+  await captureScreenshot(page, testInfo, "model-settings-server-credentials");
+
+  await useServerCredentials.click();
+  await expect(page.getByRole("button", { name: "Connect API key" })).toBeVisible();
+  await expect(
+    page.getByText("Server credentials stay in use until you connect a key."),
+  ).toBeVisible();
+  await expect(serverNote).toBeHidden();
+
+  await useServerCredentials.click();
+  await expect(serverNote).toBeVisible();
+});
+
 test("catalog models keep a space default thinking level per saved model", async ({
   page,
 }, testInfo) => {

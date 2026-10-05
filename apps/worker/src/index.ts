@@ -85,7 +85,8 @@ async function main() {
       ? new ScriptedAgentRuntime()
       : new PiAgentRuntime({ sessionRoot: resolvePiSessionRoot(dataDir) });
   // Same resolver the API uses, so both processes agree on provider, model and key.
-  const { key: deploymentModelKey } = resolveDeploymentModel();
+  const { key: deploymentModelKey, configured: deploymentModelConfigured } =
+    resolveDeploymentModel();
   const sandboxProvider = resolveSandboxProvider(process.env);
   const sandbox = createRunSandbox(sandboxProvider, {
     ...sandboxProviderOptionsFromEnv(process.env),
@@ -126,7 +127,7 @@ async function main() {
   // API process, which is the one with the inbound sink actually wired up.
   const messagingPlatforms = messagingPlatformsFromEnv(messagingEnvFromProcess(process.env));
   const messaging = isMessagingSurfaceEnabled(messagingPlatforms, {
-    deploymentModelKey,
+    deploymentModelConfigured,
     openSignup: process.env.MESSAGING_OPEN_SIGNUP === "true",
   })
     ? new ChatSdkMessagingSurface(messagingPlatforms)
@@ -196,6 +197,7 @@ async function main() {
     secretStore: secrets,
     mcpAllowPrivateEndpoint: process.env.MCP_ALLOW_PRIVATE_ENDPOINT === "true",
     deploymentModelKey,
+    deploymentModelConfigured,
     dataDir,
     notifications,
     jobs,
@@ -217,6 +219,7 @@ async function main() {
     secretStore: secrets,
     memoryProviders,
     deploymentModelKey,
+    deploymentModelConfigured,
     messaging,
     cloudAgent,
   });

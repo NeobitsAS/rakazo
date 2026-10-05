@@ -133,7 +133,8 @@ describe("account preferences", () => {
 describe("model setup gate", () => {
   function modelGateDeps(options: {
     agentRuntime: string;
-    deploymentModelKey?: string;
+    deploymentModelConfigured?: boolean;
+    deploymentModelHostCredentials?: boolean;
     deploymentModelCredentialCipher?: string;
   }) {
     const prisma = {
@@ -161,7 +162,8 @@ describe("model setup gate", () => {
         agentRuntime: options.agentRuntime,
         defaultProvider: "openrouter",
         defaultModel: "test-model",
-        deploymentModelKey: options.deploymentModelKey,
+        deploymentModelConfigured: options.deploymentModelConfigured,
+        deploymentModelHostCredentials: options.deploymentModelHostCredentials,
         webOrigin: "http://127.0.0.1:5173",
         screenProxySecret: "fake-test-secret",
         sandboxProvider: "fake",
@@ -217,10 +219,10 @@ describe("model setup gate", () => {
     });
   });
 
-  it("accepts a deployment model key as model configuration", async () => {
+  it("accepts a configured deployment model as model configuration", async () => {
     const { actor, handler } = modelGateDeps({
       agentRuntime: "pi",
-      deploymentModelKey: "fake-deployment-key",
+      deploymentModelConfigured: true,
     });
 
     const response = await call(handler, actor, "me", null);
@@ -228,6 +230,28 @@ describe("model setup gate", () => {
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual({
       json: expect.objectContaining({ needsModel: false }),
+    });
+  });
+
+  it("names the provider the deployment default runs on with host credentials", async () => {
+    const hostCredentials = modelGateDeps({
+      agentRuntime: "pi",
+      deploymentModelConfigured: true,
+      deploymentModelHostCredentials: true,
+    });
+    const keyed = modelGateDeps({ agentRuntime: "pi", deploymentModelConfigured: true });
+
+    const withHost = await call(hostCredentials.handler, hostCredentials.actor, "me", null);
+    const withKey = await call(keyed.handler, keyed.actor, "me", null);
+
+    await expect(withHost.json()).resolves.toEqual({
+      json: expect.objectContaining({
+        hostCredentialProvider: "openrouter",
+        hostCredentialSource: "host",
+      }),
+    });
+    await expect(withKey.json()).resolves.toEqual({
+      json: expect.objectContaining({ hostCredentialProvider: null, hostCredentialSource: null }),
     });
   });
 

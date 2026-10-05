@@ -91,6 +91,8 @@ export default function Models() {
   const [credentials, setCredentials] = useState<MobileModelCredential[]>([]);
   const [me, setMe] = useState<MobileMe | null>(null);
   const [provider, setProvider] = useState("");
+  // The provider whose own-key form is open instead of its server credentials.
+  const [ownKeyProvider, setOwnKeyProvider] = useState<string | null>(null);
   const [showAllProviders, setShowAllProviders] = useState(false);
   const [modelId, setModelId] = useState("");
   const [modelSearch, setModelSearch] = useState({ provider: "", query: "" });
@@ -302,6 +304,8 @@ export default function Models() {
   const isActive =
     me?.defaultProvider === selected?.provider &&
     me?.defaultModel === (isOpenAiCompatible ? modelId.trim() : selected?.id);
+  // Space still bills the host while this provider matches; model id alone is not credentials.
+  const usingServerCredentials = provider === me?.hostCredentialProvider;
   const acceptsKey = selected?.auth !== "oauth";
   const subscriptionSignIn = selected?.signIn !== undefined;
   // Effort levels for the staged catalog model — "off" stays out, matching the
@@ -865,6 +869,26 @@ export default function Models() {
     </>
   ) : null;
 
+  const ownKeySwitch = (
+    <View style={styles.switchRow}>
+      <Text style={styles.switchLabel}>{t("Use server credentials")}</Text>
+      <Switch
+        accessibilityLabel={t("Use server credentials")}
+        value={ownKeyProvider !== provider}
+        onValueChange={(on) => setOwnKeyProvider(on ? null : provider)}
+      />
+    </View>
+  );
+
+  const serverCredentialsNote = (
+    <Text style={styles.secondary}>
+      {t("Uses this server's own {source} credentials to access {provider}.", {
+        source: me?.hostCredentialSource ?? "",
+        provider: selected?.providerName ?? provider,
+      })}
+    </Text>
+  );
+
   const compatKeySection =
     isOpenAiCompatible && acceptsKey ? (
       <View style={styles.keySection}>
@@ -1205,7 +1229,7 @@ export default function Models() {
     ) : null;
 
   const saveRow =
-    credential && (!isActive || thinkingDirty) ? (
+    credential && (!isActive || thinkingDirty || usingServerCredentials) ? (
       <Pressable
         accessibilityRole="button"
         disabled={busy || (isOpenAiCompatible && !modelId.trim())}
@@ -1217,7 +1241,11 @@ export default function Models() {
         ]}
       >
         <Text style={styles.primaryLabel}>
-          {pending === "default" ? t("Switching…") : isActive ? t("Save") : t("Use this model")}
+          {pending === "default"
+            ? t("Switching…")
+            : isActive && !usingServerCredentials
+              ? t("Save")
+              : t("Use this model")}
         </Text>
       </Pressable>
     ) : null;
@@ -1372,17 +1400,32 @@ export default function Models() {
             </>
           ) : credential ? (
             <>
+              {provider === me?.hostCredentialProvider ? serverCredentialsNote : null}
               {connectedStatusRow}
               <Text style={styles.sectionTitle}>{t("Model")}</Text>
               {catalogModelCard}
               {saveRow}
               <View style={styles.maintenanceSection}>{catalogConnectionControls}</View>
             </>
+          ) : provider === me?.hostCredentialProvider && ownKeyProvider !== provider ? (
+            <>
+              {ownKeySwitch}
+              {serverCredentialsNote}
+            </>
           ) : (
             <>
-              <Text style={styles.secondary}>
-                {t("Connect this provider to use it as your personal model.")}
-              </Text>
+              {provider === me?.hostCredentialProvider ? (
+                <>
+                  {ownKeySwitch}
+                  <Text style={styles.secondary}>
+                    {t("Server credentials stay in use until you connect a key.")}
+                  </Text>
+                </>
+              ) : (
+                <Text style={styles.secondary}>
+                  {t("Connect this provider to use it as your personal model.")}
+                </Text>
+              )}
               {catalogConnectionControls}
               <Text style={styles.sectionTitle}>{t("Model")}</Text>
               {catalogModelCard}
@@ -1433,6 +1476,18 @@ function createModelsStyles() {
       fontSize: 14,
       lineHeight: 20,
       marginTop: 4,
+    },
+    switchRow: {
+      alignItems: "center",
+      flexDirection: "row",
+      gap: 12,
+      justifyContent: "space-between",
+      marginBottom: 8,
+    },
+    switchLabel: {
+      color: native.label,
+      flex: 1,
+      fontSize: 15,
     },
     sectionTitle: {
       color: native.secondaryLabel,

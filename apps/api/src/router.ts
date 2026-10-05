@@ -59,6 +59,7 @@ import {
   forgetBotSecret,
   getBotSecretMetadata,
   hasActiveComputerControl,
+  hostCredentialSource,
   isAutoReviewCheckerConfigured,
   isComputerScreenUnavailable,
   isSandboxGoneError,
@@ -545,7 +546,8 @@ export interface RouterDeps {
     teamChatJudgeModel?: string;
     defaultProvider: string;
     defaultModel: string;
-    deploymentModelKey?: string;
+    deploymentModelConfigured?: boolean;
+    deploymentModelHostCredentials?: boolean;
     webOrigin: string;
     privacyPolicyUrl?: string;
     screenProxySecret: string;
@@ -5706,6 +5708,12 @@ async function loadAutoReviewSettings(deps: RouterDeps, actor: Actor) {
   return { enabled, checkerAvailable };
 }
 
+function hostCredentials(active: boolean, provider: string) {
+  return active
+    ? { hostCredentialProvider: provider, hostCredentialSource: hostCredentialSource(provider) }
+    : { hostCredentialProvider: null, hostCredentialSource: null };
+}
+
 async function meDto(deps: RouterDeps, actor: Actor): Promise<Me> {
   const [user, setup] = await Promise.all([
     deps.prisma.user.findUniqueOrThrow({ where: { id: actor.userId } }),
@@ -5724,6 +5732,13 @@ async function meDto(deps: RouterDeps, actor: Actor): Promise<Me> {
       deps.env.defaultProvider,
     defaultModel:
       setup.credential?.defaultModel ?? setup.settings?.defaultModelId ?? deps.env.defaultModel,
+    // Set only while the active default is the deployment's own, running on host credentials.
+    ...hostCredentials(
+      !setup.credential &&
+        !setup.settings?.defaultModelProvider &&
+        Boolean(deps.env.deploymentModelHostCredentials),
+      deps.env.defaultProvider,
+    ),
     computerHost: computerHostFor(setup.settings?.computerHost, deps.env.sandboxProvider),
     canChooseHostComputer: actor.isDeploymentOwner && deps.env.sandboxProvider === "docker",
     sandboxProvider: deps.env.sandboxProvider,
@@ -5736,7 +5751,7 @@ async function modelSetup(deps: RouterDeps, actor: Actor) {
     findDefaultModelCredential(deps.prisma, actor),
     deps.prisma.deploymentSettings.findUnique({ where: { id: "default" } }),
   ]);
-  const hasDeployment = Boolean(deps.env.deploymentModelKey);
+  const hasDeployment = Boolean(deps.env.deploymentModelConfigured);
   return {
     credential,
     settings,
