@@ -70,9 +70,22 @@ export interface RakazoDesktop {
  */
 export type DesktopInstanceMode = "new" | "existing";
 
+/**
+ * A command the desktop app runs to reach a server in a private network, such as an SSH or
+ * cloud port-forwarding tunnel to a local port. Credentials stay with the command's own tool.
+ */
+export interface DesktopTunnel {
+  /** Started before connecting and restarted when it stops; the server address is its local port. */
+  command: string;
+  /** Run once when the tunnel cannot connect, for example to renew expired credentials. */
+  signInCommand?: string;
+}
+
 export interface DesktopSetup {
   mode: DesktopInstanceMode;
   serverUrl: string;
+  /** Only for an existing instance reached on this computer. */
+  tunnel?: DesktopTunnel;
 }
 
 export interface DesktopSetupState {
@@ -135,7 +148,8 @@ export interface RakazoSetup {
   /** Used only to reserve space for native window controls in the local setup UI. */
   platform: string;
   state: () => Promise<DesktopSetupState>;
-  test: (url: string) => Promise<DesktopReachability>;
+  /** Starts `tunnel` first when given, so the check reaches the server through it. */
+  test: (url: string, tunnel?: DesktopTunnel) => Promise<DesktopReachability>;
   save: (setup: DesktopSetup) => Promise<{ ok: boolean; error?: string }>;
   quit: () => Promise<void>;
   /** Opens one of the Docker install pages in the system browser. */

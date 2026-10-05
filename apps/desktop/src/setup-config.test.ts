@@ -129,6 +129,45 @@ describe("saved setup", () => {
       serverUrl: "http://192.168.1.20:3100",
     });
   });
+
+  it("keeps a tunnel for an existing instance reached on this computer", () => {
+    const command = "aws ssm start-session --target i-0123456789abcdef0";
+    expect(
+      parseSetupInput({
+        mode: "existing",
+        serverUrl: "http://127.0.0.1:18080",
+        tunnel: { command: ` ${command} `, signInCommand: "aws sso login --profile tools" },
+      }),
+    ).toEqual({
+      mode: "existing",
+      serverUrl: "http://127.0.0.1:18080",
+      tunnel: { command, signInCommand: "aws sso login --profile tools" },
+    });
+  });
+
+  it("rejects a tunnel that cannot run or would forward elsewhere", () => {
+    const tunnel = { command: "ssh -N -L 18080:rakazo.internal:80 bastion" };
+    expect(
+      parseSetupInput({ mode: "existing", serverUrl: "https://rakazo.example.com", tunnel }),
+    ).toBeNull();
+    expect(
+      parseSetupInput({ mode: "new", serverUrl: "http://127.0.0.1:18080", tunnel }),
+    ).toBeNull();
+    expect(
+      parseSetupInput({
+        mode: "existing",
+        serverUrl: "http://127.0.0.1:18080",
+        tunnel: { command: " " },
+      }),
+    ).toBeNull();
+    expect(
+      parseSetupInput({
+        mode: "existing",
+        serverUrl: "http://127.0.0.1:18080",
+        tunnel: { command: "x".repeat(2001) },
+      }),
+    ).toBeNull();
+  });
 });
 
 describe("startup target", () => {

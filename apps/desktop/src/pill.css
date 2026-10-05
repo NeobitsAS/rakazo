@@ -1,0 +1,117 @@
+html,
+body {
+  margin: 0;
+  background: transparent;
+  overflow: hidden;
+}
+
+body {
+  display: inline-block;
+  /* Room for the shadow inside the view's bounds; it fades out before the edges. */
+  padding: 10px 14px 14px;
+  font-family:
+    "Segoe UI", -apple-system, BlinkMacSystemFont, Inter, Roboto, Helvetica, Arial, sans-serif;
+  font-size: 13px;
+  line-height: 1;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px 7px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--popover);
+  color: var(--popover-foreground);
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.18);
+  opacity: 0;
+  transform: translateY(-4px);
+  transition:
+    opacity 200ms ease,
+    transform 200ms ease;
+}
+
+.pill[data-status="reconnecting"],
+.pill[data-status="connected"],
+.pill[data-status="lost"] {
+  opacity: 1;
+  transform: none;
+}
+
+/* Holds the status dot, or the settings button in its place, without resizing the pill. */
+.pill-slot {
+  display: inline-grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  flex: none;
+}
+
+.pill-icon {
+  box-sizing: border-box;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex: none;
+}
+
+.pill[data-status="reconnecting"] .pill-icon {
+  border: 2px solid var(--muted-foreground);
+  border-top-color: transparent;
+  animation: spin 800ms linear infinite;
+}
+
+.pill[data-status="connected"] .pill-icon {
+  background: var(--success);
+}
+
+.pill[data-status="lost"] .pill-icon {
+  background: var(--destructive);
+}
+
+.pill-settings {
+  display: none;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--muted-foreground);
+  cursor: pointer;
+}
+
+.pill-settings svg {
+  width: 14px;
+  height: 14px;
+}
+
+.pill-settings:hover {
+  color: var(--foreground);
+}
+
+.pill[data-status="lost"]:is(:hover, :focus-within) .pill-icon {
+  display: none;
+}
+
+.pill[data-status="lost"]:is(:hover, :focus-within) .pill-settings {
+  display: grid;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pill {
+    transition: none;
+  }
+
+  .pill[data-status="reconnecting"] .pill-icon {
+    animation: none;
+  }
+}

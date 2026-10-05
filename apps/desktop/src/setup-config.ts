@@ -1,12 +1,14 @@
 import { createHash } from "node:crypto";
 import { isIP } from "node:net";
-import type { DesktopSetup, DesktopStackProbeResponse } from "@rakazo/contracts";
+import type { DesktopSetup, DesktopStackProbeResponse, DesktopTunnel } from "@rakazo/contracts";
 
 /** Managed desktop origin; development keeps its usual web/API ports. */
 export const DEFAULT_LOCAL_WEB_URL = "http://127.0.0.1:45173";
 export const PROBE_RESPONSE_LIMIT_BYTES = 64 * 1024;
 
 export const SETUP_FILE_NAME = "setup.json";
+
+const TUNNEL_COMMAND_MAX_LENGTH = 2000;
 
 export type StartupTarget =
   | { kind: "app"; url: string; source: "env" | "saved" }
@@ -74,18 +76,43 @@ export function maySendDesktopStackToken(serverUrl: string): boolean {
   }
 }
 
+function parseCommand(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const command = value.trim();
+  if (command === "" || command.length > TUNNEL_COMMAND_MAX_LENGTH) return null;
+  return command;
+}
+
+/** Validates an untrusted tunnel: undefined when none was given, null when it is unusable. */
+export function parseTunnelInput(value: unknown): DesktopTunnel | null | undefined {
+  if (value === undefined || value === null) return undefined;
+  if (typeof value !== "object") return null;
+  const { command, signInCommand } = value as Record<string, unknown>;
+  const parsedCommand = parseCommand(command);
+  if (parsedCommand === null) return null;
+  if (signInCommand === undefined) return { command: parsedCommand };
+  const parsedSignIn = parseCommand(signInCommand);
+  return parsedSignIn === null ? null : { command: parsedCommand, signInCommand: parsedSignIn };
+}
+
 /** Validates an untrusted value (saved file or IPC payload) into a usable setup. */
 export function parseSetupInput(value: unknown): DesktopSetup | null {
   if (typeof value !== "object" || value === null) return null;
 
-  const { mode, serverUrl } = value as Record<string, unknown>;
+  const { mode, serverUrl, tunnel } = value as Record<string, unknown>;
   if (mode !== "new" && mode !== "existing") return null;
   if (typeof serverUrl !== "string") return null;
 
   const normalized = normalizeServerUrl(serverUrl);
   if (normalized === null) return null;
-  if (mode === "new" && !isLoopbackHost(new URL(normalized).hostname)) return null;
-  return { mode, serverUrl: normalized };
+  const local = isLoopbackHost(new URL(normalized).hostname);
+  if (mode === "new" && !local) return null;
+
+  const parsedTunnel = parseTunnelInput(tunnel);
+  if (parsedTunnel === undefined) return { mode, serverUrl: normalized };
+  // A tunnel forwards a remote server to a port on this computer.
+  if (parsedTunnel === null || mode !== "existing" || !local) return null;
+  return { mode, serverUrl: normalized, tunnel: parsedTunnel };
 }
 
 export function parseStoredSetup(raw: string): DesktopSetup | null {
