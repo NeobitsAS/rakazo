@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self'; style-src 'self'; form-action 'none'; base-uri 'none'"
+    />
+    <title>Connection status</title>
+    <link rel="stylesheet" href="tokens.css" />
+    <link rel="stylesheet" href="pill.css" />
+  </head>
+  <body>
+    <div role="status" aria-live="polite">
+      <div id="pill" class="pill">
+        <span class="pill-slot">
+          <span class="pill-icon" aria-hidden="true"></span>
+          <button
+            id="pill-settings"
+            class="pill-settings"
+            type="button"
+            title="Connection settings"
+            aria-label="Connection settings"
+          >
+            <!-- lucide "settings" icon, matching the web app's icon set -->
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path
+                d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"
+              />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+          </button>
+        </span>
+        <span id="pill-label" class="pill-label"></span>
+      </div>
+    </div>
+    <script src="pill.js"></script>
+  </body>
+</html>

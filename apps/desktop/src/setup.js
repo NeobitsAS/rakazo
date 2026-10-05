@@ -4,6 +4,9 @@
 
   const form = document.getElementById("setup");
   const serverUrl = document.getElementById("server-url");
+  const tunnelDetails = document.getElementById("tunnel");
+  const tunnelCommand = document.getElementById("tunnel-command");
+  const tunnelSignIn = document.getElementById("tunnel-sign-in");
   const panelNew = document.getElementById("panel-new");
   const panelExisting = document.getElementById("panel-existing");
   const stackSection = document.getElementById("stack");
@@ -60,6 +63,14 @@
   function selectedMode() {
     const checked = form.querySelector('input[name="mode"]:checked');
     return checked === null ? "new" : checked.value;
+  }
+
+  /** The tunnel to start before connecting, or undefined when no command is entered. */
+  function tunnelValue() {
+    const command = tunnelCommand.value.trim();
+    if (command === "") return undefined;
+    const signInCommand = tunnelSignIn.value.trim();
+    return signInCommand === "" ? { command } : { command, signInCommand };
   }
 
   function setStatus(message, tone) {
@@ -174,12 +185,12 @@
     setBusy(!TERMINAL_PHASES.has(phase));
   }
 
-  async function save(mode, url) {
+  async function save(mode, url, tunnel) {
     setBusy(true);
     lockMode(true);
     setStatus("Connecting…");
     try {
-      const saved = await bridge.save({ mode, serverUrl: url });
+      const saved = await bridge.save({ mode, serverUrl: url, tunnel });
       if (!saved.ok) setStatus(saved.error ?? "Could not save that address.", "error");
     } catch {
       setStatus("Could not save that address. Try again.", "error");
@@ -260,10 +271,11 @@
       return null;
     }
 
+    const tunnel = tunnelValue();
     setBusy(true);
-    setStatus("Checking…");
+    setStatus(tunnel === undefined ? "Checking…" : "Starting the tunnel…");
     try {
-      const result = await bridge.test(value);
+      const result = await bridge.test(value, tunnel);
       if (result.ok) {
         serverUrl.value = result.url;
         setStatus(`Rakazo answered at ${result.url}.`, "ok");
@@ -313,7 +325,7 @@
   form.addEventListener("submit", (event) => {
     event.preventDefault();
     if (selectedMode() === "new") void runStack();
-    else void save("existing", serverUrl.value);
+    else void save("existing", serverUrl.value, tunnelValue());
   });
 
   /** Pushed state keeps progress moving even when the OS throttles this window's timers. */
@@ -344,7 +356,14 @@
       if (state.saved !== null) {
         const modeInput = document.querySelector(`input[name="mode"][value="${state.saved.mode}"]`);
         if (modeInput !== null) modeInput.checked = true;
-        if (state.saved.mode === "existing") serverUrl.value = state.saved.serverUrl;
+        if (state.saved.mode === "existing") {
+          serverUrl.value = state.saved.serverUrl;
+          if (state.saved.tunnel !== undefined) {
+            tunnelCommand.value = state.saved.tunnel.command;
+            tunnelSignIn.value = state.saved.tunnel.signInCommand ?? "";
+            tunnelDetails.open = true;
+          }
+        }
       }
       // A relaunch with the stack down starts it before this window opens; show that
       // attempt instead of the saved mode, and follow it while it is still running.
