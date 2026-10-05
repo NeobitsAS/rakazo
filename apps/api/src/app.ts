@@ -60,9 +60,11 @@ import {
   reconcileComputerUpdates,
   removePiUserSessions,
   ScriptedAgentRuntime,
+  ServerCredentialCheck,
   SmtpEmailProvider,
   SpaceMemoryProviderResolver,
   sandboxProviderOptionsFromEnv,
+  serverCredentialSetup,
   toTeamChatInbound,
 } from "@rakazo/adapters";
 import { createAuth, isBlockedAuthPath, loopbackTwinOrigins } from "@rakazo/auth";
@@ -468,9 +470,15 @@ export async function createApp(
     : undefined;
   reconciler?.start();
 
+  // One check at startup, so onboarding can explain a deployment default that can't run on the
+  // server's credentials before anyone hits it in a run.
+  const serverCredentials = new ServerCredentialCheck(serverCredentialSetup());
+  void serverCredentials.refresh();
+
   const router = createRouter({
     cloudAgent,
     codexCatalog,
+    serverCredentials,
     prisma,
     events,
     auth,

@@ -3,6 +3,7 @@ import {
   COMPUTER_SCREEN_UNAVAILABLE,
   CodexCatalogCache,
   ComputerScreenUnavailableError,
+  ServerCredentialCheck,
   screenLeaseIdForRun,
 } from "@rakazo/adapters";
 import type { Actor, Bot } from "@rakazo/contracts";
@@ -136,6 +137,7 @@ describe("model setup gate", () => {
     deploymentModelConfigured?: boolean;
     deploymentModelHostCredentials?: boolean;
     deploymentModelCredentialCipher?: string;
+    serverCredentials?: ServerCredentialCheck;
   }) {
     const prisma = {
       user: {
@@ -158,6 +160,7 @@ describe("model setup gate", () => {
     } as unknown as PrismaClient;
     const deps = {
       prisma,
+      serverCredentials: options.serverCredentials,
       env: {
         agentRuntime: options.agentRuntime,
         defaultProvider: "openrouter",
@@ -252,6 +255,72 @@ describe("model setup gate", () => {
     });
     await expect(withKey.json()).resolves.toEqual({
       json: expect.objectContaining({ hostCredentialProvider: null, hostCredentialSource: null }),
+    });
+  });
+
+  describe("on the server's own credentials", () => {
+    const setup = {
+      provider: "amazon-bedrock",
+      model: "eu.anthropic.claude-opus-5-5",
+      source: "AWS IAM",
+    };
+
+    afterEach(() => {
+      vi.unstubAllEnvs();
+    });
+
+    it("asks for a model, and says why, once a check shows the default can't run", async () => {
+      vi.stubEnv("AWS_CONTAINER_CREDENTIALS_RELATIVE_URI", "/v2/credentials/test");
+      const serverCredentials = new ServerCredentialCheck(setup, async () => "denied");
+      await serverCredentials.refresh();
+      const { actor, handler } = modelGateDeps({
+        agentRuntime: "pi",
+        deploymentModelConfigured: true,
+        deploymentModelHostCredentials: true,
+        serverCredentials,
+      });
+
+      const response = await call(handler, actor, "me", null);
+
+      await expect(response.json()).resolves.toEqual({
+        json: expect.objectContaining({
+          needsModel: true,
+          serverCredentials: { ...setup, status: "denied" },
+        }),
+      });
+    });
+
+    it("keeps the default while a check hasn't settled whether it runs", async () => {
+      vi.stubEnv("AWS_CONTAINER_CREDENTIALS_RELATIVE_URI", "/v2/credentials/test");
+      const { actor, handler } = modelGateDeps({
+        agentRuntime: "pi",
+        deploymentModelConfigured: true,
+        deploymentModelHostCredentials: true,
+        serverCredentials: new ServerCredentialCheck(setup, async () => "ready"),
+      });
+
+      const response = await call(handler, actor, "me", null);
+
+      await expect(response.json()).resolves.toEqual({
+        json: expect.objectContaining({
+          needsModel: false,
+          serverCredentials: { ...setup, status: "unchecked" },
+        }),
+      });
+    });
+
+    it("checks the credentials on request", async () => {
+      vi.stubEnv("AWS_CONTAINER_CREDENTIALS_RELATIVE_URI", "/v2/credentials/test");
+      const check = vi.fn(async () => "ready" as const);
+      const { actor, handler } = modelGateDeps({
+        agentRuntime: "pi",
+        serverCredentials: new ServerCredentialCheck(setup, check),
+      });
+
+      const response = await call(handler, actor, "models/checkServerCredentials", null);
+
+      await expect(response.json()).resolves.toEqual({ json: { ...setup, status: "ready" } });
+      expect(check).toHaveBeenCalledTimes(1);
     });
   });
 

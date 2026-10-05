@@ -25,6 +25,30 @@ msgstr "जब तक आप कुंजी कनेक्ट नहीं क
 msgid "Use server credentials"
 msgstr "सर्वर क्रेडेंशियल का उपयोग करें"
 
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "This server isn't set up to use its own {source} credentials. To enable it, set PI_DEFAULT_CREDENTIALS=host with PI_DEFAULT_PROVIDER and PI_DEFAULT_MODEL on the server."
+msgstr "यह सर्वर अपने {source} क्रेडेंशियल का उपयोग करने के लिए सेट नहीं है। इसे सक्षम करने के लिए, सर्वर पर PI_DEFAULT_PROVIDER और PI_DEFAULT_MODEL के साथ PI_DEFAULT_CREDENTIALS=host सेट करें।"
+
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "This server has no usable {source} credentials."
+msgstr "इस सर्वर के पास उपयोग योग्य {source} क्रेडेंशियल नहीं हैं।"
+
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "This server's {source} credentials aren't allowed to use {modelLabel}."
+msgstr "इस सर्वर के {source} क्रेडेंशियल को {modelLabel} का उपयोग करने की अनुमति नहीं है।"
+
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "{modelLabel} isn't available to this server's {source} credentials."
+msgstr "{modelLabel} इस सर्वर के {source} क्रेडेंशियल के लिए उपलब्ध नहीं है।"
+
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "Check again"
+msgstr "फिर से जाँचें"
+
+#: src/pages/Onboarding.tsx
+msgid "Could not check the server's credentials"
+msgstr "सर्वर के क्रेडेंशियल की जाँच नहीं हो सकी"
+
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "Uses this server's own {hostCredentialSource} credentials to access {selectedProviderName}."
 msgstr "{selectedProviderName} तक पहुँचने के लिए इस सर्वर के अपने {hostCredentialSource} क्रेडेंशियल का उपयोग करता है।"

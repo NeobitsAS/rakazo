@@ -15,6 +15,7 @@ const procedures = new Set([
   "models/finishOAuth",
   "models/cancelOAuth",
   "models/setDefault",
+  "models/checkServerCredentials",
   "integrationSetup/get",
   "integrationSetup/save",
 ]);

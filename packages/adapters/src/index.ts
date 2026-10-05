@@ -114,6 +114,7 @@ export * from "./scripted-voice.js";
 export * from "./secrets.js";
 export * from "./sendblue-emulator.js";
 export { SerenityMemoryProvider } from "./serenity-memory-provider.js";
+export * from "./server-credentials.js";
 export * from "./skill-tools.js";
 export * from "./smtp-email.js";
 export { SupermemoryMemoryProvider } from "./supermemory-memory-provider.js";

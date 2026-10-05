@@ -25,6 +25,30 @@ msgstr "키를 연결할 때까지 서버 자격 증명이 계속 사용됩니�
 msgid "Use server credentials"
 msgstr "서버 자격 증명 사용"
 
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "This server isn't set up to use its own {source} credentials. To enable it, set PI_DEFAULT_CREDENTIALS=host with PI_DEFAULT_PROVIDER and PI_DEFAULT_MODEL on the server."
+msgstr "이 서버는 자체 {source} 자격 증명을 사용하도록 설정되어 있지 않습니다. 사용하려면 서버에서 PI_DEFAULT_PROVIDER 및 PI_DEFAULT_MODEL과 함께 PI_DEFAULT_CREDENTIALS=host를 설정하세요."
+
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "This server has no usable {source} credentials."
+msgstr "이 서버에 사용할 수 있는 {source} 자격 증명이 없습니다."
+
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "This server's {source} credentials aren't allowed to use {modelLabel}."
+msgstr "이 서버의 {source} 자격 증명에는 {modelLabel}을(를) 사용할 권한이 없습니다."
+
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "{modelLabel} isn't available to this server's {source} credentials."
+msgstr "{modelLabel}은(는) 이 서버의 {source} 자격 증명으로 사용할 수 없습니다."
+
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "Check again"
+msgstr "다시 확인"
+
+#: src/pages/Onboarding.tsx
+msgid "Could not check the server's credentials"
+msgstr "서버 자격 증명을 확인할 수 없습니다"
+
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "Uses this server's own {hostCredentialSource} credentials to access {selectedProviderName}."
 msgstr "이 서버의 자체 {hostCredentialSource} 자격 증명으로 {selectedProviderName}에 액세스합니다."
