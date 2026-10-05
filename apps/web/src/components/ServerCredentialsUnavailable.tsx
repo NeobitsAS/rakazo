@@ -57,7 +57,7 @@ export function ServerCredentialsUnavailable({
             fade it further; this one is meant to be seen, with the reason below. */}
         <Switch
           id={switchId}
-          className="mt-0.5 data-disabled:opacity-100 data-unchecked:bg-muted-foreground/60"
+          className="mt-0.5 data-disabled:opacity-100 data-unchecked:bg-muted-foreground/45"
           checked={false}
           disabled
         />
