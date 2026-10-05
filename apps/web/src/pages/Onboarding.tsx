@@ -13,6 +13,7 @@ import {
   parseModelContextWindow,
   parseModelMaxImagesPerPrompt,
   parseModelMaxTokens,
+  type ServerCredentialState,
   type ThinkingLevel,
 } from "@rakazo/contracts";
 import {
@@ -40,6 +41,10 @@ import {
   ModelPreflightFeedback,
   modelPreflightTestingLabel,
 } from "../components/ModelConnectionPreflightNotice";
+import {
+  ServerCredentialsUnavailable,
+  serverCredentialsBlocker,
+} from "../components/ServerCredentialsUnavailable";
 import { useCopyText } from "../lib/copy-text";
 import type { ModelCatalogEntry } from "../lib/model-auth";
 import { thinkingLevelLabel } from "../lib/model-catalog";
@@ -131,6 +136,7 @@ export function OnboardingPage() {
   const needsIntegrationSetup = integrationSetup?.needsSetup ?? false;
   const [integrationServers, setIntegrationServers] = useState<string[]>([]);
   const [catalog, setCatalog] = useState<ModelCatalogEntry[]>([]);
+  const [serverCredentials, setServerCredentials] = useState<ServerCredentialState | null>(null);
   const [provider, setProvider] = useState("openrouter");
   const [modelId, setModelId] = useState("");
   const modelIdRef = useRef(modelId);
@@ -201,6 +207,7 @@ export function OnboardingPage() {
       .then(([me, models, integrations]) => {
         setIntegrationSetup(integrations);
         setCatalog(models);
+        setServerCredentials(me.serverCredentials);
         deploymentDefaultModelRef.current = me.defaultModel;
         const preferred =
           models.find(
@@ -246,6 +253,17 @@ export function OnboardingPage() {
       : [];
   const subscriptionSignIn = selected?.signIn !== undefined;
   const acceptsKey = selected?.auth !== "oauth";
+  const serverCredentialsSource = isOpenAiCompatible ? undefined : selected?.hostCredentialSource;
+  const serverCredentialsBlocked = serverCredentialsSource
+    ? serverCredentialsBlocker(serverCredentials, provider)
+    : null;
+  const serverModelLabel =
+    catalog.find(
+      (entry) =>
+        entry.provider === serverCredentials?.provider && entry.id === serverCredentials?.model,
+    )?.label ??
+    serverCredentials?.model ??
+    "";
   const signInLabel = selected?.oauthLabel ?? t`Sign in`;
   const openAiCompatibleReady = openAiCompatibleConnectReady({
     baseUrl,
@@ -506,6 +524,18 @@ export function OnboardingPage() {
       setStep(nextStepAfterModel(needsIntegrationSetup));
     } catch (err) {
       setError(errorText(err, t`Could not save model`));
+    }
+  }
+
+  /** A check that now passes means the deployment default runs, so onboarding moves on. */
+  async function checkServerCredentials() {
+    setError(null);
+    try {
+      setServerCredentials(await rpc.models.checkServerCredentials());
+      const me = await rpc.me();
+      if (!me.needsModel) setStep(nextStepAfterModel(needsIntegrationSetup));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t`Could not check the server's credentials`);
     }
   }
 
@@ -954,6 +984,16 @@ export function OnboardingPage() {
                     className="mt-2"
                   />
                 </label>
+              </div>
+            ) : null}
+            {serverCredentialsSource && serverCredentialsBlocked ? (
+              <div className="mt-6">
+                <ServerCredentialsUnavailable
+                  blocker={serverCredentialsBlocked}
+                  source={serverCredentialsSource}
+                  modelLabel={serverModelLabel}
+                  onCheck={checkServerCredentials}
+                />
               </div>
             ) : null}
             {acceptsKey ? (

@@ -17,6 +17,34 @@ msgstr ""
 msgid " (unread)"
 msgstr " (okunmadı)"
 
+#: src/pages/ModelSettingsOverlay.tsx
+msgid "Server credentials stay in use until you connect a key."
+msgstr "Bir anahtar bağlayana kadar sunucu kimlik bilgileri kullanılmaya devam eder."
+
+#: src/pages/ModelSettingsOverlay.tsx
+msgid "Use server credentials"
+msgstr "Sunucu kimlik bilgilerini kullan"
+
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "This server isn't set up to use its own {source} credentials. To enable it, set PI_DEFAULT_CREDENTIALS=host with PI_DEFAULT_PROVIDER and PI_DEFAULT_MODEL on the server."
+msgstr "Bu sunucu kendi {source} kimlik bilgilerini kullanacak şekilde ayarlanmamış. Etkinleştirmek için sunucuda PI_DEFAULT_PROVIDER ve PI_DEFAULT_MODEL ile birlikte PI_DEFAULT_CREDENTIALS=host ayarlayın."
+
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "This server has no usable {source} credentials."
+msgstr "Bu sunucunun kullanılabilir {source} kimlik bilgileri yok."
+
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "This server's {source} credentials aren't allowed to use {modelLabel}."
+msgstr "Bu sunucunun {source} kimlik bilgilerinin {modelLabel} kullanma izni yok."
+
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "{modelLabel} isn't available to this server's {source} credentials."
+msgstr "{modelLabel}, bu sunucunun {source} kimlik bilgileriyle kullanılamıyor."
+
+#: src/pages/Onboarding.tsx
+msgid "Could not check the server's credentials"
+msgstr "Sunucunun kimlik bilgileri kontrol edilemedi"
+
 #. placeholder {0}: group.entries.length
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "{0, plural, one {# model} other {# models}}"

@@ -17,6 +17,34 @@ msgstr ""
 msgid " (unread)"
 msgstr " (non lu)"
 
+#: src/pages/ModelSettingsOverlay.tsx
+msgid "Server credentials stay in use until you connect a key."
+msgstr "Les identifiants du serveur restent utilisés jusqu'à ce que vous connectiez une clé."
+
+#: src/pages/ModelSettingsOverlay.tsx
+msgid "Use server credentials"
+msgstr "Utiliser les identifiants du serveur"
+
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "This server isn't set up to use its own {source} credentials. To enable it, set PI_DEFAULT_CREDENTIALS=host with PI_DEFAULT_PROVIDER and PI_DEFAULT_MODEL on the server."
+msgstr "Ce serveur n'est pas configuré pour utiliser ses propres identifiants {source}. Pour l'activer, définissez PI_DEFAULT_CREDENTIALS=host avec PI_DEFAULT_PROVIDER et PI_DEFAULT_MODEL sur le serveur."
+
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "This server has no usable {source} credentials."
+msgstr "Ce serveur n'a pas d'identifiants {source} utilisables."
+
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "This server's {source} credentials aren't allowed to use {modelLabel}."
+msgstr "Les identifiants {source} de ce serveur ne sont pas autorisés à utiliser {modelLabel}."
+
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "{modelLabel} isn't available to this server's {source} credentials."
+msgstr "{modelLabel} n'est pas disponible pour les identifiants {source} de ce serveur."
+
+#: src/pages/Onboarding.tsx
+msgid "Could not check the server's credentials"
+msgstr "Impossible de vérifier les identifiants du serveur"
+
 #. placeholder {0}: group.entries.length
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "{0, plural, one {# model} other {# models}}"
