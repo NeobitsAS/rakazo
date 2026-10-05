@@ -108,6 +108,7 @@ import {
   resolveBotWorkspacePath,
   revokeScreenControl,
   routineRunModelPin,
+  type ServerCredentialCheck,
   sanitizeComposioError,
   savePushToken,
   scheduleComputerControlExpiry,
@@ -579,6 +580,8 @@ export interface RouterDeps {
   codexCatalog?: CodexLiveCatalog;
   /** Site icons for links; defaults to the per-process cache that fetches them. */
   favicons?: FaviconResolver;
+  /** Set when the operator runs the deployment default on the server's own credentials. */
+  serverCredentials?: ServerCredentialCheck;
   /**
    * Detached refresh for a stored credential whose bearer expired — the live
    * catalog path calls it instead of refreshing inline. Defaults to the
@@ -1652,6 +1655,9 @@ export function createRouter(deps: RouterDeps) {
         });
         return { ok: true as const };
       }),
+      checkServerCredentials: authed.models.checkServerCredentials.handler(
+        async () => (await deps.serverCredentials?.refresh()) ?? null,
+      ),
       disconnect: authed.models.disconnect.handler(async ({ context, input }) => {
         // Retire pending sign-ins in every space first — the credentials are
         // account-wide, so a finishing OAuth session anywhere could otherwise
@@ -6611,11 +6617,13 @@ async function meDto(deps: RouterDeps, actor: Actor): Promise<Me> {
     ),
     defaultModel:
       setup.credential?.defaultModel ?? setup.settings?.defaultModelId ?? deps.env.defaultModel,
+    serverCredentials: deps.serverCredentials?.state() ?? null,
     // Set only while the active default is the deployment's own, running on host credentials.
     ...hostCredentials(
       !setup.credential &&
         !setup.settings?.defaultModelProvider &&
-        Boolean(deps.env.deploymentModelHostCredentials),
+        Boolean(deps.env.deploymentModelHostCredentials) &&
+        !deps.serverCredentials?.failed(),
       deps.env.defaultProvider,
     ),
     computerHost: computerHostFor(setup.settings?.computerHost, deps.env.sandboxProvider),
@@ -6637,7 +6645,10 @@ async function modelSetup(deps: RouterDeps, actor: Actor) {
     findDefaultModelCredential(deps.prisma, actor),
     deps.prisma.deploymentSettings.findUnique({ where: { id: "default" } }),
   ]);
-  const hasDeployment = Boolean(deps.env.deploymentModelConfigured);
+  // A deployment default on server credentials that a check showed can't run doesn't count:
+  // onboarding then explains what the server is missing instead of every run failing.
+  const hasDeployment =
+    Boolean(deps.env.deploymentModelConfigured) && !deps.serverCredentials?.failed();
   return {
     credential,
     settings,

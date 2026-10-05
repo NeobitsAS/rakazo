@@ -60,6 +60,10 @@ import {
   ModelPreflightFeedback,
   modelPreflightTestingLabel,
 } from "../components/ModelConnectionPreflightNotice";
+import {
+  ServerCredentialsUnavailable,
+  serverCredentialsBlocker,
+} from "../components/ServerCredentialsUnavailable";
 import { useCopyText } from "../lib/copy-text";
 import { providerRowHint } from "../lib/localized-provider-hint";
 import type { ModelCatalogEntry, ModelCredential } from "../lib/model-auth";
@@ -299,6 +303,19 @@ export function ModelSettingsOverlay({
   const selectedProviderName = selected?.providerName ?? selected?.provider ?? "";
   const disconnectName = selectedProviderName;
   const hostCredentialSource = me?.hostCredentialSource ?? "";
+  const serverCredentialsSource =
+    provider === OPENAI_COMPATIBLE_PROVIDER_ID ? undefined : selected?.hostCredentialSource;
+  const serverCredentialsBlocked = serverCredentialsSource
+    ? serverCredentialsBlocker(me?.serverCredentials, provider)
+    : null;
+  const serverModelLabel =
+    catalog.find(
+      (entry) =>
+        entry.provider === me?.serverCredentials?.provider &&
+        entry.id === me?.serverCredentials?.model,
+    )?.label ??
+    me?.serverCredentials?.model ??
+    "";
   const serverCredentialsNote = (
     <p className="text-[13px] leading-[1.5] text-muted-foreground">
       <Trans>
@@ -1499,6 +1516,19 @@ export function ModelSettingsOverlay({
                 </>
               ) : (
                 <>
+                  {serverCredentialsSource && serverCredentialsBlocked ? (
+                    <div className="mb-5">
+                      <ServerCredentialsUnavailable
+                        blocker={serverCredentialsBlocked}
+                        source={serverCredentialsSource}
+                        modelLabel={serverModelLabel}
+                        onCheck={async () => {
+                          await rpc.models.checkServerCredentials();
+                          await refresh();
+                        }}
+                      />
+                    </div>
+                  ) : null}
                   {connectionControls}
                   <div className="mt-6">{catalogModelConfig}</div>
                 </>

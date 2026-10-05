@@ -17,6 +17,39 @@ msgstr ""
 msgid " (unread)"
 msgstr "（未读）"
 
+#: src/pages/ModelSettingsOverlay.tsx
+msgid "Server credentials stay in use until you connect a key."
+msgstr "在连接密钥之前，将继续使用服务器凭据。"
+
+#: src/pages/ModelSettingsOverlay.tsx
+msgid "Use server credentials"
+msgstr "使用服务器凭据"
+
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "This server isn't set up to use its own {source} credentials. To enable it, set PI_DEFAULT_CREDENTIALS=host with PI_DEFAULT_PROVIDER and PI_DEFAULT_MODEL on the server."
+msgstr "此服务器未设置为使用自己的 {source} 凭据。要启用，请在服务器上设置 PI_DEFAULT_CREDENTIALS=host，并同时设置 PI_DEFAULT_PROVIDER 和 PI_DEFAULT_MODEL。"
+
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "This server has no usable {source} credentials."
+msgstr "此服务器没有可用的 {source} 凭据。"
+
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "This server's {source} credentials aren't allowed to use {modelLabel}."
+msgstr "此服务器的 {source} 凭据无权使用 {modelLabel}。"
+
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "{modelLabel} isn't available to this server's {source} credentials."
+msgstr "此服务器的 {source} 凭据无法使用 {modelLabel}。"
+
+#: src/pages/Onboarding.tsx
+msgid "Could not check the server's credentials"
+msgstr "无法检查服务器的凭据"
+
+#. placeholder {0}: group.entries.length
+#: src/pages/ModelSettingsOverlay.tsx
+msgid "{0, plural, one {# model} other {# models}}"
+msgstr "{0, plural, one {# 个模型} other {# 个模型}}"
+
 #. placeholder {0}: Math.ceil(oauth.expiresInSeconds / 60)
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/Onboarding.tsx

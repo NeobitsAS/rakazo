@@ -19,6 +19,17 @@ export function hostCredentialSource(provider: string): string {
   return HOST_CREDENTIAL_SOURCES[provider] ?? "host";
 }
 
+/** The kind of host credentials a provider can authenticate with, or undefined when it can't. */
+export function supportedHostCredentialSource(provider: string): string | undefined {
+  return HOST_CREDENTIAL_SOURCES[provider];
+}
+
+/** Whether Pi finds credentials for the provider on this host, where a run authenticates from. */
+export function hostCredentialsPresent(provider: string): boolean {
+  // Bedrock also resolves EC2 instance roles through IMDS at request time.
+  return provider === "amazon-bedrock" || getEnvApiKey(provider) === HOST_CREDENTIALS;
+}
+
 /**
  * The deployment-wide model default: which provider a run falls back to when no user
  * credential applies, and the key for that provider.
@@ -48,8 +59,7 @@ export function resolveDeploymentModel(env: NodeJS.ProcessEnv = process.env) {
     !key &&
     Boolean(explicitModel) &&
     env.PI_DEFAULT_CREDENTIALS?.trim() === "host" &&
-    // Bedrock also resolves EC2 instance roles through IMDS at request time.
-    (provider === "amazon-bedrock" || getEnvApiKey(provider) === HOST_CREDENTIALS);
+    hostCredentialsPresent(provider);
   return {
     provider,
     model: explicitModel || models[provider] || models.openrouter!,

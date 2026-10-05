@@ -17,6 +17,7 @@ const procedures = new Set([
   "models/setDefault",
   "models/backups",
   "models/setBackups",
+  "models/checkServerCredentials",
   "integrationSetup/get",
   "integrationSetup/save",
 ]);

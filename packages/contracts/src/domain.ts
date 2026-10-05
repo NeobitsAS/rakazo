@@ -1266,6 +1266,8 @@ export const ModelCatalogEntrySchema = z.object({
   placeholder: z.boolean().optional(),
   /** Models share one pinned HTTPS models-list URL that can be probed. */
   catalogProbe: z.boolean().optional(),
+  /** Set when a server can run this provider on its own credentials, e.g. "AWS IAM". */
+  hostCredentialSource: z.string().optional(),
 });
 export type ModelCatalogEntry = z.infer<typeof ModelCatalogEntrySchema>;
 
@@ -1421,6 +1423,29 @@ export const ServerUpdateRequestSchema = z.object({
 });
 export type ServerUpdateRequest = z.infer<typeof ServerUpdateRequestSchema>;
 
+/**
+ * The deployment default on the server's own credentials: `missing` (no usable credentials on the
+ * server), `unchecked`, `ready`, `denied` (may not invoke the model) or `unavailable` (the model
+ * isn't offered to those credentials).
+ */
+export const ServerCredentialStatusSchema = z.enum([
+  "missing",
+  "unchecked",
+  "ready",
+  "denied",
+  "unavailable",
+]);
+export type ServerCredentialStatus = z.infer<typeof ServerCredentialStatusSchema>;
+
+export const ServerCredentialStateSchema = z.object({
+  provider: z.string(),
+  model: z.string(),
+  /** The kind of credentials, e.g. "AWS IAM". */
+  source: z.string(),
+  status: ServerCredentialStatusSchema,
+});
+export type ServerCredentialState = z.infer<typeof ServerCredentialStateSchema>;
+
 export const MeSchema = z.object({
   maxUploadSizeBytes: z.number().int().positive().optional(),
   ticketBoardEnabled: z.boolean(),
@@ -1437,6 +1462,8 @@ export const MeSchema = z.object({
   hostCredentialProvider: z.string().nullable(),
   /** Kind of those credentials, e.g. "AWS IAM"; set with hostCredentialProvider. */
   hostCredentialSource: z.string().nullable(),
+  /** Set when the operator runs the deployment default on the server's own credentials. */
+  serverCredentials: ServerCredentialStateSchema.nullable(),
   computerHost: z.enum(["docker", "this-mac"]).nullable(),
   canChooseHostComputer: z.boolean(),
   sandboxProvider: z.string(),
