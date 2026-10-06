@@ -187,12 +187,7 @@ export function ScratchpadSection({ botId }: { botId: string }) {
           maxLength={200}
           className="min-w-0 flex-1"
         />
-        <Button
-          variant="secondary"
-          className="rounded-full"
-          disabled={busy || !draft.trim()}
-          onClick={() => void addItem()}
-        >
+        <Button variant="secondary" disabled={busy || !draft.trim()} onClick={() => void addItem()}>
           <Trans>Add</Trans>
         </Button>
       </form>

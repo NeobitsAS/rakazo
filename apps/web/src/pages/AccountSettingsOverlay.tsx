@@ -112,7 +112,7 @@ export function GeneralSettingsPanels({
           <p className="mt-3 text-[13px] text-muted-foreground/70">
             <Trans>Chat apps, group channels, and agent connections.</Trans>
           </p>
-          <Button variant="secondary" className="mt-3 rounded-full" onClick={onOpenMessaging}>
+          <Button variant="secondary" className="mt-3" onClick={onOpenMessaging}>
             <Trans>Manage messaging settings</Trans>
           </Button>
         </section>
@@ -368,7 +368,6 @@ function ChangePasswordSection({ email }: { email?: string | null }) {
       ) : null}
       <div className="mt-4 flex items-center gap-3">
         <Button
-          className="rounded-full"
           disabled={pending || currentPassword.length < 8 || newPassword.length < 8}
           onClick={() => void changePassword()}
         >

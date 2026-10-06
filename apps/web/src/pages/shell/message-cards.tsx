@@ -226,7 +226,7 @@ export function AppConnectCard({
         ) : (
           <Button
             variant="secondary"
-            className="rounded-full hover:border-border hover:bg-accent hover:text-foreground"
+            className="hover:border-border hover:bg-accent hover:text-foreground"
             disabled={busy}
             onClick={() => void authorize()}
           >
@@ -419,16 +419,11 @@ export function McpApprovalCard({
           </p>
           {error ? <p className="mt-2 text-xs text-destructive">{error}</p> : null}
           <div className="mt-3 flex gap-2">
-            <Button
-              className="rounded-full"
-              disabled={state !== "pending" || busy}
-              onClick={() => void authorize()}
-            >
+            <Button disabled={state !== "pending" || busy} onClick={() => void authorize()}>
               {state === "connecting" ? t`Connecting…` : needsOAuth ? t`Authorize` : t`Approve`}
             </Button>
             <Button
               variant="secondary"
-              className="rounded-full"
               disabled={state !== "pending" || busy}
               onClick={() => void dismiss()}
             >

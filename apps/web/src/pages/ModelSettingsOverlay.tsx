@@ -880,7 +880,7 @@ export function ModelSettingsOverlay({
           <Button
             type="button"
             variant="secondary"
-            className="mt-3 rounded-full"
+            className="mt-3"
             size="sm"
             disabled={busy || (!builtinLimitSave && apiKey.trim().length < 8)}
             onClick={() => void connectKey()}
@@ -930,7 +930,7 @@ export function ModelSettingsOverlay({
       <Button
         type="button"
         variant="secondary"
-        className="mt-3 rounded-full"
+        className="mt-3"
         size="sm"
         disabled={busy || !openAiCompatibleReady}
         onClick={() => void connectKey()}
@@ -946,7 +946,6 @@ export function ModelSettingsOverlay({
         <Button
           type="button"
           variant="secondary"
-          className="rounded-full"
           size="sm"
           disabled={busy || (isOpenAiCompatible && !modelId.trim())}
           onClick={() => void setModelDefault()}
