@@ -4,7 +4,8 @@
 
   const form = document.getElementById("setup");
   const serverUrl = document.getElementById("server-url");
-  const tunnelDetails = document.getElementById("tunnel");
+  const tunnelToggle = document.getElementById("tunnel-toggle");
+  const tunnelFields = document.getElementById("tunnel-fields");
   const tunnelCommand = document.getElementById("tunnel-command");
   const tunnelSignIn = document.getElementById("tunnel-sign-in");
   const panelNew = document.getElementById("panel-new");
@@ -20,7 +21,9 @@
   const status = document.getElementById("status");
   const checkButton = document.getElementById("check");
   const continueButton = document.getElementById("continue");
-  const quitButton = document.getElementById("quit");
+  const closeButton = document.getElementById("close");
+  const cancelButton = document.getElementById("cancel");
+  const heading = document.getElementById("heading");
 
   const STACK_POLL_MS = 1000;
   const PHASE_LABELS = {
@@ -66,7 +69,9 @@
   }
 
   /** The tunnel to start before connecting, or undefined when no command is entered. */
+  /** Off means no tunnel, whatever the fields still hold. */
   function tunnelValue() {
+    if (!tunnelToggle.checked) return undefined;
     const command = tunnelCommand.value.trim();
     if (command === "") return undefined;
     const signInCommand = tunnelSignIn.value.trim();
@@ -81,6 +86,7 @@
 
   function setBusy(busy) {
     checkButton.disabled = busy;
+    cancelButton.disabled = busy;
     continueButton.disabled = busy;
   }
 
@@ -314,12 +320,13 @@
     if (link) void bridge.openLink(link);
   });
 
-  quitButton.addEventListener("click", () => {
-    if (bridge === undefined) {
-      window.close();
-      return;
-    }
-    void bridge.quit();
+  // Closing the window quits the app; Cancel goes back to it without saving.
+  closeButton.addEventListener("click", () => window.close());
+  cancelButton.addEventListener("click", () => void bridge.cancel());
+
+  tunnelToggle.addEventListener("change", () => {
+    tunnelFields.hidden = !tunnelToggle.checked;
+    if (tunnelToggle.checked) tunnelCommand.focus();
   });
 
   form.addEventListener("submit", (event) => {
@@ -353,7 +360,10 @@
       const state = await bridge.state();
       if (state === null) throw new Error("Setup is not active");
       defaultLocalUrl = state.defaultLocalUrl;
+      cancelButton.hidden = !state.canCancel;
       if (state.saved !== null) {
+        // Coming back to change the server rather than setting up for the first time.
+        heading.textContent = "Server settings";
         const modeInput = document.querySelector(`input[name="mode"][value="${state.saved.mode}"]`);
         if (modeInput !== null) modeInput.checked = true;
         if (state.saved.mode === "existing") {
@@ -361,7 +371,8 @@
           if (state.saved.tunnel !== undefined) {
             tunnelCommand.value = state.saved.tunnel.command;
             tunnelSignIn.value = state.saved.tunnel.signInCommand ?? "";
-            tunnelDetails.open = true;
+            tunnelToggle.checked = true;
+            tunnelFields.hidden = false;
           }
         }
       }

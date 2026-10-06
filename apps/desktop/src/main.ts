@@ -608,8 +608,13 @@ function createSetupWindow() {
   setupWindow = win;
   win.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
   win.once("closed", () => {
-    if (setupWindow === win) setupWindow = null;
-    // Closing setup without saving restores a connected session (Change Server cancel).
+    // Continue and Cancel let go of the window before closing it; closing it any other way (its
+    // close button) quits the app.
+    if (setupWindow === win) {
+      setupWindow = null;
+      app.quit();
+      return;
+    }
     restoreAppWindowAfterSetup();
   });
   void win.loadFile(path.join(import.meta.dirname, "setup.html"));
@@ -1117,6 +1122,11 @@ function watchRendererUntilCommitted(win: BrowserWindow) {
   };
 }
 
+/** Cancel needs an app window to go back to; without one it would leave the app windowless. */
+function canCancelSetup() {
+  return mainWindow !== null && !mainWindow.isDestroyed() && currentTargetUrl !== null;
+}
+
 function destroySetupWindow() {
   const setup = setupWindow;
   setupWindow = null;
@@ -1344,6 +1354,7 @@ app.whenReady().then(async () => {
       defaultLocalUrl: localStack.webUrl(),
       saved: currentSetup,
       error: setupError ?? undefined,
+      canCancel: canCancelSetup(),
     };
   });
 
@@ -1456,8 +1467,8 @@ app.whenReady().then(async () => {
     }
   });
 
-  ipcMain.handle("desktop.setup.quit", (event) => {
-    if (fromSetupWindow(event)) app.quit();
+  ipcMain.handle("desktop.setup.cancel", (event) => {
+    if (fromSetupWindow(event) && canCancelSetup() && !setupSaveInProgress) destroySetupWindow();
   });
   ipcMain.handle("desktop.setup.openLink", async (event, link: unknown) => {
     if (!fromSetupWindow(event) || !isDesktopSetupLink(link)) return;

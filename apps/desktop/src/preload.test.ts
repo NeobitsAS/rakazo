@@ -115,9 +115,9 @@ describe("setup preload bridge", () => {
     expect(globalName).toBe("rakazoSetup");
     expect(bridge.platform).toBe("linux");
     expect(Object.keys(bridge).sort()).toEqual([
+      "cancel",
       "openLink",
       "platform",
-      "quit",
       "save",
       "stack",
       "state",
@@ -128,7 +128,7 @@ describe("setup preload bridge", () => {
     await bridge.state();
     await bridge.test("http://127.0.0.1:5173");
     await bridge.save({ mode: "new", serverUrl: "http://127.0.0.1:5173" });
-    await bridge.quit();
+    await bridge.cancel();
     await bridge.openLink("orbstack");
     await bridge.stack.state();
     await bridge.stack.start();
@@ -136,7 +136,7 @@ describe("setup preload bridge", () => {
       "desktop.setup.state",
       "desktop.setup.test",
       "desktop.setup.save",
-      "desktop.setup.quit",
+      "desktop.setup.cancel",
       "desktop.setup.openLink",
       "desktop.setup.stack.state",
       "desktop.setup.stack.start",
