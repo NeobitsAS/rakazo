@@ -1,11 +1,13 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import type { IntegrationCatalogResult, IntegrationSetupState } from "@rakazo/contracts";
-import { Button, ButtonGroup, Input, Label, Switch } from "@rakazo/ui-web";
-import { ArrowLeft, Check, Plug, Search, X } from "lucide-react";
+import { Button, ButtonGroup, Field, FieldLabel, Input, Label, Switch } from "@rakazo/ui-web";
+import { ArrowLeft, Check, Plug, Search } from "lucide-react";
 import { useEffect, useId, useState } from "react";
 import { newClientId } from "../../lib/client-id";
 import { connectMcpOauth } from "../../lib/mcp-connect";
 import { rpc } from "../../lib/rpc";
+import { ChoiceCard, ChoiceCards } from "./ChoiceCard";
+import { ConnectedStatus } from "./ConnectedStatus";
 import { IntegrationLogo } from "./IntegrationLogo";
 
 type Choice = "direct" | "composio" | "pipedream" | "executor";
@@ -152,8 +154,18 @@ export function IntegrationSetup({
       if (existing && apiKey.trim()) {
         await rpc.mcp.servers.update({ id: existing.id, secret: apiKey.trim() });
       }
-      const result = await connectMcpOauth(server.id);
-      if (result === "cancelled") return;
+      // A server added only for this sign-in goes again when the sign-in does not finish.
+      const forgetIfNew = async () => {
+        if (!existing) await rpc.mcp.servers.remove({ id: server.id });
+      };
+      const result = await connectMcpOauth(server.id).catch(async (err: unknown) => {
+        await forgetIfNew();
+        throw err;
+      });
+      if (result === "cancelled") {
+        await forgetIfNew();
+        return;
+      }
       if (botId) await rpc.mcp.assignments.approve({ botId, serverId: server.id });
       setConnected((current) =>
         new Map(current).set(url, { serverId: server.id, created: !existing }),
@@ -175,6 +187,15 @@ export function IntegrationSetup({
       });
       onServerDisconnected?.(connection.serverId);
     }, pendingFor(url));
+  }
+
+  const visibleChoices = choices.filter(
+    ({ id }) => !managedOnly || id === "composio" || id === "pipedream",
+  );
+  function selectChoice(id: Choice) {
+    setChoice(id);
+    setApiKey("");
+    setError(null);
   }
 
   const footerLocked = busy || finishingLabel !== null;
@@ -200,55 +221,39 @@ export function IntegrationSetup({
         </h1>
       )}
       {serverSetup ? (
-        <fieldset
-          aria-label={t`Integration options`}
-          className={
-            page
-              ? "grid max-w-[592px] grid-cols-2 gap-3 @lg:grid-cols-4"
-              : "overflow-hidden rounded-xl border border-border"
-          }
-        >
-          {choices
-            .filter(({ id }) => !managedOnly || id === "composio" || id === "pipedream")
-            .map(({ id, label }) => (
+        page ? (
+          <ChoiceCards label={t`Integration options`}>
+            {visibleChoices.map(({ id, label }) => (
+              <ChoiceCard
+                key={id}
+                icon={<IntegrationLogo service={id === "direct" ? "mcp" : id} />}
+                label={label}
+                selected={choice === id}
+                disabled={busy}
+                onSelect={() => selectChoice(id)}
+              />
+            ))}
+          </ChoiceCards>
+        ) : (
+          <fieldset
+            aria-label={t`Integration options`}
+            className="overflow-hidden rounded-xl border border-border"
+          >
+            {visibleChoices.map(({ id, label }) => (
               <button
                 key={id}
                 type="button"
                 aria-pressed={choice === id}
                 disabled={busy}
-                onClick={() => {
-                  setChoice(id);
-                  setApiKey("");
-                  setError(null);
-                }}
-                className={
-                  page
-                    ? `flex aspect-[4/3] flex-col justify-between rounded-xl border p-3 text-left text-sm font-medium shadow-sm transition-colors outline-none focus-visible:ring-3 focus-visible:ring-link/50 ${choice === id ? "border-transparent bg-link text-white" : "border-border bg-card hover:bg-accent"}`
-                    : `flex min-h-11 w-full items-center justify-between border-b border-border px-3.5 py-2.5 text-left last:border-0 ${choice === id ? "bg-muted" : "hover:bg-accent"}`
-                }
+                onClick={() => selectChoice(id)}
+                className={`flex min-h-11 w-full items-center justify-between border-b border-border px-3.5 py-2.5 text-left last:border-0 ${choice === id ? "bg-muted" : "hover:bg-accent"}`}
               >
-                {page ? (
-                  <>
-                    <span className="flex min-w-0 items-center gap-2">
-                      <IntegrationLogo service={id === "direct" ? "mcp" : id} />
-                      <span className="truncate">{label}</span>
-                    </span>
-                    <span
-                      aria-hidden="true"
-                      className={`grid size-4 shrink-0 place-items-center self-end rounded-full border-2 ${choice === id ? "border-white" : "border-muted-foreground/60"}`}
-                    >
-                      {choice === id ? <span className="size-1.5 rounded-full bg-white" /> : null}
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <span>{label}</span>
-                    {choice === id ? <Check className="size-4" aria-hidden /> : null}
-                  </>
-                )}
+                <span>{label}</span>
+                {choice === id ? <Check className="size-4" aria-hidden /> : null}
               </button>
             ))}
-        </fieldset>
+          </fieldset>
+        )
       ) : null}
       {choice === "composio" || choice === "pipedream" ? (
         <>
@@ -261,51 +266,51 @@ export function IntegrationSetup({
             <>
               {choice === "pipedream" ? (
                 <>
-                  <label htmlFor={`${fieldId}-client-id`} className="block text-sm">
-                    <Trans>Client ID</Trans>
+                  <Field>
+                    <FieldLabel htmlFor={`${fieldId}-client-id`}>
+                      <Trans>Client ID</Trans>
+                    </FieldLabel>
                     <Input
-                      size={size}
                       id={`${fieldId}-client-id`}
                       placeholder={t`Paste your Pipedream client ID`}
-                      className="mt-2"
                       value={clientId}
                       onChange={(event) => setClientId(event.target.value)}
                       autoComplete="off"
                     />
-                  </label>
-                  <label htmlFor={`${fieldId}-project-id`} className="block text-sm">
-                    <Trans>Project ID</Trans>
+                  </Field>
+                  <Field>
+                    <FieldLabel htmlFor={`${fieldId}-project-id`}>
+                      <Trans>Project ID</Trans>
+                    </FieldLabel>
                     <Input
-                      size={size}
                       id={`${fieldId}-project-id`}
                       placeholder={t`Paste your Pipedream project ID`}
-                      className="mt-2"
                       value={projectId}
                       onChange={(event) => setProjectId(event.target.value)}
                       autoComplete="off"
                     />
-                  </label>
+                  </Field>
                 </>
               ) : null}
               {/* The link belongs to the field above it, so it sits close. */}
               <div className="space-y-2">
-                <label htmlFor={`${fieldId}-key`} className="block text-sm">
-                  {choice === "composio" ? t`API key` : t`Client secret`}
+                <Field>
+                  <FieldLabel htmlFor={`${fieldId}-key`}>
+                    {choice === "composio" ? t`API key` : t`Client secret`}
+                  </FieldLabel>
                   <Input
-                    size={size}
                     id={`${fieldId}-key`}
                     placeholder={
                       choice === "composio"
-                        ? t`Paste your Composio API key`
+                        ? t`Paste your Composio project API key (ak_…)`
                         : t`Paste your Pipedream client secret`
                     }
-                    className="mt-2"
                     type="password"
                     value={apiKey}
                     onChange={(event) => setApiKey(event.target.value)}
                     autoComplete="new-password"
                   />
-                </label>
+                </Field>
                 <a
                   className="inline-block text-sm text-muted-foreground underline"
                   href={
@@ -318,16 +323,6 @@ export function IntegrationSetup({
                 >
                   <Trans>Get credentials</Trans>
                 </a>
-                {!onDone ? (
-                  <Button
-                    size={size}
-                    className="ml-3"
-                    disabled={busy || !credentialsReady}
-                    onClick={() => void saveProvider()}
-                  >
-                    {busy ? t`Connecting…` : t`Connect`}
-                  </Button>
-                ) : null}
               </div>
             </>
           ) : state && !configured ? (
@@ -355,7 +350,6 @@ export function IntegrationSetup({
           >
             <ButtonGroup className="w-full">
               <Input
-                size={size}
                 aria-label={t`Search apps`}
                 placeholder={t`Search for an app, e.g. GitHub or Linear`}
                 value={query}
@@ -363,7 +357,7 @@ export function IntegrationSetup({
               />
               <Button
                 type="submit"
-                size={page ? "icon-lg" : "icon"}
+                size="icon-lg"
                 aria-label={t`Search`}
                 disabled={searching || !query.trim()}
               >
@@ -426,7 +420,6 @@ export function IntegrationSetup({
           {addingUrl ? (
             <div className="space-y-3">
               <Input
-                size={size}
                 aria-label={t`Server URL`}
                 value={endpoint}
                 onChange={(event) => setEndpoint(event.target.value)}
@@ -447,30 +440,30 @@ export function IntegrationSetup({
       ) : null}
       {choice === "executor" ? (
         <div className="space-y-3">
-          <label htmlFor={`${fieldId}-endpoint`} className="block text-sm">
-            <Trans>Server URL</Trans>
+          <Field>
+            <FieldLabel htmlFor={`${fieldId}-endpoint`}>
+              <Trans>Server URL</Trans>
+            </FieldLabel>
             <Input
-              size={size}
               id={`${fieldId}-endpoint`}
-              className="mt-2"
               value={endpoint}
               onChange={(event) => setEndpoint(event.target.value)}
               placeholder="http://localhost:8000/mcp"
             />
-          </label>
-          <label htmlFor={`${fieldId}-token`} className="block text-sm">
-            <Trans>Access token</Trans>
+          </Field>
+          <Field>
+            <FieldLabel htmlFor={`${fieldId}-token`}>
+              <Trans>Access token</Trans>
+            </FieldLabel>
             <Input
-              size={size}
               id={`${fieldId}-token`}
               placeholder={t`Paste your Executor access token`}
-              className="mt-2"
               value={apiKey}
               onChange={(event) => setApiKey(event.target.value)}
               type="password"
               autoComplete="new-password"
             />
-          </label>
+          </Field>
           <Button
             variant="text"
             size={size}
@@ -505,6 +498,19 @@ export function IntegrationSetup({
           {finishError}
         </p>
       ) : null}
+      {!onDone && managed && state?.canConfigure ? (
+        <div>
+          <Button
+            variant="secondary"
+            size={size}
+            disabled={busy || !credentialsReady}
+            onClick={() => void saveProvider()}
+          >
+            <Plug />
+            {busy ? t`Connecting…` : t`Connect`}
+          </Button>
+        </div>
+      ) : null}
       {onDone ? (
         <div className={page ? "flex items-center gap-3 pt-2" : "flex gap-3"}>
           {page && onBack ? (
@@ -534,59 +540,5 @@ export function IntegrationSetup({
         </div>
       ) : null}
     </div>
-  );
-}
-
-/**
- * "Connected", in green. When the connection can be undone it turns into "Disconnect" on hover or
- * keyboard focus; a touch shows "Disconnect" first and a second touch disconnects.
- */
-function ConnectedStatus({
-  onDisconnect,
-  pending,
-}: {
-  onDisconnect: (() => void) | null;
-  /** Disconnecting is under way. */
-  pending: boolean;
-}) {
-  const [armed, setArmed] = useState(false);
-  const connected = (
-    <>
-      <Check />
-      <Trans>Connected</Trans>
-    </>
-  );
-  if (!onDisconnect) {
-    return (
-      <span className="flex h-9 items-center gap-1.5 text-sm font-medium text-success [&_svg]:size-4">
-        {connected}
-      </span>
-    );
-  }
-  return (
-    <button
-      type="button"
-      disabled={pending}
-      data-armed={armed || pending || undefined}
-      onClick={(event) => {
-        const touch =
-          event.nativeEvent instanceof PointerEvent && event.nativeEvent.pointerType === "touch";
-        if (touch && !armed) {
-          setArmed(true);
-          return;
-        }
-        onDisconnect();
-      }}
-      onBlur={() => setArmed(false)}
-      className="group/connected flex h-9 items-center gap-1.5 rounded-md text-sm font-medium text-success outline-none hover:text-destructive focus-visible:text-destructive focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50 data-armed:text-destructive [&_svg]:size-4"
-    >
-      <span className="flex items-center gap-1.5 group-hover/connected:hidden group-focus-visible/connected:hidden group-data-armed/connected:hidden">
-        {connected}
-      </span>
-      <span className="hidden items-center gap-1.5 group-hover/connected:flex group-focus-visible/connected:flex group-data-armed/connected:flex">
-        <X />
-        {pending ? <Trans>Disconnecting…</Trans> : <Trans>Disconnect</Trans>}
-      </span>
-    </button>
   );
 }

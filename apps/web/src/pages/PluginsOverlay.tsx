@@ -1,10 +1,11 @@
 import { Plural, Trans, useLingui } from "@lingui/react/macro";
 import type {
+  Bot,
+  BotMcpServer,
   CapabilityInstall,
   Connection,
   ConnectionCatalogItem,
-  IntegrationCatalogResult,
-  IntegrationCatalogSurface,
+  McpServer,
 } from "@rakazo/contracts";
 import {
   abortableDelay,
@@ -13,30 +14,33 @@ import {
   filterConnectionCatalogItems,
   humanizeToolName,
 } from "@rakazo/core";
-import {
-  Button,
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  Input,
-  NativeSelect,
-  NativeSelectOption,
-} from "@rakazo/ui-web";
-import { ChevronDown, ChevronLeft, ChevronUp, Settings, X } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Button, Dialog, DialogContent, Input, Switch } from "@rakazo/ui-web";
+import { Pencil, Plug, Plus, RotateCw, Settings, Trash } from "lucide-react";
+import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { DialogPageHeader } from "../components/DialogPageHeader";
+import { AddIntegration } from "../components/integrations/AddIntegration";
+import { ConnectedStatus } from "../components/integrations/ConnectedStatus";
 import { IntegrationSetup } from "../components/integrations/IntegrationSetup";
-import { optionalCatalogFeedProbe } from "../lib/optional-catalog-feed";
+import { Loader } from "../components/PageLoader";
+import { SettingRow } from "../components/SettingRow";
+import { connectMcpOauth } from "../lib/mcp-connect";
 import { rpc } from "../lib/rpc";
 
-type SourceKind = "treg" | "executor" | "mcp" | "api" | "graphql";
-
 type ConnectionTool = { name: string; description: string };
+
+/** An app's logo, or the first letter of its name when it has none. */
+function AppIcon({ name, logo }: { name: string; logo?: string | null }) {
+  return logo ? (
+    <img src={logo} alt="" className="size-10 rounded-xl bg-accent object-contain" />
+  ) : (
+    <div className="grid size-10 place-items-center rounded-xl bg-accent text-base font-semibold text-foreground">
+      {name[0]}
+    </div>
+  );
+}
+
+/** Tools shown for an app before "Show all". */
+const TOOL_PREVIEW_COUNT = 5;
 
 function itemKey(item: Pick<ConnectionCatalogItem, "connectorId" | "slug">) {
   return `${item.connectorId}:${item.slug}`;
@@ -70,47 +74,36 @@ function nextAccountLabel(itemName: string, existingCount: number) {
 }
 export function PluginsOverlay({
   onClose,
-  onOpenMcp,
   activeBotId,
   isDeploymentOwner = false,
 }: {
   onClose: () => void;
-  onOpenMcp?: () => void;
   activeBotId?: string;
   /** The owner sets up the catalog's provider (Composio or Pipedream) right here. */
   isDeploymentOwner?: boolean;
 }) {
   const { t } = useLingui();
-  const [setupOpen, setSetupOpen] = useState(false);
-  /** The owner's server setup (the catalog's provider), shown instead of the list. */
-  const [serverSetupOpen, setServerSetupOpen] = useState(false);
+  /** The list, adding a tool server, or the owner's setup of the catalog's provider. */
+  const [view, setView] = useState<"list" | "add" | "server">("list");
   const [query, setQuery] = useState("");
   const [visibleCount, setVisibleCount] = useState(CONNECTION_CATALOG_PAGE_SIZE);
   const [catalog, setCatalog] = useState<ConnectionCatalogItem[]>([]);
   const [connections, setConnections] = useState<Connection[]>([]);
   const [labelDrafts, setLabelDrafts] = useState<Record<string, string>>({});
   const [sources, setSources] = useState<CapabilityInstall[]>([]);
-  const [sourceKind, setSourceKind] = useState<SourceKind | null>(null);
-  const [sourceName, setSourceName] = useState("");
-  const [sourceUrl, setSourceUrl] = useState("");
-  const [credential, setCredential] = useState("");
-  const [authType, setAuthType] = useState<"none" | "bearer" | "header">("bearer");
-  const [authName, setAuthName] = useState("x-api-key");
+  const [mcpServers, setMcpServers] = useState<McpServer[]>([]);
+  const [assignments, setAssignments] = useState<BotMcpServer[]>([]);
   const [pending, setPending] = useState<string | null>(null);
   const [catalogError, setCatalogError] = useState<string | null>(null);
   const [sourceError, setSourceError] = useState<string | null>(null);
-  const [sourceHint, setSourceHint] = useState<string | null>(null);
-  const [catalogFeedEnabled, setCatalogFeedEnabled] = useState(false);
-  const [catalogFeedQuery, setCatalogFeedQuery] = useState("");
-  const [catalogFeedResults, setCatalogFeedResults] = useState<IntegrationCatalogResult[]>([]);
-  const [catalogFeedError, setCatalogFeedError] = useState<string | null>(null);
-  const [catalogFeedPending, setCatalogFeedPending] = useState(false);
-  const [catalogFeedSearched, setCatalogFeedSearched] = useState(false);
   const [loading, setLoading] = useState(true);
   const [detailKey, setDetailKey] = useState<{ connectorId: string; slug: string } | null>(null);
+  const [serverDetailId, setServerDetailId] = useState<string | null>(null);
+  const [bots, setBots] = useState<Bot[]>([]);
   const [tools, setTools] = useState<ConnectionTool[]>([]);
   const [toolsLoading, setToolsLoading] = useState(false);
-  const [toolsOpen, setToolsOpen] = useState(true);
+  const [allToolsShown, setAllToolsShown] = useState(false);
+  const [renamingId, setRenamingId] = useState<string | null>(null);
   const [toolsTick, setToolsTick] = useState(0);
   const connectionAttempt = useRef<AbortController | null>(null);
 
@@ -122,12 +115,17 @@ export function PluginsOverlay({
   }
 
   async function refresh() {
-    const [items, installs, rows, catalogFeed] = await Promise.all([
+    const [items, installs, rows, servers, serverAssignments, spaceBots] = await Promise.all([
       rpc.connections.catalog({}),
       rpc.capabilities.list(),
       rpc.connections.list(),
-      optionalCatalogFeedProbe(rpc.capabilities.catalogSearch({ query: "" })),
+      rpc.mcp.servers.list(),
+      rpc.mcp.assignments.all(),
+      rpc.bots.list(),
     ]);
+    setBots(spaceBots);
+    setMcpServers(servers);
+    setAssignments(serverAssignments);
     setCatalog(items);
     setConnections(rows);
     setLabelDrafts((current) => {
@@ -144,7 +142,6 @@ export function PluginsOverlay({
         (install) => install.kind === "mcp" || install.kind === "api" || install.kind === "graphql",
       ),
     );
-    setCatalogFeedEnabled(catalogFeed.enabled);
     return items;
   }
 
@@ -157,6 +154,7 @@ export function PluginsOverlay({
     return () => connectionAttempt.current?.abort();
   }, []);
 
+  const serverDetail = mcpServers.find((server) => server.id === serverDetailId) ?? null;
   const detailItem = useMemo(() => {
     if (!detailKey) return null;
     return (
@@ -198,7 +196,8 @@ export function PluginsOverlay({
 
   function openDetail(item: ConnectionCatalogItem) {
     setCatalogError(null);
-    setToolsOpen(true);
+    setAllToolsShown(false);
+    setRenamingId(null);
     setDetailKey({ connectorId: item.connectorId, slug: item.slug });
   }
 
@@ -343,92 +342,6 @@ export function PluginsOverlay({
     }
   }
 
-  function beginSource(kind: SourceKind) {
-    setSourceKind(kind);
-    setSourceError(null);
-    setSourceHint(null);
-    setSourceName(kind === "treg" ? "Treg" : kind === "executor" ? "Executor" : "");
-    setSourceUrl(kind === "treg" ? "https://treg.to/mcp/" : "");
-    setCredential("");
-    setAuthType(kind === "treg" || kind === "executor" ? "bearer" : "none");
-    setAuthName("x-api-key");
-  }
-
-  async function searchCatalogFeed() {
-    setCatalogFeedError(null);
-    setCatalogFeedPending(true);
-    setCatalogFeedSearched(false);
-    setCatalogFeedResults([]);
-    try {
-      const response = await rpc.capabilities.catalogSearch({ query: catalogFeedQuery });
-      setCatalogFeedResults(response.results);
-      setCatalogFeedSearched(true);
-    } catch (err) {
-      setCatalogFeedError(err instanceof Error ? err.message : t`Could not search catalog`);
-    } finally {
-      setCatalogFeedPending(false);
-    }
-  }
-
-  function beginCatalogSurface(
-    result: IntegrationCatalogResult,
-    surface: IntegrationCatalogSurface,
-  ) {
-    if (!surface.source || (surface.kind !== "mcp" && surface.kind !== "openapi")) return;
-    setSourceKind(surface.kind === "mcp" ? "mcp" : "api");
-    setSourceName(result.name);
-    setSourceUrl(surface.source);
-    setCredential("");
-    setAuthType(surface.auth?.type ?? "none");
-    setAuthName(surface.auth?.headerName ?? "x-api-key");
-    setSourceHint(surface.auth?.note ?? null);
-    setSourceError(null);
-  }
-
-  async function installSource() {
-    if (!sourceKind) return;
-    setSourceError(null);
-    setPending("install-source");
-    try {
-      const auth = {
-        type: authType,
-        ...(authType === "header" ? { name: authName.trim() } : {}),
-      };
-      await rpc.capabilities.install({
-        kind: sourceKind === "treg" || sourceKind === "executor" ? "mcp" : sourceKind,
-        name:
-          sourceName.trim() ||
-          (sourceKind === "treg"
-            ? "Treg"
-            : sourceKind === "executor"
-              ? "Executor"
-              : sourceKind === "graphql"
-                ? "GraphQL"
-                : "Custom connector"),
-        source: sourceUrl.trim(),
-        credential: credential.trim() || undefined,
-        config:
-          sourceKind === "treg"
-            ? { preset: "treg", auth: { type: "bearer" } }
-            : sourceKind === "api"
-              ? { openApi: true, auth }
-              : sourceKind === "graphql"
-                ? { auth }
-                : {
-                    preset: "custom",
-                    auth: sourceKind === "executor" ? { type: "bearer" } : auth,
-                  },
-      });
-      setCredential("");
-      setSourceKind(null);
-      await refresh();
-    } catch (err) {
-      setSourceError(err instanceof Error ? err.message : t`Could not install connector`);
-    } finally {
-      setPending(null);
-    }
-  }
-
   async function removeSource(install: CapabilityInstall) {
     setPending(install.id);
     setSourceError(null);
@@ -440,6 +353,280 @@ export function PluginsOverlay({
     } finally {
       setPending(null);
     }
+  }
+
+  async function removeMcpServer(server: McpServer) {
+    setPending(server.id);
+    setSourceError(null);
+    try {
+      await rpc.mcp.servers.remove({ id: server.id });
+      setMcpServers((current) => current.filter((entry) => entry.id !== server.id));
+      setServerDetailId(null);
+    } catch (err) {
+      setSourceError(err instanceof Error ? err.message : t`Could not remove the server`);
+    } finally {
+      setPending(null);
+    }
+  }
+
+  function mcpServerDetail(server: McpServer) {
+    const auth =
+      server.oauthStatus === "connected"
+        ? t`Signed in`
+        : server.oauthStatus === "reconnect"
+          ? t`Needs sign-in again`
+          : server.hasSecret
+            ? t`Access token`
+            : t`Not signed in`;
+    const botCount = assignments.filter((entry) => entry.serverId === server.id).length;
+    return (
+      <>
+        {t`MCP server`} · {auth} · <Plural value={botCount} one="# bot" other="# bots" />
+      </>
+    );
+  }
+
+  function sourceDetail(source: CapabilityInstall) {
+    const kind = source.kind === "graphql" ? "GraphQL" : source.kind === "api" ? "OpenAPI" : "MCP";
+    const auth = source.secretConfigured ? t`Access token` : t`No authentication`;
+    return `${kind} · ${auth} · ${t`All your bots`}`;
+  }
+
+  function renderConnectedRow({
+    id,
+    name,
+    detail,
+    logo,
+    onEdit,
+    onRemove,
+  }: {
+    id: string;
+    name: string;
+    detail: ReactNode;
+    logo?: string | null;
+    onEdit?: () => void;
+    onRemove: () => void;
+  }) {
+    return (
+      <li key={id} className="group flex min-w-0 items-center gap-3 py-2.5">
+        {logo ? (
+          <img src={logo} alt="" className="size-8 shrink-0 rounded-lg bg-accent object-contain" />
+        ) : (
+          <div className="grid size-8 shrink-0 place-items-center rounded-lg bg-accent text-sm font-semibold text-foreground">
+            {name[0]}
+          </div>
+        )}
+        <div className="min-w-0 flex-1">
+          <div className="truncate text-sm font-medium text-foreground">{name}</div>
+          <div className="truncate text-xs text-muted-foreground">{detail}</div>
+        </div>
+        <div className="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 pointer-coarse:opacity-100">
+          {onEdit ? (
+            <Button variant="ghost" size="icon-sm" aria-label={t`Edit ${name}`} onClick={onEdit}>
+              <Pencil />
+            </Button>
+          ) : null}
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label={t`Remove ${name}`}
+            disabled={pending === id}
+            onClick={onRemove}
+          >
+            <Trash />
+          </Button>
+        </div>
+      </li>
+    );
+  }
+
+  /** Gives a bot this server's tools, or takes them away. */
+  async function setBotAccess(server: McpServer, botId: string, allowed: boolean) {
+    setPending(`access:${server.id}:${botId}`);
+    setSourceError(null);
+    try {
+      if (allowed) {
+        await rpc.mcp.assignments.approve({ botId, serverId: server.id });
+      } else {
+        // replace() overwrites the bot's whole list, so keep its other servers.
+        await rpc.mcp.assignments.replace({
+          botId,
+          assignments: assignments
+            .filter((entry) => entry.botId === botId && entry.serverId !== server.id)
+            .map(({ serverId, allowAllTools, allowedTools }) => ({
+              serverId,
+              allowAllTools,
+              allowedTools,
+            })),
+        });
+      }
+      setAssignments(await rpc.mcp.assignments.all());
+    } catch (err) {
+      setSourceError(err instanceof Error ? err.message : t`Could not change who can use it`);
+    } finally {
+      setPending(null);
+    }
+  }
+
+  async function changeServerSignIn(server: McpServer) {
+    setPending(`signin:${server.id}`);
+    setSourceError(null);
+    try {
+      if (server.oauthStatus === "connected") {
+        await rpc.mcp.oauth.disconnect({ serverId: server.id });
+      } else {
+        await connectMcpOauth(server.id);
+      }
+      setMcpServers(await rpc.mcp.servers.list());
+    } catch (err) {
+      setSourceError(err instanceof Error ? err.message : t`Could not change the sign-in`);
+    } finally {
+      setPending(null);
+    }
+  }
+
+  function renderServerDetail(server: McpServer) {
+    const signInPending = pending === `signin:${server.id}`;
+    return (
+      <div data-testid="mcp-server-detail" className="space-y-8">
+        <ul className="divide-y divide-border">
+          <SettingRow
+            title={<Trans>Account</Trans>}
+            description={
+              server.oauthStatus === "connected" ? (
+                <Trans>Signed in with the service.</Trans>
+              ) : server.oauthStatus === "reconnect" ? (
+                <Trans>The sign-in has expired.</Trans>
+              ) : server.hasSecret ? (
+                <Trans>Uses an access token.</Trans>
+              ) : (
+                <Trans>Not signed in.</Trans>
+              )
+            }
+            control={
+              server.oauthStatus === "connected" ? (
+                <ConnectedStatus
+                  label={<Trans>Signed in</Trans>}
+                  disconnectLabel={<Trans>Sign out</Trans>}
+                  pendingLabel={<Trans>Signing out…</Trans>}
+                  pending={signInPending}
+                  onDisconnect={() => void changeServerSignIn(server)}
+                />
+              ) : server.oauthStatus === "reconnect" ? (
+                <Button
+                  variant="text"
+                  className="text-warning hover:text-warning"
+                  disabled={signInPending}
+                  onClick={() => void changeServerSignIn(server)}
+                >
+                  <RotateCw />
+                  <Trans>Sign in again</Trans>
+                </Button>
+              ) : server.hasSecret ? null : (
+                <Button
+                  variant="text"
+                  disabled={signInPending}
+                  onClick={() => void changeServerSignIn(server)}
+                >
+                  <Plug />
+                  {signInPending ? <Trans>Connecting…</Trans> : <Trans>Connect</Trans>}
+                </Button>
+              )
+            }
+          />
+          {bots.map((bot) => {
+            const allowed = assignments.some(
+              (entry) => entry.botId === bot.id && entry.serverId === server.id,
+            );
+            return (
+              <SettingRow
+                key={bot.id}
+                title={bot.name}
+                description={
+                  allowed ? (
+                    <Trans>Can use this server's tools.</Trans>
+                  ) : (
+                    <Trans>Can't use this server.</Trans>
+                  )
+                }
+                control={
+                  <Switch
+                    aria-label={t`Let ${bot.name} use this server`}
+                    checked={allowed}
+                    disabled={pending === `access:${server.id}:${bot.id}`}
+                    onCheckedChange={(next) => void setBotAccess(server, bot.id, next)}
+                  />
+                }
+              />
+            );
+          })}
+        </ul>
+
+        <Button
+          variant="destructive"
+          disabled={pending === server.id}
+          onClick={() => void removeMcpServer(server)}
+        >
+          {pending === server.id ? <Trans>Removing…</Trans> : <Trans>Remove server</Trans>}
+        </Button>
+      </div>
+    );
+  }
+
+  /** Everything this space can use, whichever system it is stored in. */
+  function renderConnected() {
+    const apps = catalog.filter((item) => itemConnected(item));
+    const empty = apps.length === 0 && mcpServers.length === 0 && sources.length === 0;
+    return (
+      <section className="mb-8">
+        <div className="mb-2 flex items-center justify-between">
+          <h3 className="text-sm font-medium text-foreground/75">
+            <Trans>Connected</Trans>
+          </h3>
+          <Button variant="outline" size="sm" onClick={() => setView("add")}>
+            <Plus />
+            <Trans>Add</Trans>
+          </Button>
+        </div>
+        {empty ? (
+          <p className="text-sm text-muted-foreground">
+            <Trans>
+              Nothing connected yet. Pick an app from the catalog, or add a server of your own.
+            </Trans>
+          </p>
+        ) : (
+          <ul className="divide-y divide-border">
+            {apps.map((item) =>
+              renderConnectedRow({
+                id: `uninstall:${itemKey(item)}`,
+                name: item.name,
+                detail: t`App`,
+                logo: item.logo,
+                onEdit: () => openDetail(item),
+                onRemove: () => void uninstall(item),
+              }),
+            )}
+            {mcpServers.map((server) =>
+              renderConnectedRow({
+                id: server.id,
+                name: server.name,
+                detail: mcpServerDetail(server),
+                onEdit: () => setServerDetailId(server.id),
+                onRemove: () => void removeMcpServer(server),
+              }),
+            )}
+            {sources.map((source) =>
+              renderConnectedRow({
+                id: source.id,
+                name: source.name,
+                detail: sourceDetail(source),
+                onRemove: () => void removeSource(source),
+              }),
+            )}
+          </ul>
+        )}
+      </section>
+    );
   }
 
   function renderCatalogActions(item: ConnectionCatalogItem) {
@@ -530,145 +717,179 @@ export function PluginsOverlay({
     );
   }
 
+  function renderAccount(row: Connection, item: ConnectionCatalogItem, uninstalling: boolean) {
+    if (renamingId === row.id) {
+      return (
+        <li key={row.id} className="flex min-h-14 items-center py-2.5">
+          <Input
+            autoFocus
+            value={labelDrafts[row.id] ?? row.displayName}
+            aria-label={t`Account name`}
+            onChange={(event) =>
+              setLabelDrafts((current) => ({ ...current, [row.id]: event.target.value }))
+            }
+            onBlur={() => {
+              setRenamingId(null);
+              void renameAccount(row);
+            }}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") event.currentTarget.blur();
+              if (event.key === "Escape") {
+                event.stopPropagation();
+                setLabelDrafts((current) => ({ ...current, [row.id]: row.displayName }));
+                setRenamingId(null);
+              }
+            }}
+          />
+        </li>
+      );
+    }
+    return (
+      <SettingRow
+        key={row.id}
+        title={row.displayName}
+        description={
+          row.status === "pending" ? <Trans>Waiting for sign-in.</Trans> : <Trans>Signed in.</Trans>
+        }
+        revealControl
+        control={
+          <>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label={t`Rename ${row.displayName}`}
+              onClick={() => setRenamingId(row.id)}
+            >
+              <Pencil />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label={t`Remove ${row.displayName}`}
+              disabled={pending === row.id || uninstalling}
+              onClick={() => void revokeAccount(row, item)}
+            >
+              <Trash />
+            </Button>
+          </>
+        }
+      />
+    );
+  }
+
   function renderDetail(item: ConnectionCatalogItem) {
     const accounts = activeAccounts(connections, item);
     const key = itemKey(item);
     const connecting = pending === key;
     const uninstalling = pending === `uninstall:${key}`;
-    const toolCount = tools.length;
+    const shownTools = allToolsShown ? tools : tools.slice(0, TOOL_PREVIEW_COUNT);
 
     return (
-      <div data-testid="connection-detail" className="space-y-5">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex min-w-0 items-center gap-2">
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              className="text-muted-foreground"
-              aria-label={t`Back`}
-              onClick={closeDetail}
-            >
-              <ChevronLeft />
-            </Button>
-            {item.logo ? (
-              <img
-                src={item.logo}
-                alt=""
-                loading="lazy"
-                decoding="async"
-                className="h-9 w-9 shrink-0 rounded-xl bg-accent object-contain"
-              />
-            ) : (
-              <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-accent text-sm font-semibold text-foreground">
-                {item.name[0]}
-              </div>
-            )}
-            <div className="truncate text-[17px] font-medium text-foreground">{item.name}</div>
-          </div>
-          <Button
-            type="button"
-            variant="secondary"
-            size="sm"
-            disabled={uninstalling || connecting}
-            onClick={() => void uninstall(item)}
-          >
-            {uninstalling ? <Trans>Removing…</Trans> : <Trans>Uninstall</Trans>}
-          </Button>
-        </div>
-
-        <Card data-testid="connection-accounts">
-          <CardHeader>
-            <CardTitle>
+      <div data-testid="connection-detail" className="space-y-8">
+        <section data-testid="connection-accounts">
+          <div className="mb-2 flex items-center justify-between">
+            <h3 className="text-sm font-medium text-foreground/75">
               <Trans>Accounts</Trans>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {accounts.map((row) => (
-              <div key={row.id} className="flex items-center gap-2">
-                <Input
-                  value={labelDrafts[row.id] ?? row.displayName}
-                  aria-label={t`Account label`}
-                  className="h-9 rounded-lg px-3 text-[13px]"
-                  onChange={(event) =>
-                    setLabelDrafts((current) => ({ ...current, [row.id]: event.target.value }))
-                  }
-                  onBlur={() => void renameAccount(row)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter") {
-                      event.currentTarget.blur();
-                    }
-                  }}
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="h-9 shrink-0 px-2 text-[12px]"
-                  size="sm"
-                  disabled={pending === row.id || uninstalling}
-                  onClick={() => void revokeAccount(row, item)}
-                >
-                  {pending === row.id ? <Trans>Removing…</Trans> : <Trans>Remove</Trans>}
-                </Button>
-              </div>
-            ))}
+            </h3>
             <Button
-              type="button"
-              variant="secondary"
+              variant="outline"
               size="sm"
               disabled={connecting || uninstalling}
               onClick={() => void connect(item)}
             >
+              <Plus />
               {connecting ? <Trans>Adding…</Trans> : <Trans>Add another</Trans>}
             </Button>
-          </CardContent>
-        </Card>
+          </div>
+          <ul className="divide-y divide-border">
+            {accounts.map((row) => renderAccount(row, item, uninstalling))}
+          </ul>
+        </section>
 
-        <Card data-testid="connection-tools">
-          <button
-            type="button"
-            className="flex w-full items-center justify-between gap-3 px-6 py-4 text-left"
-            onClick={() => setToolsOpen((open) => !open)}
-            aria-expanded={toolsOpen}
-          >
-            <span className="text-base font-medium text-foreground">
-              {toolsLoading ? (
-                <Trans>Tools</Trans>
-              ) : (
-                <Plural value={toolCount} one="# tool" other="# tools" />
-              )}
-            </span>
-            {toolsOpen ? (
-              <ChevronUp className="size-4 text-muted-foreground" />
+        <section data-testid="connection-tools">
+          <h3 className="mb-2 text-sm font-medium text-foreground/75">
+            {toolsLoading ? (
+              <Trans>Tools</Trans>
             ) : (
-              <ChevronDown className="size-4 text-muted-foreground" />
+              <Plural value={tools.length} one="# tool" other="# tools" />
             )}
-          </button>
-          {toolsOpen ? (
-            <CardContent className="border-t border-border pt-3">
-              {toolsLoading ? (
-                <p className="text-sm text-muted-foreground">
-                  <Trans>Loading tools…</Trans>
-                </p>
-              ) : tools.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  <Trans>No tools available.</Trans>
-                </p>
-              ) : (
-                <ul className="space-y-2">
-                  {tools.map((tool) => (
-                    <li key={tool.name} className="text-sm text-foreground">
-                      {humanizeToolName(tool.name)}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </CardContent>
-          ) : null}
-        </Card>
+          </h3>
+          {toolsLoading ? (
+            <p className="text-sm text-muted-foreground">
+              <Trans>Loading tools…</Trans>
+            </p>
+          ) : tools.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              <Trans>No tools available.</Trans>
+            </p>
+          ) : (
+            <>
+              <ul className="divide-y divide-border">
+                {shownTools.map((tool) => (
+                  <SettingRow
+                    key={tool.name}
+                    title={humanizeToolName(tool.name)}
+                    description={tool.description}
+                  />
+                ))}
+              </ul>
+              {tools.length > TOOL_PREVIEW_COUNT ? (
+                <Button
+                  variant="text"
+                  size="sm"
+                  className="mt-2"
+                  onClick={() => setAllToolsShown((shown) => !shown)}
+                >
+                  {allToolsShown ? (
+                    <Trans>Show fewer</Trans>
+                  ) : (
+                    <Trans>Show all {tools.length}</Trans>
+                  )}
+                </Button>
+              ) : null}
+            </>
+          )}
+        </section>
+
+        <Button
+          variant="destructive"
+          disabled={uninstalling || connecting}
+          onClick={() => void uninstall(item)}
+        >
+          {uninstalling ? <Trans>Removing…</Trans> : <Trans>Remove app</Trans>}
+        </Button>
       </div>
     );
   }
+
+  const heading: { title: string; description: string; icon?: ReactNode; onBack?: () => void } =
+    view === "server"
+      ? {
+          title: t`App catalog`,
+          description: t`Choose the service that provides the catalog and signs people in to its apps.`,
+          onBack: () => setView("list"),
+        }
+      : view === "add"
+        ? {
+            title: t`Add a server`,
+            description: t`Connect an MCP server, or an OpenAPI or GraphQL endpoint, of your own.`,
+            onBack: () => setView("list"),
+          }
+        : serverDetail
+          ? {
+              title: serverDetail.name,
+              description: serverDetail.endpoint ?? t`MCP server`,
+              icon: <AppIcon name={serverDetail.name} />,
+              onBack: () => setServerDetailId(null),
+            }
+          : detailItem
+            ? {
+                title: detailItem.name,
+                description: t`An app from the catalog.`,
+                icon: <AppIcon name={detailItem.name} logo={detailItem.logo} />,
+                onBack: closeDetail,
+              }
+            : { title: t`Apps`, description: t`The apps and servers your bots can use.` };
 
   return (
     <Dialog
@@ -679,122 +900,98 @@ export function PluginsOverlay({
     >
       <DialogContent
         showCloseButton={false}
-        className="flex h-[760px] max-h-[calc(100%-2rem)] w-[1080px] max-w-[calc(100%-2rem)] flex-col gap-0 overflow-hidden rounded-2xl bg-card p-0 sm:max-w-[1080px]"
+        className="flex h-[760px] max-h-[calc(100%-2rem)] w-[576px] max-w-[calc(100%-2rem)] flex-col gap-0 overflow-hidden rounded-2xl p-0 sm:max-w-[576px]"
       >
-        <DialogHeader className="flex-row items-start justify-between px-8 pt-7">
-          <div className="flex items-center gap-2">
-            {serverSetupOpen ? (
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                aria-label={t`Back`}
-                onClick={() => setServerSetupOpen(false)}
-              >
-                <ChevronLeft />
-              </Button>
-            ) : null}
-            <DialogTitle className="text-2xl text-foreground">
-              {serverSetupOpen ? <Trans>Server integrations</Trans> : <Trans>Integrations</Trans>}
-            </DialogTitle>
-          </div>
-          <div className="flex items-center gap-1">
-            {isDeploymentOwner && !serverSetupOpen ? (
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                aria-label={t`Server integrations`}
-                title={t`Server integrations`}
-                onClick={() => setServerSetupOpen(true)}
-              >
-                <Settings />
-              </Button>
-            ) : null}
-            <DialogClose
-              render={<Button variant="ghost" size="icon-sm" aria-label={t`Close integrations`} />}
-            >
-              <X />
-            </DialogClose>
-          </div>
-        </DialogHeader>
+        <DialogPageHeader
+          title={heading.title}
+          description={heading.description}
+          icon={heading.icon}
+          onBack={heading.onBack}
+          closeLabel={t`Close apps`}
+        />
 
-        {serverSetupOpen ? (
-          <div className="rk-scroll flex-1 overflow-y-auto px-8 py-6">
+        {view === "server" ? (
+          <div className="rk-scroll flex-1 overflow-y-auto px-6 pb-6 sm:px-8">
             <IntegrationSetup
               serverSetup
               managedOnly
               layout="page"
               onSaved={() => {
-                setServerSetupOpen(false);
+                setView("list");
                 refreshAfterSetup();
               }}
             />
           </div>
         ) : null}
 
-        {!detailItem && !serverSetupOpen ? (
-          <div className="px-8 pt-4">
-            <Input
-              value={query}
-              onChange={(event) => {
-                setQuery(event.target.value);
-                setVisibleCount(CONNECTION_CATALOG_PAGE_SIZE);
+        {view === "add" ? (
+          <div className="rk-scroll flex-1 overflow-y-auto px-6 pb-6 sm:px-8">
+            <AddIntegration
+              activeBotId={activeBotId}
+              connectedEndpoints={mcpServers.flatMap((server) =>
+                server.endpoint ? [server.endpoint] : [],
+              )}
+              onAdded={() => {
+                setView("list");
+                refreshAfterSetup();
               }}
-              aria-label={t`Search apps`}
-              placeholder={t`Search apps`}
-              className="h-11 rounded-xl px-4 md:text-[15px]"
+              onCancel={() => setView("list")}
             />
           </div>
         ) : null}
 
         <div
           id="integration-list"
-          hidden={serverSetupOpen}
-          className="rk-scroll flex-1 overflow-y-auto px-8 py-6"
+          hidden={view !== "list"}
+          className="rk-scroll flex-1 overflow-y-auto px-6 pb-6 sm:px-8"
         >
-          <Button
-            variant="outline"
-            className="mb-4"
-            onClick={() => setSetupOpen((current) => !current)}
-          >
-            <Trans>Browse MCP servers</Trans>
-          </Button>
-          {setupOpen ? (
-            <div className="mb-6">
-              <IntegrationSetup
-                botId={activeBotId}
-                onDone={() => {
-                  setSetupOpen(false);
-                  void refresh().catch((err: unknown) =>
-                    setCatalogError(
-                      err instanceof Error ? err.message : t`Could not load integrations`,
-                    ),
-                  );
-                }}
-              />
-            </div>
-          ) : null}
           {catalogError ? <p className="mb-4 text-sm text-destructive">{catalogError}</p> : null}
+          {sourceError ? <p className="mb-4 text-sm text-destructive">{sourceError}</p> : null}
 
           {detailItem ? (
             renderDetail(detailItem)
+          ) : serverDetail ? (
+            renderServerDetail(serverDetail)
+          ) : loading ? (
+            <div role="status" className="grid h-full place-items-center">
+              <Loader />
+            </div>
           ) : (
             <>
-              {loading ? (
-                <p className="text-muted-foreground/80">
-                  <Trans>Loading integrations…</Trans>
-                </p>
+              {renderConnected()}
+              <div className="mb-3 flex items-center justify-between">
+                <h3 className="text-sm font-medium text-foreground/75">
+                  <Trans>Catalog</Trans>
+                </h3>
+                {isDeploymentOwner ? (
+                  <Button variant="text" size="sm" onClick={() => setView("server")}>
+                    <Settings />
+                    <Trans>Settings</Trans>
+                  </Button>
+                ) : null}
+              </div>
+              {catalog.length > 0 ? (
+                <Input
+                  className="mb-4"
+                  value={query}
+                  onChange={(event) => {
+                    setQuery(event.target.value);
+                    setVisibleCount(CONNECTION_CATALOG_PAGE_SIZE);
+                  }}
+                  aria-label={t`Search the catalog`}
+                  placeholder={t`Search the catalog`}
+                />
               ) : null}
 
               {showFeatured ? (
-                <div className="mb-6" data-testid="featured-connectors">
-                  {!loading && catalog.length === 0 ? (
+                <div
+                  className={catalog.length > 0 ? "mb-6" : undefined}
+                  data-testid="featured-connectors"
+                >
+                  {catalog.length === 0 ? (
                     isDeploymentOwner ? (
-                      <p className="flex flex-wrap items-center gap-x-3 text-[13.5px] leading-6 text-muted-foreground/80">
+                      <p className="text-[13.5px] leading-6 text-muted-foreground/80">
                         <Trans>Set up Composio or Pipedream to bring their apps here.</Trans>
-                        <Button variant="text" size="sm" onClick={() => setServerSetupOpen(true)}>
-                          <Settings />
-                          <Trans>Server integrations</Trans>
-                        </Button>
                       </p>
                     ) : (
                       <p className="text-[13.5px] leading-6 text-muted-foreground/80">
@@ -843,12 +1040,12 @@ export function PluginsOverlay({
                 </div>
               ) : null}
 
-              {!loading && catalog.length === 0 && !showFeatured ? (
+              {catalog.length === 0 && !showFeatured ? (
                 <p className="text-muted-foreground/80">
                   <Trans>No managed app catalog is configured on this deployment.</Trans>
                 </p>
               ) : null}
-              {!loading && catalog.length > 0 && visible.length === 0 && !showFeatured ? (
+              {catalog.length > 0 && visible.length === 0 && !showFeatured ? (
                 <p className="text-muted-foreground/80">
                   <Trans>No apps match your search.</Trans>
                 </p>
@@ -875,344 +1072,6 @@ export function PluginsOverlay({
                   </Button>
                 </div>
               ) : null}
-
-              <details
-                data-testid="integrations-advanced"
-                className="group mt-8"
-                onToggle={(event) => {
-                  if (!(event.currentTarget as HTMLDetailsElement).open) {
-                    setSourceKind(null);
-                    setSourceError(null);
-                    setSourceHint(null);
-                    setSourceName("");
-                    setSourceUrl("");
-                    setCredential("");
-                    setAuthType("none");
-                    setAuthName("x-api-key");
-                  }
-                }}
-              >
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-[14px] text-muted-foreground">
-                  <span className="text-muted-foreground">
-                    <Trans>Advanced</Trans>
-                  </span>
-                  <span aria-hidden="true" className="transition-transform group-open:rotate-90">
-                    ›
-                  </span>
-                </summary>
-
-                <div className="mt-4 space-y-4">
-                  {catalogFeedEnabled ? (
-                    <Card data-testid="integrations-catalog-feed">
-                      <CardHeader>
-                        <CardTitle>
-                          <Trans>Search by domain</Trans>
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-3">
-                        <form
-                          className="flex gap-2"
-                          onSubmit={(event) => {
-                            event.preventDefault();
-                            void searchCatalogFeed();
-                          }}
-                        >
-                          <Input
-                            value={catalogFeedQuery}
-                            disabled={catalogFeedPending}
-                            onChange={(event) => {
-                              setCatalogFeedQuery(event.target.value);
-                              setCatalogFeedResults([]);
-                              setCatalogFeedError(null);
-                              setCatalogFeedSearched(false);
-                            }}
-                            placeholder="github.com"
-                            aria-label={t`Integration domain`}
-                          />
-                          <Button
-                            type="submit"
-                            variant="secondary"
-                            size="sm"
-                            disabled={!catalogFeedQuery.trim() || catalogFeedPending}
-                          >
-                            {catalogFeedPending ? <Trans>Searching…</Trans> : <Trans>Search</Trans>}
-                          </Button>
-                        </form>
-                        {catalogFeedError ? (
-                          <p className="text-sm text-destructive">{catalogFeedError}</p>
-                        ) : null}
-                        {catalogFeedSearched &&
-                        !catalogFeedPending &&
-                        catalogFeedResults.length === 0 ? (
-                          <p className="text-sm text-muted-foreground">
-                            <Trans>No results</Trans>
-                          </p>
-                        ) : null}
-                        {catalogFeedResults.map((result) => (
-                          <div
-                            key={`${result.domain}:${result.name}:${result.pageUrl ?? ""}`}
-                            className="rounded-xl border border-border/70 p-3"
-                          >
-                            <div className="font-medium text-foreground">
-                              {result.pageUrl ? (
-                                <a
-                                  href={result.pageUrl}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="hover:underline"
-                                >
-                                  {result.name}
-                                </a>
-                              ) : (
-                                result.name
-                              )}
-                            </div>
-                            <div className="text-xs text-muted-foreground">{result.domain}</div>
-                            {result.description ? (
-                              <p className="mt-2 text-sm leading-5 text-muted-foreground">
-                                {result.description}
-                              </p>
-                            ) : null}
-                            <div className="mt-3 flex flex-wrap gap-2">
-                              {result.surfaces.map((surface) => {
-                                const canAdd =
-                                  Boolean(surface.source) &&
-                                  (surface.kind === "mcp" || surface.kind === "openapi");
-                                return (
-                                  <Button
-                                    key={`${result.domain}:${surface.slug}`}
-                                    type="button"
-                                    variant="secondary"
-                                    size="sm"
-                                    disabled={!canAdd}
-                                    title={canAdd ? undefined : t`Manual setup required`}
-                                    onClick={() => beginCatalogSurface(result, surface)}
-                                  >
-                                    {surface.kind.toUpperCase()} · {canAdd ? t`Add` : t`Manual`}
-                                  </Button>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        ))}
-                      </CardContent>
-                    </Card>
-                  ) : null}
-
-                  <div data-testid="integrations-advanced-add" className="flex flex-wrap gap-2">
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => beginSource("mcp")}
-                    >
-                      <Trans>Add MCP server</Trans>
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => beginSource("api")}
-                    >
-                      <Trans>Add OpenAPI</Trans>
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => beginSource("graphql")}
-                    >
-                      <Trans>Add GraphQL</Trans>
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => beginSource("executor")}
-                    >
-                      <Trans>Add Executor</Trans>
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => beginSource("treg")}
-                    >
-                      <Trans>Add Treg</Trans>
-                    </Button>
-                  </div>
-
-                  {sourceError ? <p className="text-sm text-destructive">{sourceError}</p> : null}
-
-                  {sourceKind ? (
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>
-                          {sourceKind === "treg" ? (
-                            <Trans>Connect Treg</Trans>
-                          ) : sourceKind === "executor" ? (
-                            <Trans>Connect Executor</Trans>
-                          ) : sourceKind === "mcp" ? (
-                            <Trans>Add remote MCP server</Trans>
-                          ) : sourceKind === "graphql" ? (
-                            <Trans>Add GraphQL endpoint</Trans>
-                          ) : (
-                            <Trans>Import OpenAPI JSON</Trans>
-                          )}
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-3">
-                        <Input
-                          value={sourceName}
-                          onChange={(event) => setSourceName(event.target.value)}
-                          placeholder={t`Display name`}
-                        />
-                        {sourceKind !== "treg" ? (
-                          <Input
-                            value={sourceUrl}
-                            onChange={(event) => setSourceUrl(event.target.value)}
-                            placeholder={
-                              sourceKind === "mcp"
-                                ? "https://example.com/mcp"
-                                : sourceKind === "executor"
-                                  ? "https://executor.example/mcp"
-                                  : sourceKind === "graphql"
-                                    ? "https://example.com/graphql"
-                                    : "https://example.com/openapi.json"
-                            }
-                          />
-                        ) : null}
-                        {sourceKind !== "treg" && sourceKind !== "executor" ? (
-                          <NativeSelect
-                            className="w-full"
-                            value={authType}
-                            onChange={(event) => setAuthType(event.target.value as typeof authType)}
-                          >
-                            <NativeSelectOption value="none">
-                              <Trans>No authentication</Trans>
-                            </NativeSelectOption>
-                            <NativeSelectOption value="bearer">
-                              <Trans>Bearer token</Trans>
-                            </NativeSelectOption>
-                            <NativeSelectOption value="header">
-                              <Trans>API key header</Trans>
-                            </NativeSelectOption>
-                          </NativeSelect>
-                        ) : null}
-                        {authType === "header" &&
-                        sourceKind !== "treg" &&
-                        sourceKind !== "executor" ? (
-                          <Input
-                            value={authName}
-                            onChange={(event) => setAuthName(event.target.value)}
-                            placeholder={t`Header name`}
-                          />
-                        ) : null}
-                        {sourceKind === "treg" ||
-                        sourceKind === "executor" ||
-                        authType !== "none" ? (
-                          <Input
-                            type="password"
-                            autoComplete="new-password"
-                            value={credential}
-                            onChange={(event) => setCredential(event.target.value)}
-                            placeholder={
-                              sourceKind === "treg"
-                                ? t`Treg token`
-                                : sourceKind === "executor"
-                                  ? t`Executor token`
-                                  : t`Credential`
-                            }
-                          />
-                        ) : null}
-                        <p className="text-xs leading-5 text-muted-foreground">
-                          <Trans>Credentials are encrypted and never sent to the model.</Trans>
-                        </p>
-                        {sourceHint ? (
-                          <p className="text-xs leading-5 text-muted-foreground">{sourceHint}</p>
-                        ) : null}
-                        <div className="flex gap-2">
-                          <Button
-                            type="button"
-                            variant="secondary"
-                            size="sm"
-                            disabled={pending === "install-source"}
-                            onClick={() => void installSource()}
-                          >
-                            {pending === "install-source" ? (
-                              <Trans>Verifying…</Trans>
-                            ) : (
-                              <Trans>Verify and add</Trans>
-                            )}
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="secondary"
-                            size="sm"
-                            onClick={() => setSourceKind(null)}
-                          >
-                            <Trans>Cancel</Trans>
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ) : null}
-
-                  <div>
-                    <div className="mb-3 text-sm font-medium text-foreground/75">
-                      <Trans>Tool sources</Trans>
-                    </div>
-                    {sources.length === 0 && !sourceKind ? (
-                      <p className="text-muted-foreground/80">
-                        <Trans>No MCP or API tool sources installed yet.</Trans>
-                      </p>
-                    ) : null}
-                    {sources.map((source) => (
-                      <div
-                        key={source.id}
-                        className="flex items-center gap-4 rounded-xl px-3 py-2.5"
-                      >
-                        <div className="grid h-[42px] w-[42px] place-items-center rounded-xl bg-accent font-semibold uppercase text-foreground">
-                          {source.kind === "mcp" ? "M" : source.kind === "graphql" ? "G" : "A"}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="text-[15.5px] font-medium text-foreground">
-                            {source.name}
-                          </div>
-                          <div className="truncate text-[13.5px] text-muted-foreground/70">
-                            {source.kind.toUpperCase()} · {source.source} ·{" "}
-                            {source.secretConfigured ? (
-                              <Trans>credential saved</Trans>
-                            ) : (
-                              <Trans>no auth</Trans>
-                            )}
-                          </div>
-                        </div>
-                        <Button
-                          type="button"
-                          variant="secondary"
-                          size="sm"
-                          disabled={pending === source.id}
-                          onClick={() => void removeSource(source)}
-                        >
-                          {pending === source.id ? <Trans>Removing…</Trans> : <Trans>Remove</Trans>}
-                        </Button>
-                      </div>
-                    ))}
-                    {onOpenMcp ? (
-                      <Button
-                        type="button"
-                        variant="link"
-                        size="xs"
-                        className="mt-2 px-0 text-muted-foreground"
-                        onClick={onOpenMcp}
-                      >
-                        <Trans>Manage MCP servers</Trans>
-                      </Button>
-                    ) : null}
-                  </div>
-                </div>
-              </details>
             </>
           )}
         </div>
