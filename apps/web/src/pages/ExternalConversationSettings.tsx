@@ -6,9 +6,9 @@ import type {
   ExternalConversation,
   ExternalConversationPolicy,
 } from "@rakazo/contracts";
-import { Button } from "@rakazo/ui-web";
+import { Button, Field, FieldLabel, Textarea } from "@rakazo/ui-web";
 import { RotateCcw } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useId, useMemo, useState } from "react";
 import { SuccessPop } from "../components/ai/primitives";
 
 type ListenMode = "inherit" | "listen" | "mentions";
@@ -31,6 +31,7 @@ export function ExternalConversationSettings({
   onSave: (policy: ExternalConversationPolicy) => Promise<void>;
 }) {
   const { t } = useLingui();
+  const rulesId = useId();
   const [mode, setMode] = useState<ListenMode>(() =>
     listenMode(conversation.teamChatAmbientEnabled),
   );
@@ -120,9 +121,11 @@ export function ExternalConversationSettings({
         </div>
       </fieldset>
 
-      <label className="mt-6 block text-[13.5px] text-muted-foreground">
-        <span className="flex items-center justify-between gap-3">
-          <Trans>Room guidance</Trans>
+      <Field className="mt-6">
+        <div className="flex items-center justify-between gap-3">
+          <FieldLabel htmlFor={rulesId}>
+            <Trans>Room guidance</Trans>
+          </FieldLabel>
           {rules !== null ? (
             <button
               type="button"
@@ -141,8 +144,9 @@ export function ExternalConversationSettings({
               <Trans>{bot.name} default</Trans>
             </span>
           )}
-        </span>
-        <textarea
+        </div>
+        <Textarea
+          id={rulesId}
           value={rules ?? bot.teamChatRules}
           maxLength={4000}
           onChange={(event) => {
@@ -151,9 +155,9 @@ export function ExternalConversationSettings({
           }}
           placeholder={t`Engage when... Ignore...`}
           rows={6}
-          className="mt-2 w-full resize-y rounded-lg border border-border bg-transparent px-3 py-2.5 text-[13.5px] leading-5 text-foreground outline-none focus:border-muted-foreground"
+          className="resize-y"
         />
-      </label>
+      </Field>
 
       <div className="mt-6 border-t border-border pt-5">
         <h3 className="text-[13.5px] text-muted-foreground">

@@ -1,15 +1,17 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import type { AvatarStyle } from "@rakazo/contracts";
-import { BotAvatar, Button, Field, FieldLabel, Input, Label, Switch, Toggle } from "@rakazo/ui-web";
-import { ChevronDown } from "lucide-react";
 import {
-  type KeyboardEvent as ReactKeyboardEvent,
-  type RefObject,
-  useEffect,
-  useId,
-  useRef,
-  useState,
-} from "react";
+  BotAvatar,
+  Button,
+  Field,
+  FieldGroup,
+  FieldLabel,
+  Input,
+  OptionSelect,
+  SwitchField,
+  Toggle,
+} from "@rakazo/ui-web";
+import { type RefObject, useId, useRef, useState } from "react";
 import { ApprovalRulesSettings } from "../components/ApprovalRulesSettings";
 import { SuccessPop } from "../components/ai/primitives";
 import { ComputersUnavailableHint } from "../components/ComputersUnavailableHint";
@@ -58,11 +60,9 @@ export function GeneralSettingsPanels({
   const [streamReplies, setStreamReplies] = useState(
     () => getResponseStreamingPreference() === "on",
   );
-  const streamRepliesId = useId();
   const [showToolActivity, setShowToolActivity] = useState(
     () => getToolActivityPreference() === "on",
   );
-  const showToolActivityId = useId();
   const [avatarPending, setAvatarPending] = useState(false);
   const [avatarError, setAvatarError] = useState<string | null>(null);
 
@@ -91,7 +91,7 @@ export function GeneralSettingsPanels({
 
   return (
     <div className="space-y-5">
-      <section className="rounded-xl border border-border px-4 py-4">
+      <section className="py-4">
         <h3 className="text-[15px] font-medium text-foreground">
           <Trans>Account</Trans>
         </h3>
@@ -102,7 +102,7 @@ export function GeneralSettingsPanels({
       <ChangePasswordSection email={email} />
 
       {messagingEnabled && onOpenMessaging ? (
-        <section className="rounded-xl border border-border px-4 py-4">
+        <section className="py-4">
           <h3 className="text-[15px] font-medium text-foreground">
             <Trans>Messaging</Trans>
           </h3>
@@ -115,7 +115,7 @@ export function GeneralSettingsPanels({
         </section>
       ) : null}
 
-      <section className="rounded-xl border border-border px-4 py-4">
+      <section className="py-4">
         <h3 className="text-[15px] font-medium text-foreground">
           <Trans>Appearance</Trans>
         </h3>
@@ -128,17 +128,21 @@ export function GeneralSettingsPanels({
         />
       </section>
 
-      <section className="rounded-xl border border-border px-4 py-4">
+      <section className="py-4">
         <h3 className="text-[15px] font-medium text-foreground">
           <Trans>Language</Trans>
         </h3>
-        <UiLocalePicker value={locale} onChange={chooseLocale} />
+        <OptionSelect<UiLocale>
+          className="mt-3"
+          data-testid="ui-locale-select"
+          aria-label={t`Language`}
+          value={locale}
+          onValueChange={chooseLocale}
+          options={UI_LOCALES.map((code) => ({ value: code, label: UI_LOCALE_LABELS[code] }))}
+        />
       </section>
 
-      <section
-        className="rounded-xl border border-border px-4 py-4"
-        data-testid="avatar-style-select"
-      >
+      <section className="py-4" data-testid="avatar-style-select">
         <h3 className="text-[15px] font-medium text-foreground">
           <Trans>Avatars</Trans>
         </h3>
@@ -170,8 +174,8 @@ export function GeneralSettingsPanels({
         ) : null}
       </section>
 
-      <details data-testid="advanced-settings" className="group rounded-xl border border-border">
-        <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-4 text-[14px] text-foreground/75">
+      <details data-testid="advanced-settings" className="group">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-4 text-[14px] text-foreground/75">
           <span className="block text-[15px] text-foreground">
             <Trans>Advanced</Trans>
           </span>
@@ -179,40 +183,25 @@ export function GeneralSettingsPanels({
             ›
           </span>
         </summary>
-        <div className="border-t border-border px-4 pb-5">
-          <div className="flex items-start gap-3 pt-5">
-            <Switch
-              id={streamRepliesId}
-              data-testid="response-streaming-toggle"
-              className="mt-0.5"
-              checked={streamReplies}
-              onCheckedChange={(checked) => {
-                setStreamReplies(checked);
-                setResponseStreamingPreference(checked ? "on" : "off");
-              }}
-            />
-            <Label htmlFor={streamRepliesId} className="text-[14px] font-normal text-foreground/75">
-              <Trans>Stream replies</Trans>
-            </Label>
-          </div>
-          <div className="flex items-start gap-3 pt-4">
-            <Switch
-              id={showToolActivityId}
-              data-testid="tool-activity-toggle"
-              className="mt-0.5"
-              checked={showToolActivity}
-              onCheckedChange={(checked) => {
-                setShowToolActivity(checked);
-                setToolActivityPreference(checked ? "on" : "off");
-              }}
-            />
-            <Label
-              htmlFor={showToolActivityId}
-              className="text-[14px] font-normal text-foreground/75"
-            >
-              <Trans>Show tool activity</Trans>
-            </Label>
-          </div>
+        <div className="flex flex-col gap-4 pt-1 pb-5">
+          <SwitchField
+            data-testid="response-streaming-toggle"
+            label={<Trans>Stream replies</Trans>}
+            checked={streamReplies}
+            onCheckedChange={(checked) => {
+              setStreamReplies(checked);
+              setResponseStreamingPreference(checked ? "on" : "off");
+            }}
+          />
+          <SwitchField
+            data-testid="tool-activity-toggle"
+            label={<Trans>Show tool activity</Trans>}
+            checked={showToolActivity}
+            onCheckedChange={(checked) => {
+              setShowToolActivity(checked);
+              setToolActivityPreference(checked ? "on" : "off");
+            }}
+          />
           <ApprovalRulesSettings />
         </div>
       </details>
@@ -228,12 +217,7 @@ export function UsageSettingsPanel({
   panelRef?: RefObject<HTMLDivElement | null>;
 }) {
   return (
-    <div
-      ref={panelRef}
-      tabIndex={-1}
-      data-testid="usage-settings"
-      className="rounded-xl border border-border px-4 py-4 outline-none"
-    >
+    <div ref={panelRef} tabIndex={-1} data-testid="usage-settings" className="py-4 outline-none">
       <h3 className="text-[15px] font-medium text-foreground">
         <Trans>Usage</Trans>
       </h3>
@@ -253,10 +237,7 @@ export function UsageSettingsPanel({
 
 export function ComputerSettingsPanel() {
   return (
-    <div
-      data-testid="computers-setup-settings"
-      className="rounded-xl border border-border px-4 py-4"
-    >
+    <div data-testid="computers-setup-settings" className="py-4">
       <h3 className="text-[15px] font-medium text-foreground">
         <Trans>Computers</Trans>
       </h3>
@@ -318,11 +299,11 @@ function ChangePasswordSection({ email }: { email?: string | null }) {
   }
 
   return (
-    <section className="rounded-xl border border-border px-4 py-4">
+    <section className="py-4">
       <h3 className="text-[15px] font-medium text-foreground">
         <Trans>Password</Trans>
       </h3>
-      <div className="mt-3 grid gap-3">
+      <FieldGroup className="mt-4">
         <input
           type="text"
           name="username"
@@ -335,29 +316,32 @@ function ChangePasswordSection({ email }: { email?: string | null }) {
         />
         <SettingsPasswordInput
           label={t`Current password`}
+          placeholder={t`Your current password`}
           autoComplete="current-password"
           value={currentPassword}
           onChange={setCurrentPassword}
         />
         <SettingsPasswordInput
           label={t`New password`}
+          placeholder={t`At least 8 characters`}
           autoComplete="new-password"
           value={newPassword}
           onChange={setNewPassword}
         />
         <SettingsPasswordInput
           label={t`Confirm password`}
+          placeholder={t`Type the new password again`}
           autoComplete="new-password"
           value={confirmation}
           onChange={setConfirmation}
         />
-      </div>
+      </FieldGroup>
       {error ? (
         <p role="alert" className="mt-3 text-[12.5px] text-destructive">
           {error}
         </p>
       ) : null}
-      <div className="mt-4 flex items-center gap-3">
+      <div className="mt-6 flex items-center gap-3">
         <Button
           disabled={pending || currentPassword.length < 8 || newPassword.length < 8}
           onClick={() => void changePassword()}
@@ -372,11 +356,13 @@ function ChangePasswordSection({ email }: { email?: string | null }) {
 
 function SettingsPasswordInput({
   label,
+  placeholder,
   autoComplete,
   value,
   onChange,
 }: {
   label: string;
+  placeholder: string;
   autoComplete: "current-password" | "new-password";
   value: string;
   onChange: (value: string) => void;
@@ -389,6 +375,7 @@ function SettingsPasswordInput({
         id={id}
         type="password"
         autoComplete={autoComplete}
+        placeholder={placeholder}
         minLength={8}
         value={value}
         onChange={(event) => onChange(event.target.value)}
@@ -429,147 +416,5 @@ function AppearancePicker({
         </Toggle>
       ))}
     </fieldset>
-  );
-}
-
-function UiLocalePicker({
-  value,
-  onChange,
-}: {
-  value: UiLocale;
-  onChange: (locale: UiLocale) => void;
-}) {
-  const { t } = useLingui();
-  const rootRef = useRef<HTMLDivElement>(null);
-  const triggerRef = useRef<HTMLButtonElement>(null);
-  const optionRefs = useRef<Array<HTMLButtonElement | null>>([]);
-  const listboxId = useId();
-  const selectedIndex = Math.max(0, UI_LOCALES.indexOf(value));
-  const [open, setOpen] = useState(false);
-  const [highlightedIndex, setHighlightedIndex] = useState(selectedIndex);
-
-  useEffect(() => {
-    setHighlightedIndex(selectedIndex);
-    setOpen(false);
-  }, [selectedIndex, value]);
-
-  useEffect(() => {
-    if (!open) return;
-    optionRefs.current[highlightedIndex]?.focus();
-  }, [highlightedIndex, open]);
-
-  useEffect(() => {
-    if (!open) return;
-    function closeOnOutsidePointer(event: PointerEvent) {
-      if (!rootRef.current?.contains(event.target as Node)) setOpen(false);
-    }
-    document.addEventListener("pointerdown", closeOnOutsidePointer);
-    return () => document.removeEventListener("pointerdown", closeOnOutsidePointer);
-  }, [open]);
-
-  function choose(index: number) {
-    const next = UI_LOCALES[index];
-    if (!next) return;
-    onChange(next);
-    setOpen(false);
-    triggerRef.current?.focus();
-  }
-
-  function moveHighlight(index: number) {
-    setHighlightedIndex((index + UI_LOCALES.length) % UI_LOCALES.length);
-  }
-
-  function onTriggerKeyDown(event: ReactKeyboardEvent<HTMLButtonElement>) {
-    if (event.key === "Escape" && open) {
-      event.preventDefault();
-      event.stopPropagation();
-      setOpen(false);
-      return;
-    }
-    if (event.key === "ArrowDown" || event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      setOpen(true);
-      return;
-    }
-    if (event.key === "ArrowUp") {
-      event.preventDefault();
-      setOpen(true);
-      setHighlightedIndex(UI_LOCALES.length - 1);
-    }
-  }
-
-  function onOptionKeyDown(event: ReactKeyboardEvent<HTMLButtonElement>, index: number) {
-    if (event.key === "ArrowDown") {
-      event.preventDefault();
-      moveHighlight(index + 1);
-    } else if (event.key === "ArrowUp") {
-      event.preventDefault();
-      moveHighlight(index - 1);
-    } else if (event.key === "Home") {
-      event.preventDefault();
-      setHighlightedIndex(0);
-    } else if (event.key === "End") {
-      event.preventDefault();
-      setHighlightedIndex(UI_LOCALES.length - 1);
-    } else if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      choose(index);
-    } else if (event.key === "Escape") {
-      event.preventDefault();
-      event.stopPropagation();
-      setOpen(false);
-      triggerRef.current?.focus();
-    }
-  }
-
-  return (
-    <div ref={rootRef} className="relative mt-3">
-      <button
-        ref={triggerRef}
-        type="button"
-        role="combobox"
-        data-testid="ui-locale-select"
-        aria-label={t`Language`}
-        aria-controls={listboxId}
-        aria-expanded={open}
-        aria-haspopup="listbox"
-        className="flex h-9 w-full items-center justify-between rounded-lg border border-input bg-transparent px-3 text-start text-sm text-foreground outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30 dark:hover:bg-input/50"
-        onClick={() => setOpen((current) => !current)}
-        onKeyDown={onTriggerKeyDown}
-      >
-        <span className="min-w-0 truncate">{UI_LOCALE_LABELS[value]}</span>
-        <span className="ml-3 shrink-0 text-muted-foreground" aria-hidden="true">
-          <ChevronDown size={16} strokeWidth={1.8} />
-        </span>
-      </button>
-      {open ? (
-        <div
-          id={listboxId}
-          role="listbox"
-          aria-label={t`Language`}
-          className="rk-scroll absolute left-0 right-0 top-full z-20 mt-1 overflow-y-auto rounded-lg bg-popover p-1 text-popover-foreground shadow-md ring-1 ring-foreground/10"
-        >
-          {UI_LOCALES.map((code, index) => (
-            <button
-              key={code}
-              ref={(element) => {
-                optionRefs.current[index] = element;
-              }}
-              type="button"
-              role="option"
-              aria-selected={code === value}
-              tabIndex={index === highlightedIndex ? 0 : -1}
-              className={`w-full rounded-md px-2 py-1.5 text-start text-sm outline-none hover:bg-accent focus-visible:bg-accent ${
-                code === value ? "bg-accent" : ""
-              }`}
-              onClick={() => choose(index)}
-              onKeyDown={(event) => onOptionKeyDown(event, index)}
-            >
-              {UI_LOCALE_LABELS[code]}
-            </button>
-          ))}
-        </div>
-      ) : null}
-    </div>
   );
 }

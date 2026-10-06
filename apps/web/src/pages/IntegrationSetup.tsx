@@ -1,6 +1,6 @@
 import { useLingui } from "@lingui/react/macro";
 import type { Bot, IntegrationSetupState } from "@rakazo/contracts";
-import { NativeSelect, NativeSelectOption } from "@rakazo/ui-web";
+import { OptionSelect } from "@rakazo/ui-web";
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { IntegrationSetup } from "../components/integrations/IntegrationSetup";
@@ -51,18 +51,13 @@ export function IntegrationSetupPage() {
     <EntryFrame wide align="top" title={serverSetup ? t`Server integrations` : t`Add MCP server`}>
       <div className="w-full">
         {bots.length > 1 ? (
-          <NativeSelect
+          <OptionSelect
             aria-label={t`Bot`}
             value={botId}
-            onChange={(event) => setBotId(event.target.value)}
-            className="mb-6 w-full"
-          >
-            {bots.map((bot) => (
-              <NativeSelectOption key={bot.id} value={bot.id}>
-                {bot.name}
-              </NativeSelectOption>
-            ))}
-          </NativeSelect>
+            onValueChange={setBotId}
+            className="mb-6"
+            options={bots.map((bot) => ({ value: bot.id, label: bot.name }))}
+          />
         ) : null}
         {ready ? (
           <IntegrationSetup

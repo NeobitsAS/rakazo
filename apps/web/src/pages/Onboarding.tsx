@@ -23,13 +23,12 @@ import {
 } from "@rakazo/core";
 import {
   Button,
+  Field,
+  FieldLabel,
   Input,
   ModelThinkingOptions,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  OptionSelect,
+  type SelectOption,
   Stepper,
 } from "@rakazo/ui-web";
 import { Check, Copy } from "lucide-react";
@@ -278,7 +277,9 @@ export function OnboardingPage() {
     () => modelsForProvider.map((entry) => ({ value: entry.id, label: entry.label })),
     [modelsForProvider],
   );
-  const thinkingLevelItems = useMemo(
+  const thinkingLevelItems = useMemo<
+    SelectOption<ThinkingLevel | typeof DEFAULT_THINKING_LEVEL_OPTION>[]
+  >(
     () => [
       {
         value: DEFAULT_THINKING_LEVEL_OPTION,
@@ -575,42 +576,32 @@ export function OnboardingPage() {
                 <span>
                   <Trans>Provider</Trans>
                 </span>
-                <Select
+                <OptionSelect
+                  aria-label={t`Provider`}
+                  className="mt-2"
                   value={provider}
                   onValueChange={(value) => {
-                    if (typeof value !== "string" || !value) return;
-                    selectProvider(value);
+                    if (value) selectProvider(value);
                   }}
-                  items={providerItems}
-                >
-                  <SelectTrigger size="lg" aria-label={t`Provider`} className="mt-2 w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {providers.map((entry) => (
-                      <SelectItem key={entry.provider} value={entry.provider}>
-                        {providerLabel(entry)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  options={providerItems}
+                />
               </div>
               <div className="mt-6 block text-sm text-foreground">
                 {isOpenAiCompatible ? (
                   <>
-                    <label htmlFor={`${fieldId}-base-url`} className="block font-medium">
-                      <Trans>Server URL</Trans>
+                    <Field>
+                      <FieldLabel htmlFor={`${fieldId}-base-url`}>
+                        <Trans>Server URL</Trans>
+                      </FieldLabel>
                       <Input
-                        size="lg"
                         id={`${fieldId}-base-url`}
                         value={baseUrl}
                         onChange={(e) => updateBaseUrl(e.target.value)}
                         aria-label={t`OpenAI-compatible server URL`}
                         placeholder="http://127.0.0.1:8000/v1"
                         autoComplete="off"
-                        className="mt-2"
                       />
-                    </label>
+                    </Field>
                     <div className="mt-3">
                       <Button
                         variant="outline"
@@ -626,11 +617,11 @@ export function OnboardingPage() {
                         <Trans>Model</Trans>
                       </span>
                       {probeModels.length && !manualModelId ? (
-                        <Select
+                        <OptionSelect
+                          aria-label={t`Models from server`}
+                          className="mt-2"
                           value={modelId}
-                          onValueChange={(value) => {
-                            if (typeof value !== "string") return;
-                            const next = value;
+                          onValueChange={(next) => {
                             if (next === CUSTOM_MODEL_OPTION) {
                               setManualModelId(true);
                               setModelId("");
@@ -639,29 +630,10 @@ export function OnboardingPage() {
                               setModelId(next);
                             }
                           }}
-                          items={probeModelItems}
-                        >
-                          <SelectTrigger
-                            size="lg"
-                            aria-label={t`Models from server`}
-                            className="mt-2 w-full"
-                          >
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {probeModels.map((id) => (
-                              <SelectItem key={id} value={id}>
-                                {id}
-                              </SelectItem>
-                            ))}
-                            <SelectItem value={CUSTOM_MODEL_OPTION}>
-                              <Trans>Other model…</Trans>
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
+                          options={probeModelItems}
+                        />
                       ) : (
                         <Input
-                          size="lg"
                           value={modelId}
                           onChange={(e) => {
                             setManualModelId(true);
@@ -727,59 +699,32 @@ export function OnboardingPage() {
                     <span className="font-medium">
                       <Trans>Model</Trans>
                     </span>
-                    <Select
+                    <OptionSelect
+                      aria-label={t`Model`}
+                      className="mt-2"
                       value={selected?.id ?? modelId}
                       onValueChange={(value) => {
-                        if (typeof value !== "string" || !value) return;
-                        if (value === modelId) return;
+                        if (!value || value === modelId) return;
                         cancelOAuthAttempt();
                         setModelId(value);
                         setThinkingLevel(null);
                       }}
-                      items={modelItems}
-                    >
-                      <SelectTrigger size="lg" aria-label={t`Model`} className="mt-2 w-full">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {modelsForProvider.map((entry) => (
-                          <SelectItem key={`${entry.provider}:${entry.id}`} value={entry.id}>
-                            {entry.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                      options={modelItems}
+                    />
                     {catalogThinkingLevels.length ? (
                       <div className="mt-4 block">
                         <span className="font-medium">
                           <Trans>Thinking</Trans>
                         </span>
-                        <Select
+                        <OptionSelect
+                          aria-label={t`Thinking`}
+                          className="mt-2"
                           value={thinkingLevel ?? DEFAULT_THINKING_LEVEL_OPTION}
-                          onValueChange={(value) => {
-                            const next = String(value);
-                            setThinkingLevel(
-                              next === DEFAULT_THINKING_LEVEL_OPTION
-                                ? null
-                                : (next as ThinkingLevel),
-                            );
-                          }}
-                          items={thinkingLevelItems}
-                        >
-                          <SelectTrigger size="lg" aria-label={t`Thinking`} className="mt-2 w-full">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value={DEFAULT_THINKING_LEVEL_OPTION}>
-                              {t`Default (${thinkingLevelLabel("medium")})`}
-                            </SelectItem>
-                            {catalogThinkingLevels.map((level) => (
-                              <SelectItem key={level} value={level}>
-                                {thinkingLevelLabel(level)}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                          onValueChange={(next) =>
+                            setThinkingLevel(next === DEFAULT_THINKING_LEVEL_OPTION ? null : next)
+                          }
+                          options={thinkingLevelItems}
+                        />
                       </div>
                     ) : null}
                   </>
@@ -822,7 +767,6 @@ export function OnboardingPage() {
                           </p>
                           <div className="mt-3 flex items-center gap-2">
                             <Input
-                              size="lg"
                               value={pasteCode}
                               onChange={(e) => setPasteCode(e.target.value)}
                               aria-label={t`Authorization code or callback URL`}
@@ -941,7 +885,6 @@ export function OnboardingPage() {
                       <Trans>API key</Trans>
                     </summary>
                     <Input
-                      size="lg"
                       aria-label={t`API key`}
                       value={apiKey}
                       onChange={(e) => updateApiKey(e.target.value)}
@@ -952,26 +895,23 @@ export function OnboardingPage() {
                     />
                   </details>
                 ) : (
-                  <label
-                    htmlFor={`${fieldId}-api-key`}
-                    className="mt-4 block text-sm font-medium text-foreground"
-                  >
-                    {subscriptionSignIn ? (
-                      <Trans>Or paste an API key</Trans>
-                    ) : (
-                      <Trans>API key</Trans>
-                    )}
+                  <Field className="mt-4">
+                    <FieldLabel htmlFor={`${fieldId}-api-key`}>
+                      {subscriptionSignIn ? (
+                        <Trans>Or paste an API key</Trans>
+                      ) : (
+                        <Trans>API key</Trans>
+                      )}
+                    </FieldLabel>
                     <Input
-                      size="lg"
                       id={`${fieldId}-api-key`}
                       value={apiKey}
                       onChange={(e) => updateApiKey(e.target.value)}
                       placeholder="sk-…"
                       type="password"
                       autoComplete="new-password"
-                      className="mt-2"
                     />
-                  </label>
+                  </Field>
                 )
               ) : null}
               {notice ? <p className="mt-3 text-sm text-success">{notice}</p> : null}

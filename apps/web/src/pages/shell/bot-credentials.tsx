@@ -1,7 +1,7 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import type { BotSecretMetadata } from "@rakazo/contracts";
 import { BotSecretName, encodeLoginSecret } from "@rakazo/contracts";
-import { Button, Input, NativeSelect, NativeSelectOption } from "@rakazo/ui-web";
+import { Button, Input, OptionSelect } from "@rakazo/ui-web";
 import { useEffect, useId, useState } from "react";
 import { rpc } from "../../lib/rpc";
 
@@ -399,18 +399,19 @@ export function BotCredentialsSection({ botId }: { botId: string }) {
           </label>
           <label htmlFor={`${ids}-auth`} className={fieldLabelClass}>
             <Trans>Type</Trans>
-            <NativeSelect
+            <OptionSelect<CredentialAuthType>
               id={`${ids}-auth`}
               data-testid="credential-auth-type"
-              className="mt-1.5 w-full"
+              className="mt-1.5"
               value={authType}
-              onChange={(event) => setAuthType(event.target.value as CredentialAuthType)}
-            >
-              <NativeSelectOption value="bearer">{t`Bearer token`}</NativeSelectOption>
-              <NativeSelectOption value="header">{t`Custom header`}</NativeSelectOption>
-              <NativeSelectOption value="basic">{t`Basic auth`}</NativeSelectOption>
-              <NativeSelectOption value="login">{t`Website login`}</NativeSelectOption>
-            </NativeSelect>
+              onValueChange={setAuthType}
+              options={[
+                { value: "bearer", label: t`Bearer token` },
+                { value: "header", label: t`Custom header` },
+                { value: "basic", label: t`Basic auth` },
+                { value: "login", label: t`Website login` },
+              ]}
+            />
           </label>
           {authType === "header" ? (
             <label htmlFor={`${ids}-header`} className={fieldLabelClass}>

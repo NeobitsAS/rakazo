@@ -30,10 +30,41 @@ vi.mock("@rakazo/ui-web", () => ({
   }: ComponentProps<"button"> & { variant?: string; size?: string }) => (
     <button type="button" {...props} />
   ),
+  Field: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
+  FieldLabel: ({ children, htmlFor }: { children?: ReactNode; htmlFor?: string }) => (
+    <label htmlFor={htmlFor}>{children}</label>
+  ),
   Input: (props: ComponentProps<"input">) => <input {...props} />,
   Textarea: (props: ComponentProps<"textarea">) => <textarea {...props} />,
-  NativeSelect: (props: ComponentProps<"select">) => <select {...props} />,
-  NativeSelectOption: (props: ComponentProps<"option">) => <option {...props} />,
+  OptionSelect: ({
+    options,
+    value,
+    onValueChange,
+    ...props
+  }: {
+    options: readonly { value: string; label: string }[];
+    value: string;
+    onValueChange: (value: string) => void;
+    id?: string;
+    disabled?: boolean;
+    "aria-label"?: string;
+    "data-testid"?: string;
+  }) => (
+    <select
+      id={props.id}
+      disabled={props.disabled}
+      aria-label={props["aria-label"]}
+      data-testid={props["data-testid"]}
+      value={value}
+      onChange={(event) => onValueChange(event.target.value)}
+    >
+      {options.map((option) => (
+        <option key={option.value} value={option.value}>
+          {option.label}
+        </option>
+      ))}
+    </select>
+  ),
   Switch: ({
     onCheckedChange: _onCheckedChange,
     checked: _checked,

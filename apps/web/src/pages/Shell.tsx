@@ -291,9 +291,6 @@ const PeerMessagesOverlay = lazy(() =>
 const PluginsOverlay = lazy(() =>
   import("./PluginsOverlay").then((module) => ({ default: module.PluginsOverlay })),
 );
-const McpServersOverlay = lazy(() =>
-  import("./McpServersOverlay").then((module) => ({ default: module.McpServersOverlay })),
-);
 
 type PendingAttachment = {
   id: string;
@@ -534,7 +531,6 @@ export function ShellPage() {
     commitSnapshot(update(snapshotRef.current));
   }
   const [pluginsOpen, setPluginsOpen] = useState(false);
-  const [mcpOpen, setMcpOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsSection, setSettingsSection] = useState<SettingsSection>("general");
   const [messagingSettingsOpen, setMessagingSettingsOpen] = useState(false);
@@ -3347,7 +3343,7 @@ export function ShellPage() {
             <LayoutGrid size={15} strokeWidth={1.8} />
           </span>
           <span className="text-[14px] font-medium text-foreground/90">
-            <Trans>Integrations</Trans>
+            <Trans>Apps</Trans>
           </span>
         </button>
         <Popover open={menuOpen} onOpenChange={setMenuOpen}>
@@ -4391,13 +4387,8 @@ export function ShellPage() {
             activeBotId={activeBotId.current}
             isDeploymentOwner={bootstrapMe?.isDeploymentOwner === true}
             onClose={() => setPluginsOpen(false)}
-            onOpenMcp={() => {
-              setPluginsOpen(false);
-              setMcpOpen(true);
-            }}
           />
         ) : null}
-        {mcpOpen ? <McpServersOverlay onClose={() => setMcpOpen(false)} /> : null}
         {messagingSettingsOpen ? (
           <MessagingSettingsOverlay onClose={() => setMessagingSettingsOpen(false)} />
         ) : null}

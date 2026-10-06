@@ -7,7 +7,7 @@ import {
   type CronUnit,
   cronFromPreset,
 } from "@rakazo/core";
-import { Input, NativeSelect, NativeSelectOption } from "@rakazo/ui-web";
+import { Input, OptionSelect } from "@rakazo/ui-web";
 import { Clock } from "lucide-react";
 
 const UNITS: CronUnit[] = ["minutes", "hours", "days"];
@@ -181,48 +181,39 @@ export function RoutineSchedule({
   }
 
   const intervalAmountSelect = (
-    <NativeSelect
+    <OptionSelect
       size="sm"
+      className="w-auto"
       value={String(value.n)}
       aria-label={t`Interval amount`}
-      onChange={(event) => patch({ n: Number(event.target.value) })}
-    >
-      {numbers.map((n) => (
-        <NativeSelectOption key={n} value={n}>
-          {n}
-        </NativeSelectOption>
-      ))}
-    </NativeSelect>
+      onValueChange={(next) => patch({ n: Number(next) })}
+      options={numbers.map((n) => ({ value: String(n), label: String(n) }))}
+    />
   );
 
   const intervalUnitSelect = (
-    <NativeSelect
+    <OptionSelect<CronUnit>
       size="sm"
+      className="w-auto"
       value={value.unit}
       aria-label={t`Interval unit`}
-      onChange={(event) => patch({ unit: event.target.value as CronUnit })}
-    >
-      {UNITS.map((unit) => (
-        <NativeSelectOption key={unit} value={unit}>
-          {i18n.locale === "ru" ? russianIntervalUnit(value.n, unit) : cronUnitLabel(unit)}
-        </NativeSelectOption>
-      ))}
-    </NativeSelect>
+      onValueChange={(unit) => patch({ unit })}
+      options={UNITS.map((unit) => ({
+        value: unit,
+        label: i18n.locale === "ru" ? russianIntervalUnit(value.n, unit) : cronUnitLabel(unit),
+      }))}
+    />
   );
 
   const timeSelect = (
-    <NativeSelect
+    <OptionSelect
       size="sm"
+      className="w-auto"
       value={value.time}
       aria-label={t`Time of day`}
-      onChange={(event) => patch({ time: event.target.value })}
-    >
-      {times.map((time) => (
-        <NativeSelectOption key={time} value={time}>
-          {time}
-        </NativeSelectOption>
-      ))}
-    </NativeSelect>
+      onValueChange={(time) => patch({ time })}
+      options={times.map((time) => ({ value: time, label: time }))}
+    />
   );
 
   return (
@@ -235,25 +226,20 @@ export function RoutineSchedule({
         ) : null}
       </div>
       <div className="mt-2.5 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-        <NativeSelect
+        <OptionSelect<CronFreq>
           size="sm"
+          className="w-auto"
           value={value.freq}
           aria-label={t`How often`}
-          onChange={(event) => {
-            const freq = event.target.value as CronFreq;
+          onValueChange={(freq) => {
             if (freq === "Advanced") {
               patch({ freq, cron: cronFromPreset(value) });
               return;
             }
             patch({ freq });
           }}
-        >
-          {CRON_FREQS.map((freq) => (
-            <NativeSelectOption key={freq} value={freq}>
-              {cronFreqLabel(freq)}
-            </NativeSelectOption>
-          ))}
-        </NativeSelect>
+          options={CRON_FREQS.map((freq) => ({ value: freq, label: cronFreqLabel(freq) }))}
+        />
         {value.freq === "Interval" ? (
           i18n.locale === "ru" ? (
             <>

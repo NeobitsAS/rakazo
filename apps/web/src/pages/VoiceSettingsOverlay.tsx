@@ -9,8 +9,7 @@ import {
   Field,
   FieldLabel,
   Input,
-  NativeSelect,
-  NativeSelectOption,
+  OptionSelect,
 } from "@rakazo/ui-web";
 import { XIcon } from "lucide-react";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
@@ -205,7 +204,9 @@ export function VoiceSettingsOverlay({
         </div>
       ) : null}
 
-      <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-hidden px-6 py-6 sm:px-8 md:flex-row">
+      <div
+        className={`flex min-h-0 flex-1 flex-col gap-6 overflow-hidden px-6 pb-6 sm:px-8 md:flex-row ${embedded ? "" : "pt-6"}`}
+      >
         <div className="flex min-h-0 shrink-0 flex-col md:w-[280px]">
           <div className="mb-3 text-[13.5px] text-muted-foreground">
             <Trans>Providers</Trans>
@@ -257,7 +258,7 @@ export function VoiceSettingsOverlay({
           </div>
         </div>
 
-        <div className="rk-scroll min-h-0 min-w-0 flex-1 overflow-y-auto">
+        <div className="rk-scroll -m-1 min-h-0 min-w-0 flex-1 overflow-y-auto p-1">
           {loading ? (
             <p className="text-sm text-muted-foreground">
               <Trans>Loading voice providers…</Trans>
@@ -317,20 +318,18 @@ export function VoiceSettingsOverlay({
                     <FieldLabel htmlFor={voiceSelectId}>
                       <Trans>Voice</Trans>
                     </FieldLabel>
-                    <NativeSelect
+                    <OptionSelect
                       id={voiceSelectId}
-                      className="w-full"
                       value={voiceId}
                       disabled={busy}
-                      onChange={(event) => void chooseVoice(event.target.value)}
-                    >
-                      {voiceOptions.map((voice) => (
-                        <NativeSelectOption key={voice.id} value={voice.id}>
-                          {voice.label}
-                          {voice.description ? ` · ${voice.description}` : ""}
-                        </NativeSelectOption>
-                      ))}
-                    </NativeSelect>
+                      onValueChange={(next) => void chooseVoice(next)}
+                      options={voiceOptions.map((voice) => ({
+                        value: voice.id,
+                        label: voice.description
+                          ? `${voice.label} · ${voice.description}`
+                          : voice.label,
+                      }))}
+                    />
                   </Field>
                   {selected.id === "fish-audio" ? (
                     <Field className="mt-6">

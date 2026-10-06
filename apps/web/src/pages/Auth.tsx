@@ -130,7 +130,7 @@ export function AuthPage({ mode }: { mode: AuthMode }) {
         <>
           {mode === "up" ? (
             <div className="mb-4 w-full">
-              <Label htmlFor="name" className="text-muted-foreground">
+              <Label htmlFor="name">
                 <Trans>Name</Trans>
               </Label>
               <Input
@@ -146,7 +146,7 @@ export function AuthPage({ mode }: { mode: AuthMode }) {
             </div>
           ) : null}
           <div className="w-full">
-            <Label htmlFor="email" className="text-muted-foreground">
+            <Label htmlFor="email">
               <Trans>Email</Trans>
             </Label>
             <Input
@@ -164,7 +164,7 @@ export function AuthPage({ mode }: { mode: AuthMode }) {
           </div>
           {mode !== "forgot" ? (
             <div className="mt-4 w-full">
-              <Label htmlFor={passwordFieldId} className="text-muted-foreground">
+              <Label htmlFor={passwordFieldId}>
                 <Trans>Password</Trans>
               </Label>
               <Input
@@ -348,9 +348,7 @@ function PasswordField({
 }) {
   return (
     <div className={`w-full ${className}`}>
-      <Label htmlFor={id} className="text-muted-foreground">
-        {label}
-      </Label>
+      <Label htmlFor={id}>{label}</Label>
       <Input
         id={id}
         name={id}

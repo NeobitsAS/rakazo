@@ -19,6 +19,8 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
+  Field,
+  FieldLabel,
   Input,
   Textarea,
 } from "@rakazo/ui-web";
@@ -307,28 +309,30 @@ export function RoutineEditor({
         </div>
       </div>
 
-      <label htmlFor={`${fieldId}-name`} className="block text-sm text-muted-foreground">
-        <Trans>Name</Trans>
+      <Field>
+        <FieldLabel htmlFor={`${fieldId}-name`}>
+          <Trans>Name</Trans>
+        </FieldLabel>
         <Input
           id={`${fieldId}-name`}
           value={draft.name}
           placeholder={t`Name this routine`}
           onChange={(e) => onChange({ ...draft, name: e.target.value })}
-          className="mt-2"
         />
-      </label>
+      </Field>
 
-      <label htmlFor={`${fieldId}-prompt`} className="mt-5 block text-sm text-muted-foreground">
-        <Trans>Instruction</Trans>
+      <Field className="mt-5">
+        <FieldLabel htmlFor={`${fieldId}-prompt`}>
+          <Trans>Instruction</Trans>
+        </FieldLabel>
         <Textarea
           id={`${fieldId}-prompt`}
           value={draft.prompt}
           placeholder={t`What should this routine do each time it runs?`}
           onChange={(e) => onChange({ ...draft, prompt: e.target.value })}
           rows={4}
-          className="mt-2"
         />
-      </label>
+      </Field>
 
       <div className="mt-5 text-sm text-muted-foreground">
         <div className="flex items-baseline gap-2">
@@ -397,17 +401,18 @@ export function RoutineEditor({
           ) : null}
 
           {needsOneShotArm ? (
-            <label htmlFor={`${fieldId}-run-at`} className="block text-sm text-muted-foreground">
-              <Trans>Run at</Trans>
+            <Field>
+              <FieldLabel htmlFor={`${fieldId}-run-at`}>
+                <Trans>Run at</Trans>
+              </FieldLabel>
               <Input
                 id={`${fieldId}-run-at`}
                 type="datetime-local"
                 value={draft.runAtLocal}
                 onChange={(e) => onChange({ ...draft, runAtLocal: e.target.value })}
                 aria-label={t`Run at`}
-                className="mt-2"
               />
-            </label>
+            </Field>
           ) : null}
         </div>
 

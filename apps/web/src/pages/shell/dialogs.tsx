@@ -16,6 +16,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  Field,
+  FieldLabel,
   Input,
 } from "@rakazo/ui-web";
 import { Lock, Users } from "lucide-react";
@@ -68,8 +70,10 @@ export function NewSpaceDialog({
             <Trans>New space</Trans>
           </DialogTitle>
         </DialogHeader>
-        <label htmlFor={nameId} className="block text-[13.5px] text-foreground/75">
-          <Trans>Name</Trans>
+        <Field>
+          <FieldLabel htmlFor={nameId}>
+            <Trans>Name</Trans>
+          </FieldLabel>
           <Input
             id={nameId}
             maxLength={60}
@@ -79,9 +83,8 @@ export function NewSpaceDialog({
               if (event.key === "Enter") create();
             }}
             placeholder={t`Customer support`}
-            className="mt-2"
           />
-        </label>
+        </Field>
         {error ? <p className="text-[13.5px] text-destructive">{error}</p> : null}
         <DialogFooter>
           <Button variant="outline" disabled={saving} onClick={onCancel}>
@@ -183,16 +186,17 @@ export function NewBotSectionDialog({
               <Trans>Create a section and move {bot.name} into it.</Trans>
             </DialogDescription>
           </DialogHeader>
-          <label htmlFor={nameId} className="block text-[13.5px] text-foreground/75">
-            <Trans>Name</Trans>
+          <Field>
+            <FieldLabel htmlFor={nameId}>
+              <Trans>Name</Trans>
+            </FieldLabel>
             <Input
               id={nameId}
               maxLength={60}
               value={name}
               onChange={(event) => setName(event.target.value)}
-              className="mt-2"
             />
-          </label>
+          </Field>
           {error ? <p className="text-[13.5px] text-destructive">{error}</p> : null}
           <DialogFooter>
             <Button type="button" variant="outline" disabled={saving} onClick={onCancel}>
@@ -246,17 +250,18 @@ export function RenameBotSectionDialog({
               <Trans>Rename section</Trans>
             </DialogTitle>
           </DialogHeader>
-          <label htmlFor={nameId} className="block text-[13.5px] text-foreground/75">
-            <Trans>Name</Trans>
+          <Field>
+            <FieldLabel htmlFor={nameId}>
+              <Trans>Name</Trans>
+            </FieldLabel>
             <Input
               id={nameId}
               maxLength={60}
               value={name}
               onChange={(event) => setName(event.target.value)}
-              className="mt-2"
               autoFocus
             />
-          </label>
+          </Field>
           {error ? <p className="text-[13.5px] text-destructive">{error}</p> : null}
           <DialogFooter>
             <Button type="button" variant="outline" disabled={saving} onClick={onCancel}>

@@ -57,6 +57,10 @@ msgstr "Utilise les identifiants {hostCredentialSource} propres à ce serveur po
 msgid "Ask the server owner to set up Composio or Pipedream to connect apps."
 msgstr "Demandez au propriétaire du serveur de configurer Composio ou Pipedream pour connecter des applications."
 
+#: src/pages/AccountSettingsOverlay.tsx
+msgid "At least 8 characters"
+msgstr "Au moins 8 caractères"
+
 #: src/pages/Onboarding.tsx
 msgid "Choose your default model"
 msgstr "Choisissez votre modèle par défaut"
@@ -82,8 +86,8 @@ msgid "Opening your first agent…"
 msgstr "Ouverture de votre premier agent…"
 
 #: src/components/integrations/IntegrationSetup.tsx
-msgid "Paste your Composio API key"
-msgstr "Collez votre clé API Composio"
+msgid "Paste your Composio project API key (ak_…)"
+msgstr "Collez la clé API du projet Composio (ak_…)"
 
 #: src/components/integrations/IntegrationSetup.tsx
 msgid "Paste your Executor access token"
@@ -129,9 +133,17 @@ msgstr "Configurez Composio ou Pipedream pour afficher leurs applications ici."
 msgid "Try your agent"
 msgstr "Essayez votre agent"
 
+#: src/pages/AccountSettingsOverlay.tsx
+msgid "Type the new password again"
+msgstr "Saisissez à nouveau le nouveau mot de passe"
+
 #: src/pages/Onboarding.tsx
 msgid "Your bots use this model to think and reply. Choose a provider and a model, then sign in with your subscription or paste an API key. It is saved for you in this space, and you can connect more models later in Settings → Models."
 msgstr "Vos bots utilisent ce modèle pour réfléchir et répondre. Choisissez un fournisseur et un modèle, puis connectez-vous avec votre abonnement ou collez une clé API. Il est enregistré pour vous dans cet espace, et vous pourrez connecter d'autres modèles plus tard dans Paramètres → Modèles."
+
+#: src/pages/AccountSettingsOverlay.tsx
+msgid "Your current password"
+msgstr "Votre mot de passe actuel"
 
 #. placeholder {0}: group.entries.length
 #: src/pages/ModelSettingsOverlay.tsx
@@ -269,10 +281,6 @@ msgstr ""
 msgid "{title}, {label}"
 msgstr "{title}, {label}"
 
-#: src/pages/PluginsOverlay.tsx
-msgid "{toolCount, plural, one {# tool} other {# tools}}"
-msgstr "{toolCount, plural, one {# outil} other {# outils}}"
-
 #: src/pages/Shell.tsx
 msgid "{workingBotName} is working"
 msgstr "{workingBotName} est en cours d'exécution"
@@ -304,10 +312,6 @@ msgstr "À propos des espaces"
 msgid "Access token"
 msgstr "Jeton d'accès"
 
-#: src/pages/McpServersOverlay.tsx
-msgid "Access token (optional)"
-msgstr "Jeton d'accès (optionnel)"
-
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Account"
 msgstr "Compte"
@@ -317,16 +321,8 @@ msgid "Account default"
 msgstr "Défaut du compte"
 
 #: src/pages/PluginsOverlay.tsx
-msgid "Account label"
-msgstr "Libellé du compte"
-
-#: src/pages/PluginsOverlay.tsx
 msgid "Accounts"
 msgstr "Comptes"
-
-#: src/components/ApprovalRulesSettings.tsx
-msgid "Action confirmations"
-msgstr "Confirmations d'action"
 
 #. placeholder {0}: bot.name
 #. placeholder {0}: group.spaceName
@@ -374,33 +370,9 @@ msgstr "Ajoutez une planification, un webhook, GitHub ou un déclencheur de mess
 msgid "Add a schedule, webhook, GitHub, or message trigger to run this routine."
 msgstr "Ajoutez une planification, un webhook, GitHub ou un déclencheur de message pour exécuter cette routine."
 
-#: src/pages/McpServersOverlay.tsx
-msgid "Add a server name."
-msgstr "Ajoutez un nom de serveur."
-
-#: src/pages/McpServersOverlay.tsx
-msgid "Add a stdio command."
-msgstr "Ajoutez une commande stdio."
-
-#: src/pages/McpServersOverlay.tsx
-msgid "Add an HTTPS server URL."
-msgstr "Ajoutez une URL de serveur HTTPS."
-
 #: src/pages/PluginsOverlay.tsx
 msgid "Add another"
 msgstr "En ajouter un autre"
-
-#: src/pages/PluginsOverlay.tsx
-msgid "Add Executor"
-msgstr "Ajouter un exécuteur"
-
-#: src/pages/PluginsOverlay.tsx
-msgid "Add GraphQL"
-msgstr "Ajouter GraphQL"
-
-#: src/pages/PluginsOverlay.tsx
-msgid "Add GraphQL endpoint"
-msgstr "Ajouter un point de terminaison GraphQL"
 
 #: src/pages/ScratchpadSection.tsx
 msgid "Add item"
@@ -411,18 +383,6 @@ msgstr "Ajouter un élément"
 msgid "Add MCP server"
 msgstr "Ajouter un serveur MCP"
 
-#: src/pages/PluginsOverlay.tsx
-msgid "Add OpenAPI"
-msgstr "Ajouter OpenAPI"
-
-#: src/pages/PluginsOverlay.tsx
-msgid "Add remote MCP server"
-msgstr "Ajouter un serveur MCP distant"
-
-#: src/pages/McpServersOverlay.tsx
-msgid "Add server"
-msgstr "Ajouter un serveur"
-
 #: src/components/integrations/IntegrationSetup.tsx
 msgid "Add server URL"
 msgstr "Ajouter une URL de serveur"
@@ -430,10 +390,6 @@ msgstr "Ajouter une URL de serveur"
 #: src/components/teach/SkillDraftCard.tsx
 msgid "Add to routine"
 msgstr "Ajouter à la routine"
-
-#: src/pages/PluginsOverlay.tsx
-msgid "Add Treg"
-msgstr "Ajouter Treg"
 
 #: src/pages/RoutineEditor.tsx
 msgid "Add trigger"
@@ -469,10 +425,6 @@ msgstr "Ordinateur de l'agent"
 #: src/pages/MessagingSettingsOverlay.tsx
 msgid "Agent connections"
 msgstr "Connexions d'agent"
-
-#: src/pages/McpServersOverlay.tsx
-msgid "Agents:"
-msgstr "Agents :"
 
 #: src/pages/Artifacts.tsx
 msgid "All bots"
@@ -696,10 +648,6 @@ msgstr "Archivé"
 msgid "Archived. Chat, memory, and files kept."
 msgstr "Archivé. Conversation, mémoire et fichiers conservés."
 
-#: src/pages/McpServersOverlay.tsx
-msgid "Arguments"
-msgstr "Arguments"
-
 #: src/pages/Artifacts.tsx
 #: src/pages/Shell.tsx
 msgid "Artifacts"
@@ -864,10 +812,6 @@ msgstr "Les bots sont en cours d'exécution"
 #: src/pages/memory-providers/SerenitySettingsForm.tsx
 msgid "Brain label"
 msgstr "Libellé du cerveau"
-
-#: src/pages/PluginsOverlay.tsx
-msgid "Browse MCP servers"
-msgstr "Parcourir les serveurs MCP"
 
 #: src/components/computer/ComputerWorkspace.tsx
 msgid "Browser"
@@ -1040,14 +984,6 @@ msgstr "Fermer l'ordinateur"
 msgid "Close image preview"
 msgstr "Fermer l'aperçu de l'image"
 
-#: src/pages/PluginsOverlay.tsx
-msgid "Close integrations"
-msgstr "Fermer les intégrations"
-
-#: src/pages/McpServersOverlay.tsx
-msgid "Close MCP servers"
-msgstr "Fermer les serveurs MCP"
-
 #: src/pages/MemorySettingsOverlay.tsx
 #: src/pages/SettingsOverlay.tsx
 msgid "Close memory settings"
@@ -1109,10 +1045,6 @@ msgstr "Couleur {color}"
 msgid "Coming soon"
 msgstr "Bientôt disponible"
 
-#: src/pages/McpServersOverlay.tsx
-msgid "Command"
-msgstr "Commande"
-
 #: src/pages/ScratchpadSection.tsx
 msgid "Complete"
 msgstr "Terminé"
@@ -1151,10 +1083,6 @@ msgstr "Les ordinateurs sont désactivés. Définissez SANDBOX_PROVIDER=docker a
 msgid "Configured by deployment"
 msgstr "Configuré par le déploiement"
 
-#: src/pages/McpServersOverlay.tsx
-msgid "Configured servers"
-msgstr "Serveurs configurés"
-
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/McpServersOverlay.tsx
 msgid "Confirm delete"
@@ -1176,25 +1104,13 @@ msgstr "Connecter"
 msgid "Connect API key"
 msgstr "Connecter la clé API"
 
-#: src/pages/PluginsOverlay.tsx
-msgid "Connect Executor"
-msgstr "Connecter l'exécuteur"
-
 #: src/pages/shell/message-cards.tsx
 msgid "Connect MCP server “{name}”"
 msgstr "Connecter le serveur MCP « {name} »"
 
-#: src/pages/McpServersOverlay.tsx
-msgid "Connect OAuth"
-msgstr "Connecter OAuth"
-
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "Connect this provider to use it as your personal model."
 msgstr "Connectez ce fournisseur pour l'utiliser comme modèle personnel."
-
-#: src/pages/PluginsOverlay.tsx
-msgid "Connect Treg"
-msgstr "Connecter Treg"
 
 #: src/components/integrations/IntegrationSetup.tsx
 #: src/pages/McpOAuthCallback.tsx
@@ -1271,10 +1187,6 @@ msgstr "Copier"
 #: src/pages/ScratchpadSection.tsx
 msgid "Could not add"
 msgstr "Impossible d'ajouter"
-
-#: src/pages/McpServersOverlay.tsx
-msgid "Could not add MCP server"
-msgstr "Impossible d'ajouter le serveur MCP"
 
 #: src/pages/shell/message-cards.tsx
 msgid "Could not approve this server"
@@ -1367,10 +1279,6 @@ msgstr "Impossible de supprimer le bot"
 msgid "Could not delete group"
 msgstr "Impossible de supprimer le groupe"
 
-#: src/pages/McpServersOverlay.tsx
-msgid "Could not delete MCP server"
-msgstr "Impossible de supprimer le serveur MCP"
-
 #: src/pages/shell/dialogs.tsx
 msgid "Could not delete routine"
 msgstr "Impossible de supprimer la routine"
@@ -1390,10 +1298,6 @@ msgstr "Impossible de supprimer cet artefact."
 #: src/pages/MemorySettingsOverlay.tsx
 msgid "Could not disconnect memory provider"
 msgstr "Impossible de déconnecter le fournisseur de mémoire"
-
-#: src/pages/McpServersOverlay.tsx
-msgid "Could not disconnect OAuth"
-msgstr "Impossible de déconnecter OAuth"
 
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "Could not disconnect this provider"
@@ -1424,10 +1328,6 @@ msgstr "Impossible de télécharger {name}. Réessayez."
 msgid "Could not download file"
 msgstr ""
 
-#: src/pages/PluginsOverlay.tsx
-msgid "Could not install connector"
-msgstr "Impossible d'installer le connecteur"
-
 #: src/components/computer/FilesApp.tsx
 msgid "Could not list files"
 msgstr ""
@@ -1456,10 +1356,6 @@ msgstr ""
 #: src/pages/PluginsOverlay.tsx
 msgid "Could not load integrations"
 msgstr "Impossible de charger les intégrations"
-
-#: src/pages/McpServersOverlay.tsx
-msgid "Could not load MCP servers"
-msgstr "Impossible de charger les serveurs MCP"
 
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "Could not load model settings"
@@ -1617,10 +1513,6 @@ msgstr "Impossible d'envoyer l'e-mail de réinitialisation"
 msgid "Could not send that"
 msgstr "Impossible d'envoyer cela"
 
-#: src/pages/McpServersOverlay.tsx
-msgid "Could not start OAuth"
-msgstr "Impossible de démarrer OAuth"
-
 #: src/components/teach/TeachComputerOverlay.tsx
 msgid "Could not start teaching"
 msgstr "Impossible de démarrer l'enseignement"
@@ -1636,10 +1528,6 @@ msgstr "Impossible de prendre le contrôle"
 #: src/pages/ScratchpadSection.tsx
 msgid "Could not update"
 msgstr "Impossible de mettre à jour"
-
-#: src/pages/McpServersOverlay.tsx
-msgid "Could not update agent access"
-msgstr "Impossible de mettre à jour l'accès de l'agent"
 
 #: src/components/ComputerMaintenanceActions.tsx
 msgid "Could not update computer"
@@ -1727,11 +1615,6 @@ msgstr "Création en cours…"
 #: src/pages/PluginsOverlay.tsx
 msgid "Credential"
 msgstr "Identifiant"
-
-#: src/pages/McpServersOverlay.tsx
-#: src/pages/PluginsOverlay.tsx
-msgid "credential saved"
-msgstr "Identifiant enregistré"
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Credentials are encrypted and never sent to the model."
@@ -1919,10 +1802,6 @@ msgstr "Fermer l'erreur"
 msgid "Dismissed. Reconnect anytime from MCP settings."
 msgstr "Fermé. Reconnectez-vous à tout moment depuis les paramètres MCP."
 
-#: src/pages/PluginsOverlay.tsx
-msgid "Display name"
-msgstr "Nom d'affichage"
-
 #: src/pages/HostComputerPrompt.tsx
 msgid "Docker"
 msgstr "Docker"
@@ -2051,10 +1930,6 @@ msgstr "Chaque mois"
 #: src/pages/RoutineSchedule.tsx
 msgid "Every week"
 msgstr "Chaque semaine"
-
-#: src/pages/PluginsOverlay.tsx
-msgid "Executor token"
-msgstr "Jeton de l'exécuteur"
 
 #: src/pages/shell/message-cards.tsx
 msgid "Expand"
@@ -2233,10 +2108,6 @@ msgstr "en-tête"
 msgid "Header name"
 msgstr "Nom de l'en-tête"
 
-#: src/pages/McpServersOverlay.tsx
-msgid "Header value"
-msgstr "Valeur de l'en-tête"
-
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "Hear a sample"
 msgstr "Écouter un extrait"
@@ -2300,10 +2171,6 @@ msgstr "Ignorer"
 msgid "Image upload area"
 msgstr "Zone de téléchargement d'image"
 
-#: src/pages/PluginsOverlay.tsx
-msgid "Import OpenAPI JSON"
-msgstr "Importer OpenAPI JSON"
-
 #: src/pages/shell/message-cards.tsx
 msgid "Inbox & email"
 msgstr "Boîte de réception et e-mail"
@@ -2324,18 +2191,9 @@ msgstr "Clé API de l'instance"
 msgid "Instruction"
 msgstr "Instruction"
 
-#: src/pages/PluginsOverlay.tsx
-msgid "Integration domain"
-msgstr "Domaine d'intégration"
-
 #: src/components/integrations/IntegrationSetup.tsx
 msgid "Integration options"
 msgstr "Options d'intégration"
-
-#: src/pages/PluginsOverlay.tsx
-#: src/pages/Shell.tsx
-msgid "Integrations"
-msgstr "Intégrations"
 
 #: src/pages/RoutineEditor.tsx
 #: src/pages/RoutineSchedule.tsx
@@ -2454,10 +2312,6 @@ msgstr "Charger les exécutions précédentes"
 msgid "Loading activity…"
 msgstr "Chargement de l'activité…"
 
-#: src/pages/PluginsOverlay.tsx
-msgid "Loading integrations…"
-msgstr "Chargement des intégrations…"
-
 #: src/pages/MemorySettingsOverlay.tsx
 msgid "Loading memory settings…"
 msgstr "Chargement des paramètres de mémoire…"
@@ -2469,10 +2323,6 @@ msgstr "Chargement du catalogue de modèles…"
 #: src/components/ArtifactFileCard.tsx
 msgid "Loading preview…"
 msgstr "Chargement de l'aperçu…"
-
-#: src/components/ApprovalRulesSettings.tsx
-msgid "Loading rules…"
-msgstr "Chargement des règles…"
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Loading tools…"
@@ -2522,10 +2372,6 @@ msgstr "Faible"
 msgid "Make sure nothing is still running on this computer."
 msgstr "Assurez-vous qu'aucun processus ne tourne encore sur cet ordinateur."
 
-#: src/pages/PluginsOverlay.tsx
-msgid "Manage MCP servers"
-msgstr "Gérer les serveurs MCP"
-
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Manage messaging settings"
 msgstr "Gérer les paramètres de messagerie"
@@ -2533,14 +2379,6 @@ msgstr "Gérer les paramètres de messagerie"
 #: src/pages/MemorySettingsOverlay.tsx
 msgid "Manage the Space semantic memory provider."
 msgstr "Gérer le fournisseur de mémoire sémantique de l'espace."
-
-#: src/pages/PluginsOverlay.tsx
-msgid "Manual"
-msgstr "Manuel"
-
-#: src/pages/PluginsOverlay.tsx
-msgid "Manual setup required"
-msgstr "Configuration manuelle requise"
 
 #: src/pages/BotContextMenu.tsx
 msgid "Mark as Read"
@@ -2577,10 +2415,6 @@ msgstr "Jetons de sortie maximum"
 #: src/pages/memory-providers/SerenitySettingsForm.tsx
 msgid "MCP endpoint"
 msgstr "Point de terminaison MCP"
-
-#: src/pages/McpServersOverlay.tsx
-msgid "MCP servers"
-msgstr "Serveurs MCP"
 
 #. js-lingui-explicit-id
 #: src/lib/model-catalog.ts
@@ -2824,10 +2658,6 @@ msgid "No artifacts found."
 msgstr "Aucun artefact trouvé."
 
 #: src/pages/PluginsOverlay.tsx
-msgid "no auth"
-msgstr "pas d'authentification"
-
-#: src/pages/PluginsOverlay.tsx
 msgid "No authentication"
 msgstr "Aucune authentification"
 
@@ -2866,14 +2696,6 @@ msgstr "Aucun artefact correspondant sur cette page."
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "No matching models"
 msgstr "Aucun modèle correspondant"
-
-#: src/pages/PluginsOverlay.tsx
-msgid "No MCP or API tool sources installed yet."
-msgstr "Aucune source d'outils MCP ou API installée pour le moment."
-
-#: src/pages/McpServersOverlay.tsx
-msgid "No MCP servers yet."
-msgstr "Aucun serveur MCP pour le moment."
 
 #: src/pages/PeerMessagesOverlay.tsx
 msgid "No messages with {peerBotName} yet."
@@ -2953,17 +2775,9 @@ msgstr "Utilise maintenant {0}."
 msgid "OAuth authorization was cancelled."
 msgstr "L'autorisation OAuth a été annulée."
 
-#: src/pages/McpServersOverlay.tsx
-msgid "OAuth connected"
-msgstr "OAuth connecté"
-
 #: src/pages/McpOAuthCallback.tsx
 msgid "OAuth connection failed"
 msgstr "Échec de la connexion OAuth"
-
-#: src/pages/McpServersOverlay.tsx
-msgid "OAuth expired"
-msgstr "OAuth expiré"
 
 #. placeholder {0}: call.botName
 #: src/components/call/CallCard.tsx
@@ -3047,10 +2861,6 @@ msgstr "Ouverture de votre espace…"
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "Optional"
 msgstr "Optionnel"
-
-#: src/pages/McpServersOverlay.tsx
-msgid "Optional header value"
-msgstr "Valeur d'en-tête optionnelle"
 
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "Or connect an API key"
@@ -3212,10 +3022,6 @@ msgstr "Rappel uniquement"
 #: src/pages/ActivityList.tsx
 msgid "Recent"
 msgstr "Récent"
-
-#: src/pages/McpServersOverlay.tsx
-msgid "Reconnect OAuth"
-msgstr "Reconnecter OAuth"
 
 #: src/App.tsx
 #: src/components/ComputerUpdateProgress.tsx
@@ -3577,10 +3383,6 @@ msgstr "Rechercher des artefacts…"
 msgid "Search bots and switch conversations"
 msgstr "Rechercher des bots et changer de conversation"
 
-#: src/pages/PluginsOverlay.tsx
-msgid "Search by domain"
-msgstr "Rechercher par domaine"
-
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "Search models"
 msgstr "Rechercher des modèles"
@@ -3635,10 +3437,6 @@ msgstr "Le point de terminaison Serenity est obligatoire."
 #: src/pages/LocalSettings.tsx
 msgid "Server integrations"
 msgstr "Intégrations du serveur"
-
-#: src/pages/McpServersOverlay.tsx
-msgid "Server name"
-msgstr "Nom du serveur"
 
 #: src/components/integrations/IntegrationSetup.tsx
 #: src/pages/McpServersOverlay.tsx
@@ -3838,10 +3636,6 @@ msgstr "Arrêter l'enseignement"
 msgid "Stopped."
 msgstr "Arrêté."
 
-#: src/pages/McpServersOverlay.tsx
-msgid "Stored encrypted"
-msgstr "Stocké chiffré"
-
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "Stored securely. Never shown here."
 msgstr "Stocké en toute sécurité. Jamais affiché ici."
@@ -3992,14 +3786,6 @@ msgstr "Ce lien de réinitialisation est invalide ou a expiré"
 msgid "This server cannot be assigned without a bot."
 msgstr "Ce serveur ne peut pas être assigné sans bot."
 
-#: src/pages/McpServersOverlay.tsx
-msgid "This server did not request browser authorization."
-msgstr "Ce serveur n'a pas demandé l'autorisation du navigateur."
-
-#: src/pages/McpServersOverlay.tsx
-msgid "This server is already connected. Disconnect it first to authorize again."
-msgstr "Ce serveur est déjà connecté. Déconnectez-le d'abord pour l'autoriser à nouveau."
-
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "This subscription sign-in is not available in Rakazo yet. Use a deployment credential or choose another provider."
 msgstr "Cette connexion par abonnement n'est pas encore disponible dans Rakazo. Utilisez un identifiant de déploiement ou choisissez un autre fournisseur."
@@ -4025,10 +3811,6 @@ msgid "Today"
 msgstr "Aujourd'hui"
 
 #: src/pages/PluginsOverlay.tsx
-msgid "Tool sources"
-msgstr "Sources d'outils"
-
-#: src/pages/PluginsOverlay.tsx
 msgid "Tools"
 msgstr "Outils"
 
@@ -4039,10 +3821,6 @@ msgstr "Transcription"
 #: src/pages/ExternalConversationSettings.tsx
 msgid "Treat like a person"
 msgstr "Traiter comme une personne"
-
-#: src/pages/PluginsOverlay.tsx
-msgid "Treg token"
-msgstr "Jeton Treg"
 
 #: src/pages/Onboarding.tsx
 msgid "Try again"
@@ -4063,10 +3841,6 @@ msgstr "Non assigné"
 #: src/components/SoftwareUpdateSection.tsx
 msgid "Unavailable"
 msgstr "Indisponible"
-
-#: src/pages/PluginsOverlay.tsx
-msgid "Uninstall"
-msgstr "Désinstaller"
 
 #: src/pages/MessagingSettingsOverlay.tsx
 msgid "Unlink"
@@ -4172,14 +3946,6 @@ msgstr "Utiliser ce modèle"
 #: src/components/AskCard.tsx
 msgid "Username"
 msgstr ""
-
-#: src/pages/PluginsOverlay.tsx
-msgid "Verify and add"
-msgstr "Vérifier et ajouter"
-
-#: src/pages/PluginsOverlay.tsx
-msgid "Verifying…"
-msgstr "Vérification en cours…"
 
 #: src/pages/Artifacts.tsx
 msgid "Version"
@@ -4301,3 +4067,255 @@ msgstr "Votre nom"
 #: src/pages/ResizableSidePanel.tsx
 msgid "Resize panel"
 msgstr "Redimensionner le panneau"
+
+#: src/pages/SettingsOverlay.tsx
+msgid "Your account and password, how Rakazo looks, and the language it speaks."
+msgstr "Votre compte et mot de passe, l’apparence de Rakazo et la langue qu’il parle."
+
+#: src/pages/SettingsOverlay.tsx
+msgid "Choose the model your bots think with, and connect the providers that run it."
+msgstr "Choisissez le modèle avec lequel vos bots réfléchissent et connectez les fournisseurs qui l’exécutent."
+
+#: src/pages/SettingsOverlay.tsx
+msgid "Your bots keep shared notes in MEMORY.md. Add a provider so they can also recall past conversations."
+msgstr "Vos bots tiennent des notes partagées dans MEMORY.md. Ajoutez un fournisseur pour qu’ils se souviennent aussi des conversations passées."
+
+#: src/pages/SettingsOverlay.tsx
+msgid "Connect a voice provider so your bots can read replies aloud and understand what you say."
+msgstr "Connectez un fournisseur vocal pour que vos bots lisent leurs réponses à voix haute et comprennent ce que vous dites."
+
+#: src/pages/SettingsOverlay.tsx
+msgid "How much your bots have run, and how many tokens they have used."
+msgstr "Combien de fois vos bots se sont exécutés et combien de jetons ils ont utilisés."
+
+#: src/pages/SettingsOverlay.tsx
+msgid "Give your bots a computer to run code and work with files."
+msgstr "Donnez à vos bots un ordinateur pour exécuter du code et travailler avec des fichiers."
+
+#: src/pages/SettingsOverlay.tsx
+msgid "See which version you are running, and install new releases when they are out."
+msgstr "Voyez quelle version vous utilisez et installez les nouvelles dès leur sortie."
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Could not remove the server"
+msgstr "Impossible de retirer le serveur"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Signed in"
+msgstr "Connecté"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Needs sign-in again"
+msgstr "Reconnexion nécessaire"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Not signed in"
+msgstr "Non connecté"
+
+#: src/components/integrations/AddIntegration.tsx
+msgid "MCP server"
+msgstr "Serveur MCP"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "{botCount, plural, one {# bot} other {# bots}}"
+msgstr "{botCount, plural, one {# bot} other {# bots}}"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "All your bots"
+msgstr "Tous vos bots"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Edit {name}"
+msgstr "Modifier {name}"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Remove {name}"
+msgstr "Retirer {name}"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Could not change who can use it"
+msgstr "Impossible de modifier qui peut l'utiliser"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Could not change the sign-in"
+msgstr "Impossible de modifier la connexion"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Signed in with the service."
+msgstr "Connecté au service."
+
+#: src/pages/PluginsOverlay.tsx
+msgid "The sign-in has expired."
+msgstr "La connexion a expiré."
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Uses an access token."
+msgstr "Utilise un jeton d'accès."
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Not signed in."
+msgstr "Non connecté."
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Sign out"
+msgstr "Se déconnecter"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Signing out…"
+msgstr "Déconnexion…"
+
+#: src/components/integrations/AddIntegration.tsx
+msgid "Can use this server's tools."
+msgstr "Peut utiliser les outils de ce serveur."
+
+#: src/components/integrations/AddIntegration.tsx
+msgid "Can't use this server."
+msgstr "Ne peut pas utiliser ce serveur."
+
+#: src/components/integrations/AddIntegration.tsx
+msgid "Let {0} use this server"
+msgstr "Autoriser {0} à utiliser ce serveur"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Remove server"
+msgstr "Retirer le serveur"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Nothing connected yet. Pick an app from the catalog, or add a server of your own."
+msgstr "Rien n'est encore connecté. Choisissez une application dans le catalogue ou ajoutez votre propre serveur."
+
+#: src/pages/PluginsOverlay.tsx
+msgid "App"
+msgstr "Application"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Account name"
+msgstr "Nom du compte"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Waiting for sign-in."
+msgstr "En attente de connexion."
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Signed in."
+msgstr "Connecté."
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Rename {0}"
+msgstr "Renommer {0}"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "{0, plural, one {# tool} other {# tools}}"
+msgstr "{0, plural, one {# outil} other {# outils}}"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Show fewer"
+msgstr "Afficher moins"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Show all {0}"
+msgstr "Afficher les {0}"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Remove app"
+msgstr "Retirer l'application"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "App catalog"
+msgstr "Catalogue d'applications"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Choose the service that provides the catalog and signs people in to its apps."
+msgstr "Choisissez le service qui fournit le catalogue et gère la connexion à ses applications."
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Add a server"
+msgstr "Ajouter un serveur"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Connect an MCP server, or an OpenAPI or GraphQL endpoint, of your own."
+msgstr "Connectez votre propre serveur MCP, ou votre propre point de terminaison OpenAPI ou GraphQL."
+
+#: src/pages/PluginsOverlay.tsx
+msgid "An app from the catalog."
+msgstr "Une application du catalogue."
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Apps"
+msgstr "Applications"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "The apps and servers your bots can use."
+msgstr "Les applications et serveurs que vos bots peuvent utiliser."
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Close apps"
+msgstr "Fermer les applications"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Catalog"
+msgstr "Catalogue"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Search the catalog"
+msgstr "Rechercher dans le catalogue"
+
+#: src/components/integrations/AddIntegration.tsx
+msgid "Sign in with the service"
+msgstr "Se connecter au service"
+
+#: src/components/integrations/AddIntegration.tsx
+msgid "Could not add the integration"
+msgstr "Impossible d'ajouter l'intégration"
+
+#: src/components/integrations/AddIntegration.tsx
+msgid "Find a server"
+msgstr "Trouver un serveur"
+
+#: src/components/integrations/AddIntegration.tsx
+msgid "Results from integrations.sh."
+msgstr "Résultats de integrations.sh."
+
+#: src/components/integrations/AddIntegration.tsx
+msgid "Or add it manually"
+msgstr "Ou ajoutez-le manuellement"
+
+#: src/components/integrations/AddIntegration.tsx
+msgid "What kind of server"
+msgstr "Type de serveur"
+
+#: src/components/integrations/AddIntegration.tsx
+msgid "Server type"
+msgstr "Type de serveur"
+
+#: src/components/integrations/AddIntegration.tsx
+msgid "Fill in for:"
+msgstr "Pré-remplir pour :"
+
+#: src/components/integrations/AddIntegration.tsx
+msgid "What your bots will call it"
+msgstr "Le nom que vos bots lui donneront"
+
+#: src/components/integrations/AddIntegration.tsx
+msgid "Address"
+msgstr "Adresse"
+
+#: src/components/integrations/AddIntegration.tsx
+msgid "How to connect"
+msgstr "Mode de connexion"
+
+#: src/components/integrations/AddIntegration.tsx
+msgid "Paste the token"
+msgstr "Collez le jeton"
+
+#: src/components/integrations/AddIntegration.tsx
+msgid "Sign in from the server's page once it is added. Some services, like GitHub, only accept a token."
+msgstr "Connectez-vous depuis la page du serveur une fois qu'il est ajouté. Certains services, comme GitHub, n'acceptent qu'un jeton."
+
+#: src/components/integrations/AddIntegration.tsx
+msgid "Who can use it"
+msgstr "Qui peut l'utiliser"
+
+#: src/components/integrations/AddIntegration.tsx
+msgid "All your bots in this space can use it."
+msgstr "Tous vos bots de cet espace peuvent l'utiliser."
