@@ -569,10 +569,8 @@ export function ModelSettingsOverlay({
         type="button"
         aria-current={group.id === provider ? "true" : undefined}
         onClick={() => chooseProvider(group.id)}
-        className={`flex w-full items-center gap-3 border-b border-border px-3.5 py-3 text-start last:border-0 first:rounded-t-[11px] last:rounded-b-[11px] ${
-          group.id === provider
-            ? "bg-accent text-accent-foreground outline-2 -outline-offset-2 outline-link"
-            : "hover:bg-accent/50"
+        className={`flex w-full items-center gap-3 border-b border-border px-3.5 py-3 text-start last:border-0 ${
+          group.id === provider ? "bg-muted" : "hover:bg-accent/50"
         }`}
       >
         <ProviderLogo provider={group.id} name={group.name} />
@@ -594,6 +592,9 @@ export function ModelSettingsOverlay({
           <span className="text-[12px] text-success">
             <Trans>Connected</Trans>
           </span>
+        ) : null}
+        {group.id === provider ? (
+          <Check aria-hidden="true" className="size-4 shrink-0 text-foreground" />
         ) : null}
       </button>
     );
