@@ -283,45 +283,48 @@ export function IntegrationSetup({
                   </label>
                 </>
               ) : null}
-              <label htmlFor={`${fieldId}-key`} className="block text-sm">
-                {choice === "composio" ? t`API key` : t`Client secret`}
-                <Input
-                  size={size}
-                  id={`${fieldId}-key`}
-                  placeholder={
+              {/* The link belongs to the field above it, so it sits close. */}
+              <div className="space-y-2">
+                <label htmlFor={`${fieldId}-key`} className="block text-sm">
+                  {choice === "composio" ? t`API key` : t`Client secret`}
+                  <Input
+                    size={size}
+                    id={`${fieldId}-key`}
+                    placeholder={
+                      choice === "composio"
+                        ? t`Paste your Composio API key`
+                        : t`Paste your Pipedream client secret`
+                    }
+                    className="mt-2"
+                    type="password"
+                    value={apiKey}
+                    onChange={(event) => setApiKey(event.target.value)}
+                    autoComplete="new-password"
+                  />
+                </label>
+                <a
+                  className="inline-block text-sm text-muted-foreground underline"
+                  href={
                     choice === "composio"
-                      ? t`Paste your Composio API key`
-                      : t`Paste your Pipedream client secret`
+                      ? "https://dashboard.composio.dev"
+                      : "https://pipedream.com/docs/connect/mcp/developers"
                   }
-                  className="mt-2"
-                  type="password"
-                  value={apiKey}
-                  onChange={(event) => setApiKey(event.target.value)}
-                  autoComplete="new-password"
-                />
-              </label>
-              <a
-                className="inline-block text-sm text-muted-foreground underline"
-                href={
-                  choice === "composio"
-                    ? "https://dashboard.composio.dev"
-                    : "https://pipedream.com/docs/connect/mcp/developers"
-                }
-                target="_blank"
-                rel="noreferrer"
-              >
-                <Trans>Get credentials</Trans>
-              </a>
-              {!onDone ? (
-                <Button
-                  size={size}
-                  className="ml-3"
-                  disabled={busy || !credentialsReady}
-                  onClick={() => void saveProvider()}
+                  target="_blank"
+                  rel="noreferrer"
                 >
-                  {busy ? t`Connecting…` : t`Connect`}
-                </Button>
-              ) : null}
+                  <Trans>Get credentials</Trans>
+                </a>
+                {!onDone ? (
+                  <Button
+                    size={size}
+                    className="ml-3"
+                    disabled={busy || !credentialsReady}
+                    onClick={() => void saveProvider()}
+                  >
+                    {busy ? t`Connecting…` : t`Connect`}
+                  </Button>
+                ) : null}
+              </div>
             </>
           ) : state && !configured ? (
             <p className="text-sm text-muted-foreground">
