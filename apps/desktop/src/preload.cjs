@@ -1,5 +1,25 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
+// The shell draws its own controls over this page (see drag-holes.ts). Where the page marks
+// those spots as window drag areas, the window would take the clicks, so they are marked as
+// not draggable. Elements later in the document override earlier drag areas.
+let dragHoles = null;
+ipcRenderer.on("desktop.dragHoles", (_event, rects) => {
+  if (document.body === null) return;
+  if (dragHoles === null) {
+    dragHoles = document.createElement("div");
+    dragHoles.setAttribute("aria-hidden", "true");
+  }
+  dragHoles.replaceChildren(
+    ...rects.map((rect) => {
+      const hole = document.createElement("div");
+      hole.style.cssText = `position:fixed;left:${rect.x}px;top:${rect.y}px;width:${rect.width}px;height:${rect.height}px;pointer-events:none;-webkit-app-region:no-drag`;
+      return hole;
+    }),
+  );
+  document.body.append(dragHoles);
+});
+
 contextBridge.exposeInMainWorld("rakazoDesktop", {
   platform: process.platform,
   localSettings: {

@@ -1,28 +1,37 @@
 export interface ServerMonitorDeps {
   /** True when the server answers. */
   healthy: () => Promise<boolean>;
-  /** Called when the server stops answering, and again when it answers after that. */
-  onReachable: (reachable: boolean) => void;
+  /** Called once when the server stops answering. */
+  onDropped: () => void;
   wait?: (ms: number) => Promise<void>;
 }
 
 const CHECK_INTERVAL_MS = 15_000;
-/** While the server is not answering, check more often so recovery shows up quickly. */
-const RETRY_INTERVAL_MS = 3_000;
 /** The server counts as unreachable after this many failed checks in a row. */
 const MISSES = 2;
 
 /**
  * Watches a server the app reaches directly (no tunnel) so the app can show when the
- * connection drops and when it comes back. One slow check is not reported as a drop.
+ * connection drops. One slow check is not reported as a drop. After a drop it stops checking:
+ * reconnecting is the user's call, through `check`.
  */
 export class ServerMonitor {
   private readonly stopped = new AbortController();
+  private watching = false;
 
   constructor(private readonly deps: ServerMonitorDeps) {}
 
   start(): void {
+    if (this.watching || this.isStopped) return;
+    this.watching = true;
     void this.watch();
+  }
+
+  /** Checks the server once; when it answers, watching starts again. */
+  async check(): Promise<boolean> {
+    const healthy = await this.deps.healthy();
+    if (healthy) this.start();
+    return healthy;
   }
 
   stop(): void {
@@ -35,22 +44,14 @@ export class ServerMonitor {
 
   private async watch(): Promise<void> {
     const wait = this.deps.wait ?? defaultWait;
-    let reachable = true;
     let misses = 0;
-    while (!this.isStopped) {
-      await wait(reachable ? CHECK_INTERVAL_MS : RETRY_INTERVAL_MS);
+    while (!this.isStopped && misses < MISSES) {
+      await wait(CHECK_INTERVAL_MS);
       if (this.isStopped) return;
-      const healthy = await this.deps.healthy();
-      if (this.isStopped) return;
-      misses = healthy ? 0 : misses + 1;
-      if (reachable && misses >= MISSES) {
-        reachable = false;
-        this.deps.onReachable(false);
-      } else if (!reachable && healthy) {
-        reachable = true;
-        this.deps.onReachable(true);
-      }
+      misses = (await this.deps.healthy()) ? 0 : misses + 1;
     }
+    this.watching = false;
+    if (!this.isStopped) this.deps.onDropped();
   }
 }
 

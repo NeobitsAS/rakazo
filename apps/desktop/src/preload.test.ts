@@ -83,9 +83,9 @@ describe("desktop preload bridge", () => {
   });
 
   it("forwards captured codes without leaking the IPC event to the renderer", () => {
-    const listeners: Array<(event: unknown, callback: unknown) => void> = [];
-    const on = vi.fn((_channel: string, handler: (event: unknown, callback: unknown) => void) => {
-      listeners.push(handler);
+    const listeners = new Map<string, (event: unknown, callback: unknown) => void>();
+    const on = vi.fn((channel: string, handler: (event: unknown, callback: unknown) => void) => {
+      listeners.set(channel, handler);
     });
     const off = vi.fn();
     const { exposeInMainWorld } = runPreload("preload.cjs", { on, off });
@@ -95,7 +95,10 @@ describe("desktop preload bridge", () => {
     const unsubscribe = bridge.oauth.onCallback((callback) => received.push(callback));
 
     expect(on).toHaveBeenCalledWith("desktop.oauth.callback", expect.any(Function));
-    listeners[0]?.({ sender: "ipc-event" }, { code: "ac_123", state: "verifier_456" });
+    listeners.get("desktop.oauth.callback")?.(
+      { sender: "ipc-event" },
+      { code: "ac_123", state: "verifier_456" },
+    );
     expect(received).toEqual([{ code: "ac_123", state: "verifier_456" }]);
 
     unsubscribe();

@@ -1,5 +1,6 @@
 import path from "node:path";
 import { type BrowserWindow, WebContentsView } from "electron";
+import { DragHoles } from "./drag-holes.js";
 import { type PillSize, parsePillSize, pillBounds } from "./pill-layout.js";
 
 /** What the pill says about the connection to the open server; hidden while all is well. */
@@ -23,7 +24,8 @@ export class ConnectionPill {
 
   constructor(
     private readonly win: BrowserWindow,
-    onActivate: () => void,
+    /** The refresh button on "Connection lost": tries to connect again. */
+    reconnect: () => void,
   ) {
     this.view = new WebContentsView({
       webPreferences: {
@@ -45,9 +47,10 @@ export class ConnectionPill {
       this.size = parsePillSize(width, height);
       this.place();
       if (this.size !== null && this.status !== "hidden") this.view.setVisible(true);
+      this.syncDragHole();
     });
-    contents.ipc.on("desktop.pill.activate", () => {
-      if (this.status === "lost") onActivate();
+    contents.ipc.on("desktop.pill.reconnect", () => {
+      if (this.status === "lost") reconnect();
     });
     win.on("resize", () => this.place());
     win.once("closed", () => {
@@ -69,7 +72,10 @@ export class ConnectionPill {
       }
     });
     if (status === "hidden") {
-      this.hideTimer = setTimeout(() => this.view.setVisible(false), FADE_MS);
+      this.hideTimer = setTimeout(() => {
+        this.view.setVisible(false);
+        this.syncDragHole();
+      }, FADE_MS);
     } else if (status === "connected") {
       this.hideTimer = setTimeout(() => this.show("hidden"), CONNECTED_MS);
     }
@@ -78,5 +84,14 @@ export class ConnectionPill {
   private place() {
     if (this.size === null || this.win.isDestroyed()) return;
     this.view.setBounds(pillBounds(this.win.getContentBounds().width, this.size));
+    this.syncDragHole();
+  }
+
+  private syncDragHole() {
+    if (this.win.isDestroyed()) return;
+    DragHoles.for(this.win).set(
+      "connection-pill",
+      this.view.getVisible() ? this.view.getBounds() : null,
+    );
   }
 }

@@ -42,6 +42,7 @@ import {
 } from "./renderer-assets.js";
 import { ServerMonitor } from "./server-monitor.js";
 import { installSessionPermissions } from "./session-permissions.js";
+import { SettingsButton } from "./settings-button.js";
 import {
   DEFAULT_LOCAL_WEB_URL,
   desktopStackImageTag,
@@ -91,8 +92,6 @@ let tunnel: { supervisor: TunnelSupervisor; serverUrl: string } | null = null;
 /** Watches the open (or opening) server when it is reached directly, without a tunnel. */
 let serverWatch: { monitor: ServerMonitor; serverUrl: string } | null = null;
 const connectionPills = new WeakMap<BrowserWindow, ConnectionPill>();
-/** Why the connection was lost, shown in setup when the "Connection lost" pill is clicked. */
-let connectionLostMessage: string | null = null;
 let setupError: string | null = null;
 let setupSaveInProgress = false;
 let openAppPromise: Promise<boolean> | null = null;
@@ -276,6 +275,7 @@ function createWindow(url: string, partition: string | null) {
   mainWindow = win;
   appWindowTargets.set(win, url);
   const targetOrigin = safeOrigin(url);
+  if (targetOrigin !== null) new SettingsButton(win, targetOrigin, () => showSetupWindow());
   // Intentional OAuth flows open the provider's authorize page via a named
   // window; give those and same-origin popups a normal frame. Everything else
   // opens in the system browser so a connected server cannot navigate us away.
@@ -745,10 +745,10 @@ function installApplicationMenu() {
             enabled: false,
           },
           {
-            id: "restart-tunnel",
-            label: "Restart Tunnel",
+            id: "reconnect-tunnel",
+            label: "Reconnect Tunnel",
             click: () => {
-              void restartTunnel();
+              void reconnect();
             },
           },
         ];
@@ -805,8 +805,7 @@ const TUNNEL_MENU_LABELS: Record<TunnelPhase, string> = {
   starting: "Tunnel: Starting…",
   "signing-in": "Tunnel: Signing In…",
   connected: "Tunnel: Connected",
-  reconnecting: "Tunnel: Reconnecting…",
-  failed: "Tunnel: Stopped",
+  failed: "Tunnel: Disconnected",
   stopped: "Tunnel: Off",
 };
 
@@ -861,9 +860,9 @@ async function connectServer(setup: DesktopSetup | null): Promise<string | null>
 function watchServer(serverUrl: string) {
   const monitor: ServerMonitor = new ServerMonitor({
     healthy: async () => (await probeServer(serverUrl)).ok,
-    onReachable: (reachable) => {
+    onDropped: () => {
       if (serverWatch?.monitor !== monitor) return;
-      showConnectionStatus(serverUrl, reachable ? "connected" : "reconnecting");
+      showConnectionStatus(serverUrl, "lost");
     },
   });
   serverWatch = { monitor, serverUrl };
@@ -874,7 +873,6 @@ const TUNNEL_CONNECTION_STATUS: Record<TunnelPhase, ConnectionStatus> = {
   starting: "reconnecting",
   "signing-in": "reconnecting",
   connected: "connected",
-  reconnecting: "reconnecting",
   failed: "lost",
   stopped: "hidden",
 };
@@ -883,9 +881,6 @@ function onTunnelState(supervisor: TunnelSupervisor, state: TunnelState) {
   // A replaced tunnel can still report while it winds down.
   if (tunnel?.supervisor !== supervisor) return;
   installApplicationMenu();
-  if (state.phase === "failed") {
-    connectionLostMessage = `The tunnel stopped. ${state.message ?? ""}`.trim();
-  }
   showConnectionStatus(tunnel.serverUrl, TUNNEL_CONNECTION_STATUS[state.phase]);
 }
 
@@ -900,24 +895,31 @@ function showConnectionStatus(serverUrl: string | null, status: ConnectionStatus
   let pill = connectionPills.get(win);
   if (pill === undefined) {
     if (status === "hidden") return;
-    pill = new ConnectionPill(win, () => showSetupWindow(connectionLostMessage));
+    pill = new ConnectionPill(win, () => void reconnect());
     connectionPills.set(win, pill);
   }
   pill.show(status);
 }
 
-async function restartTunnel() {
-  if (tunnel === null) return;
-  if (tunnel.supervisor.state().phase !== "failed") {
-    tunnel.supervisor.restart();
+/**
+ * Tries the open server again, once: the pill's refresh button and the Reconnect menu item.
+ * Nothing reconnects in the background; a failure leaves the pill on "Connection lost".
+ */
+async function reconnect() {
+  if (tunnel !== null) {
+    // A fresh tunnel, with the sign-in command if the first attempt fails.
+    const setup = currentSetup;
+    tunnel.supervisor.stop();
+    tunnel = null;
+    await connectServer(setup);
     return;
   }
-  // Supervision ends with a failure, so start over from the saved setup.
-  const setup = currentSetup;
-  tunnel.supervisor.stop();
-  tunnel = null;
-  const error = await connectServer(setup);
-  if (error !== null) showSetupWindow(error);
+  if (serverWatch === null) return;
+  const { monitor, serverUrl } = serverWatch;
+  showConnectionStatus(serverUrl, "reconnecting");
+  const healthy = await monitor.check();
+  if (serverWatch?.monitor !== monitor) return;
+  showConnectionStatus(serverUrl, healthy ? "connected" : "lost");
 }
 
 /** Setup IPC must only answer the setup window, never a connected Rakazo server. */

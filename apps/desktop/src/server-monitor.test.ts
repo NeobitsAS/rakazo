@@ -1,16 +1,17 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ServerMonitor } from "./server-monitor.js";
 
-function harness() {
-  const changes: boolean[] = [];
+function harness(results: boolean[] = []) {
   const health = { ok: true };
+  const onDropped = vi.fn();
+  const healthy = vi.fn(async () => results.shift() ?? health.ok);
   const monitor = new ServerMonitor({
-    healthy: async () => health.ok,
-    onReachable: (reachable) => changes.push(reachable),
+    healthy,
+    onDropped,
     // Yield to the event loop so checks run back to back without real delays.
     wait: () => new Promise((resolve) => setImmediate(resolve)),
   });
-  return { monitor, changes, health };
+  return { monitor, health, onDropped, healthy };
 }
 
 let active: ServerMonitor | null = null;
@@ -21,58 +22,54 @@ afterEach(() => {
 
 describe("ServerMonitor", () => {
   it("stays quiet while the server answers", async () => {
-    const { monitor, changes } = harness();
+    const { monitor, onDropped } = harness();
     active = monitor;
 
     monitor.start();
     await new Promise((resolve) => setTimeout(resolve, 20));
 
-    expect(changes).toEqual([]);
-  });
-
-  it("reports a drop once the server stops answering, then its return", async () => {
-    const { monitor, changes, health } = harness();
-    active = monitor;
-    monitor.start();
-
-    health.ok = false;
-    await vi.waitFor(() => expect(changes).toEqual([false]));
-    health.ok = true;
-
-    await vi.waitFor(() => expect(changes).toEqual([false, true]));
+    expect(onDropped).not.toHaveBeenCalled();
   });
 
   it("does not report a single failed check", async () => {
-    const changes: boolean[] = [];
     const results = [false, true];
-    const monitor = new ServerMonitor({
-      healthy: async () => results.shift() ?? true,
-      onReachable: (reachable) => changes.push(reachable),
-      wait: () => new Promise((resolve) => setImmediate(resolve)),
-    });
+    const { monitor, onDropped } = harness(results);
     active = monitor;
 
     monitor.start();
     await vi.waitFor(() => expect(results).toEqual([]));
     await new Promise((resolve) => setTimeout(resolve, 20));
 
-    expect(changes).toEqual([]);
+    expect(onDropped).not.toHaveBeenCalled();
   });
 
-  it("stops checking once stopped", async () => {
-    const healthy = vi.fn(async () => false);
-    const monitor = new ServerMonitor({
-      healthy,
-      onReachable: () => {},
-      wait: () => new Promise((resolve) => setImmediate(resolve)),
-    });
+  it("reports a drop once, then stops checking", async () => {
+    const { monitor, health, onDropped, healthy } = harness();
+    active = monitor;
     monitor.start();
-    await vi.waitFor(() => expect(healthy).toHaveBeenCalled());
 
-    monitor.stop();
+    health.ok = false;
+    await vi.waitFor(() => expect(onDropped).toHaveBeenCalledTimes(1));
     const checks = healthy.mock.calls.length;
     await new Promise((resolve) => setTimeout(resolve, 20));
 
-    expect(healthy.mock.calls.length).toBeLessThanOrEqual(checks + 1);
+    expect(healthy.mock.calls.length).toBe(checks);
+  });
+
+  it("watches again once a check on request finds the server back", async () => {
+    const { monitor, health, onDropped, healthy } = harness();
+    active = monitor;
+    monitor.start();
+    health.ok = false;
+    await vi.waitFor(() => expect(onDropped).toHaveBeenCalledTimes(1));
+
+    await expect(monitor.check()).resolves.toBe(false);
+    health.ok = true;
+    await expect(monitor.check()).resolves.toBe(true);
+    const checks = healthy.mock.calls.length;
+
+    await vi.waitFor(() => expect(healthy.mock.calls.length).toBeGreaterThan(checks));
+    health.ok = false;
+    await vi.waitFor(() => expect(onDropped).toHaveBeenCalledTimes(2));
   });
 });

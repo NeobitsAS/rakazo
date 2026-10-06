@@ -7,7 +7,7 @@ const LABELS = {
 const bridge = window.rakazoPill;
 const pill = document.getElementById("pill");
 const label = document.getElementById("pill-label");
-const settings = document.getElementById("pill-settings");
+const reconnect = document.getElementById("pill-reconnect");
 const theme = window.matchMedia("(prefers-color-scheme: light)");
 
 function applyTheme() {
@@ -24,5 +24,5 @@ function render(status) {
 
 applyTheme();
 theme.addEventListener("change", applyTheme);
-settings.addEventListener("click", () => bridge.activate());
+reconnect.addEventListener("click", () => bridge.reconnect());
 bridge.onStatus(render);
