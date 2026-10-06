@@ -72,10 +72,13 @@ export function PluginsOverlay({
   onClose,
   onOpenMcp,
   activeBotId,
+  isDeploymentOwner = false,
 }: {
   onClose: () => void;
   onOpenMcp?: () => void;
   activeBotId?: string;
+  /** The owner sets up the catalog's provider (Composio or Pipedream) right here. */
+  isDeploymentOwner?: boolean;
 }) {
   const { t } = useLingui();
   const [setupOpen, setSetupOpen] = useState(false);
@@ -108,6 +111,13 @@ export function PluginsOverlay({
   const [toolsOpen, setToolsOpen] = useState(true);
   const [toolsTick, setToolsTick] = useState(0);
   const connectionAttempt = useRef<AbortController | null>(null);
+
+  /** A provider was just set up: list its apps. */
+  function refreshAfterSetup() {
+    void refresh().catch((err: unknown) =>
+      setCatalogError(err instanceof Error ? err.message : t`Could not load integrations`),
+    );
+  }
 
   async function refresh() {
     const [items, installs, rows, catalogFeed] = await Promise.all([
@@ -733,9 +743,25 @@ export function PluginsOverlay({
               {showFeatured ? (
                 <div className="mb-6" data-testid="featured-connectors">
                   {!loading && catalog.length === 0 ? (
-                    <p className="text-[13.5px] leading-6 text-muted-foreground/80">
-                      <Trans>Configure a plugin catalog on the server to connect apps.</Trans>
-                    </p>
+                    isDeploymentOwner ? (
+                      <div className="space-y-4">
+                        <p className="text-[13.5px] leading-6 text-muted-foreground/80">
+                          <Trans>Set up Composio or Pipedream to bring their apps here.</Trans>
+                        </p>
+                        <IntegrationSetup
+                          serverSetup
+                          managedOnly
+                          layout="page"
+                          onSaved={refreshAfterSetup}
+                        />
+                      </div>
+                    ) : (
+                      <p className="text-[13.5px] leading-6 text-muted-foreground/80">
+                        <Trans>
+                          Ask the server owner to set up Composio or Pipedream to connect apps.
+                        </Trans>
+                      </p>
+                    )
                   ) : (
                     <div className="grid grid-cols-2 gap-2">
                       {featuredTiles.map((tile) => {
@@ -835,6 +861,23 @@ export function PluginsOverlay({
                 </summary>
 
                 <div className="mt-4 space-y-4">
+                  {isDeploymentOwner && catalog.length > 0 ? (
+                    <Card data-testid="integrations-server-setup">
+                      <CardHeader>
+                        <CardTitle>
+                          <Trans>Server integrations</Trans>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <IntegrationSetup
+                          serverSetup
+                          managedOnly
+                          layout="page"
+                          onSaved={refreshAfterSetup}
+                        />
+                      </CardContent>
+                    </Card>
+                  ) : null}
                   {catalogFeedEnabled ? (
                     <Card data-testid="integrations-catalog-feed">
                       <CardHeader>

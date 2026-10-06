@@ -17,6 +17,10 @@ msgstr ""
 msgid " (unread)"
 msgstr " (unread)"
 
+#: src/pages/PluginsOverlay.tsx
+msgid "Ask the server owner to set up Composio or Pipedream to connect apps."
+msgstr "Ask the server owner to set up Composio or Pipedream to connect apps."
+
 #: src/pages/Onboarding.tsx
 msgid "Choose your default model"
 msgstr "Choose your default model"
@@ -80,6 +84,10 @@ msgstr "Results from integrations.sh"
 #: src/components/integrations/IntegrationSetup.tsx
 msgid "Search for an app, e.g. GitHub or Linear"
 msgstr "Search for an app, e.g. GitHub or Linear"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Set up Composio or Pipedream to bring their apps here."
+msgstr "Set up Composio or Pipedream to bring their apps here."
 
 #: src/pages/Onboarding.tsx
 msgid "Try your agent"
@@ -1102,10 +1110,6 @@ msgstr "Computers"
 #: src/components/ComputersUnavailableHint.tsx
 msgid "Computers are off. Set SANDBOX_PROVIDER=docker with SANDBOX_SUPERVISOR_TOKEN, or set SANDBOX_PROVIDER to e2b, daytona, or box with its API key. Recreate the stack after changing .env."
 msgstr "Computers are off. Set SANDBOX_PROVIDER=docker with SANDBOX_SUPERVISOR_TOKEN, or set SANDBOX_PROVIDER to e2b, daytona, or box with its API key. Recreate the stack after changing .env."
-
-#: src/pages/PluginsOverlay.tsx
-msgid "Configure a plugin catalog on the server to connect apps."
-msgstr "Configure a plugin catalog on the server to connect apps."
 
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "Configured by deployment"

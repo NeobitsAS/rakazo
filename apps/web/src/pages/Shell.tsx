@@ -4389,6 +4389,7 @@ export function ShellPage() {
         {pluginsOpen ? (
           <PluginsOverlay
             activeBotId={activeBotId.current}
+            isDeploymentOwner={bootstrapMe?.isDeploymentOwner === true}
             onClose={() => setPluginsOpen(false)}
             onOpenMcp={() => {
               setPluginsOpen(false);

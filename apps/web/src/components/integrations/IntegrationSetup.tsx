@@ -18,6 +18,7 @@ export function IntegrationSetup({
   botId,
   onServerConnected,
   onServerDisconnected,
+  onSaved,
   onBack,
   finishingLabel = null,
   finishError = null,
@@ -31,6 +32,8 @@ export function IntegrationSetup({
   botId?: string;
   onServerConnected?: (id: string) => void;
   onServerDisconnected?: (id: string) => void;
+  /** A provider's credentials were saved (its apps can be listed now). */
+  onSaved?: () => void;
   /** Shown as a Back button in the page layout. */
   onBack?: () => void;
   /** Shown on Continue while the page acts on it (opening the chat, say); the footer waits. */
@@ -128,6 +131,7 @@ export function IntegrationSetup({
       );
       setApiKey("");
       setState(await rpc.integrationSetup.get());
+      onSaved?.();
       onDone?.();
     });
   }
