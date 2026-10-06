@@ -1,20 +1,9 @@
 import { useLingui } from "@lingui/react/macro";
 import type { AvatarStyle, SpaceMemoryConfig } from "@rakazo/contracts";
 import { Button, Dialog, DialogClose, DialogContent, DialogTitle } from "@rakazo/ui-web";
-import {
-  Brain,
-  CloudDownload,
-  Cpu,
-  Gauge,
-  Monitor,
-  Plug,
-  Settings,
-  Volume2,
-  XIcon,
-} from "lucide-react";
+import { Brain, CloudDownload, Cpu, Gauge, Monitor, Settings, Volume2, XIcon } from "lucide-react";
 import { type ComponentType, useEffect, useRef, useState } from "react";
 import { computersAreUnavailable } from "../components/ComputersUnavailableHint";
-import { IntegrationSetup } from "../components/integrations/IntegrationSetup";
 import {
   ComputerSettingsPanel,
   GeneralSettingsPanels,
@@ -30,7 +19,6 @@ export type SettingsSection =
   | "models"
   | "memory"
   | "voice"
-  | "integrations"
   | "usage"
   | "computer"
   | "updates";
@@ -96,10 +84,6 @@ export function SettingsOverlay({
     { id: "models", label: t`Models`, icon: Cpu },
     { id: "memory", label: t`Memory`, icon: Brain },
     { id: "voice", label: t`Voice`, icon: Volume2 },
-    // Server-wide integrations are the deployment owner's to set up.
-    ...(isDeploymentOwner
-      ? [{ id: "integrations" as const, label: t`Server integrations`, icon: Plug }]
-      : []),
     { id: "usage", label: t`Usage`, icon: Gauge },
     ...(showComputer ? [{ id: "computer" as const, label: t`Computer`, icon: Monitor }] : []),
     { id: "updates", label: t`Updates`, icon: CloudDownload },
@@ -221,9 +205,6 @@ export function SettingsOverlay({
                     onOpenMessaging ? () => leaveSettings(onOpenMessaging) : undefined
                   }
                 />
-              ) : null}
-              {section === "integrations" && isDeploymentOwner ? (
-                <IntegrationSetup serverSetup layout="page" />
               ) : null}
               {section === "usage" ? (
                 <UsageSettingsPanel usage={usage} panelRef={usageRef} />

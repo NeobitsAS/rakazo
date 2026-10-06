@@ -53,6 +53,10 @@ msgstr "无法检查服务器的凭据"
 msgid "Uses this server's own {hostCredentialSource} credentials to access {selectedProviderName}."
 msgstr "使用此服务器自己的 {hostCredentialSource} 凭据访问 {selectedProviderName}。"
 
+#: src/pages/PluginsOverlay.tsx
+msgid "Ask the server owner to set up Composio or Pipedream to connect apps."
+msgstr "请服务器所有者设置 Composio 或 Pipedream 以连接应用。"
+
 #: src/pages/Onboarding.tsx
 msgid "Choose your default model"
 msgstr "选择你的默认模型"
@@ -116,6 +120,10 @@ msgstr "结果来自 integrations.sh"
 #: src/components/integrations/IntegrationSetup.tsx
 msgid "Search for an app, e.g. GitHub or Linear"
 msgstr "搜索应用，例如 GitHub 或 Linear"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Set up Composio or Pipedream to bring their apps here."
+msgstr "设置 Composio 或 Pipedream，即可在这里使用它们的应用。"
 
 #: src/pages/Onboarding.tsx
 msgid "Try your agent"
@@ -1138,10 +1146,6 @@ msgstr "电脑"
 #: src/components/ComputersUnavailableHint.tsx
 msgid "Computers are off. Set SANDBOX_PROVIDER=docker with SANDBOX_SUPERVISOR_TOKEN, or set SANDBOX_PROVIDER to e2b, daytona, or box with its API key. Recreate the stack after changing .env."
 msgstr "电脑未开启。请设置 SANDBOX_PROVIDER=docker 并提供 SANDBOX_SUPERVISOR_TOKEN，或将 SANDBOX_PROVIDER 设为 e2b、daytona 或 box 并提供对应 API 密钥。更改 .env 后请重建环境。"
-
-#: src/pages/PluginsOverlay.tsx
-msgid "Configure a plugin catalog on the server to connect apps."
-msgstr ""
 
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "Configured by deployment"

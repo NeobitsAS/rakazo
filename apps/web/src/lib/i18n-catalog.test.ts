@@ -273,7 +273,7 @@ describe("lingui catalogs", () => {
     );
     expect(catalog).toContain('msgstr "{0, plural, one {# modèle} other {# modèles}}"');
     expect(catalog).toContain(
-      'msgid "Configure a plugin catalog on the server to connect apps."\nmsgstr "Configurez un catalogue de plugins sur le serveur pour connecter des applications."',
+      'msgid "Ask the server owner to set up Composio or Pipedream to connect apps."\nmsgstr "Demandez au propriétaire du serveur de configurer Composio ou Pipedream pour connecter des applications."',
     );
   });
 
