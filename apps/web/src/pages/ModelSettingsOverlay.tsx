@@ -37,6 +37,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  Disclosure,
   Field,
   FieldLabel,
   Input,
@@ -599,8 +600,10 @@ export function ModelSettingsOverlay({
         type="button"
         aria-current={group.id === provider ? "true" : undefined}
         onClick={() => chooseProvider(group.id)}
-        className={`flex w-full items-center gap-3 border-b border-border px-3.5 py-3 text-start last:border-0 ${
-          group.id === provider ? "bg-accent text-accent-foreground" : "hover:bg-accent/50"
+        className={`flex w-full items-center gap-3 border-b border-border px-3.5 py-3 text-start last:border-0 first:rounded-t-[11px] last:rounded-b-[11px] ${
+          group.id === provider
+            ? "bg-accent text-accent-foreground outline-2 -outline-offset-2 outline-link"
+            : "hover:bg-accent/50"
         }`}
       >
         <ProviderLogo provider={group.id} name={group.name} />
@@ -922,10 +925,7 @@ export function ModelSettingsOverlay({
   // OpenAI-compatible connections keep an optional key behind a disclosure.
   const compatKeyBlock = isOpenAiCompatible ? (
     <div className="mt-5">
-      <details className="text-[13.5px] text-muted-foreground">
-        <summary className="w-fit cursor-pointer select-none">
-          <Trans>API key</Trans>
-        </summary>
+      <Disclosure className="text-[13.5px] text-muted-foreground" summary={<Trans>API key</Trans>}>
         <Input
           aria-label={t`API key`}
           value={apiKey}
@@ -935,7 +935,7 @@ export function ModelSettingsOverlay({
           autoComplete="new-password"
           className="mt-2 text-foreground"
         />
-      </details>
+      </Disclosure>
       <Button
         type="button"
         variant="secondary"
@@ -1102,14 +1102,14 @@ export function ModelSettingsOverlay({
                           autoComplete="off"
                         />
                       </Field>
-                      <details className="mt-2 text-[13px] leading-[1.5] text-muted-foreground">
-                        <summary className="w-fit cursor-pointer select-none">
-                          <Trans>Setup help</Trans>
-                        </summary>
+                      <Disclosure
+                        className="mt-2 text-[13px] leading-[1.5] text-muted-foreground"
+                        summary={<Trans>Setup help</Trans>}
+                      >
                         <p className="mt-1">
                           {t`Paste the OpenAI-compatible address from your server. Rakazo adds /v1 if needed.`}
                         </p>
-                      </details>
+                      </Disclosure>
                       <div className="mt-3 flex items-center gap-2">
                         <Button
                           type="button"

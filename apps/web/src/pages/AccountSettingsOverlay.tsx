@@ -3,6 +3,7 @@ import type { AvatarStyle } from "@rakazo/contracts";
 import {
   BotAvatar,
   Button,
+  Disclosure,
   Field,
   FieldGroup,
   FieldLabel,
@@ -11,6 +12,7 @@ import {
   SwitchField,
   Toggle,
 } from "@rakazo/ui-web";
+import { Check } from "lucide-react";
 import { type RefObject, useId, useRef, useState } from "react";
 import { ApprovalRulesSettings } from "../components/ApprovalRulesSettings";
 import { SuccessPop } from "../components/ai/primitives";
@@ -155,7 +157,7 @@ export function GeneralSettingsPanels({
               disabled={avatarPending}
               onPressedChange={() => void chooseAvatarStyle(style)}
               data-testid={`avatar-style-${style}`}
-              className="h-auto justify-start gap-3 px-3.5 py-3 text-[14px] font-normal"
+              className="h-auto justify-start gap-3 px-3.5 py-3 text-[14px] font-normal aria-pressed:ring-2 aria-pressed:ring-link"
             >
               <BotAvatar
                 color="#D9508A"
@@ -163,7 +165,12 @@ export function GeneralSettingsPanels({
                 size={32}
                 variant={style}
               />
-              <span>{style === "robot" ? <Trans>Robot</Trans> : <Trans>Organic</Trans>}</span>
+              <span className="flex-1 text-start">
+                {style === "robot" ? <Trans>Robot</Trans> : <Trans>Organic</Trans>}
+              </span>
+              {style === avatarStyle ? (
+                <Check aria-hidden="true" className="size-4 shrink-0 text-foreground" />
+              ) : null}
             </Toggle>
           ))}
         </div>
@@ -174,15 +181,11 @@ export function GeneralSettingsPanels({
         ) : null}
       </section>
 
-      <details data-testid="advanced-settings" className="group">
-        <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-4 text-[14px] text-foreground/75">
-          <span className="block text-[15px] text-foreground">
-            <Trans>Advanced</Trans>
-          </span>
-          <span aria-hidden="true" className="transition-transform group-open:rotate-90">
-            ›
-          </span>
-        </summary>
+      <Disclosure
+        data-testid="advanced-settings"
+        summaryClassName="py-4 text-[15px] font-medium text-foreground"
+        summary={<Trans>Advanced</Trans>}
+      >
         <div className="flex flex-col gap-4 pt-1 pb-5">
           <SwitchField
             data-testid="response-streaming-toggle"
@@ -204,7 +207,7 @@ export function GeneralSettingsPanels({
           />
           <ApprovalRulesSettings />
         </div>
-      </details>
+      </Disclosure>
     </div>
   );
 }

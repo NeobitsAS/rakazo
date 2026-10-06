@@ -11,7 +11,7 @@ import {
   Input,
   OptionSelect,
 } from "@rakazo/ui-web";
-import { XIcon } from "lucide-react";
+import { Check, XIcon } from "lucide-react";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { rpc } from "../lib/rpc";
 
@@ -251,6 +251,9 @@ export function VoiceSettingsOverlay({
                     <span className="text-[12px] text-success">
                       <Trans>Connected</Trans>
                     </span>
+                  ) : null}
+                  {entry.id === provider ? (
+                    <Check aria-hidden="true" className="size-4 shrink-0 text-foreground" />
                   ) : null}
                 </button>
               );

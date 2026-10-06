@@ -22,6 +22,7 @@ import {
 } from "@rakazo/core";
 import {
   Button,
+  Disclosure,
   Field,
   FieldLabel,
   Input,
@@ -463,21 +464,15 @@ export function BotSettings({
           }}
         />
       </div>
-      <details
+      <Disclosure
         data-testid="bot-settings-advanced"
-        className="group mt-5"
+        className="mt-5"
+        summaryClassName="text-[14px] text-muted-foreground"
+        summary={<Trans>Advanced</Trans>}
         onToggle={(event) => {
           if (event.currentTarget.open) setAdvancedOpened(true);
         }}
       >
-        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-[14px] text-muted-foreground">
-          <span className="text-muted-foreground">
-            <Trans>Advanced</Trans>
-          </span>
-          <span aria-hidden="true" className="transition-transform group-open:rotate-90">
-            ›
-          </span>
-        </summary>
         <ComputerModePicker value={computerMode} onChange={setComputerMode} />
         <Suspense fallback={null}>
           <ScratchpadSection botId={bot.id} />
@@ -585,7 +580,7 @@ export function BotSettings({
           </Field>
         ) : null}
         {advancedOpened ? <BotCredentialsSection botId={bot.id} /> : null}
-      </details>
+      </Disclosure>
       {error ? <p className="mt-2 text-[13px] text-destructive">{error}</p> : null}
       <div className="mt-5 flex flex-col items-start gap-3">
         <Button

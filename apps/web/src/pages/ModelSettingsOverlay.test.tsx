@@ -87,6 +87,19 @@ vi.mock("@rakazo/ui-web", () => {
     DialogDescription: Pass,
     DialogHeader: Pass,
     DialogTitle: Pass,
+    Disclosure: ({
+      summary,
+      children,
+      ...props
+    }: Omit<ComponentProps<"details">, "children"> & {
+      summary: ReactNode;
+      children?: ReactNode;
+    }) => (
+      <details {...props}>
+        <summary>{summary}</summary>
+        {children}
+      </details>
+    ),
     Field: Pass,
     FieldLabel: ({ children, htmlFor }: { children?: ReactNode; htmlFor?: string }) => (
       <label htmlFor={htmlFor}>{children}</label>
