@@ -36,6 +36,9 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  box-sizing: border-box;
+  /* Holds the drag area and the macOS window buttons even with nothing drawn in it. */
+  min-height: 44px;
   padding: 10px 14px;
   flex: none;
 }
@@ -44,28 +47,20 @@ html[data-platform="darwin"] .titlebar {
   padding-left: 88px;
 }
 
-.titlebar-name {
-  font-size: 12px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--muted-foreground);
-}
-
-.titlebar-quit {
+/* Same as the close control the web app draws on frameless windows. */
+.titlebar-close {
   -webkit-app-region: no-drag;
-  background: none;
+  width: 12px;
+  height: 12px;
+  padding: 0;
   border: 0;
-  color: var(--muted-foreground);
-  font: inherit;
-  font-size: 12px;
+  border-radius: 50%;
+  background: #ff5f57;
   cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 6px;
 }
 
-.titlebar-quit:hover {
-  color: var(--foreground);
-  background: var(--accent);
+html[data-platform="darwin"] .titlebar-close {
+  display: none;
 }
 
 .shell {
@@ -164,18 +159,61 @@ html[data-platform="darwin"] .titlebar {
   margin-top: 14px;
 }
 
-.tunnel-summary {
-  cursor: pointer;
-  font-size: 13px;
-  color: var(--muted-foreground);
-}
-
-.tunnel[open] .tunnel-summary {
-  margin-bottom: 12px;
+.tunnel-fields {
+  margin-top: 14px;
 }
 
 .tunnel .field + .field-label {
   margin-top: 12px;
+}
+
+/* A switch and its label, drawn like the web app's Switch. */
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  color: color-mix(in srgb, var(--foreground) 75%, transparent);
+  cursor: pointer;
+}
+
+.switch {
+  appearance: none;
+  position: relative;
+  flex: none;
+  width: 32px;
+  height: 18.4px;
+  margin: 0;
+  border-radius: 999px;
+  /* Visible against the page while off. */
+  background: color-mix(in srgb, var(--muted-foreground) 45%, transparent);
+  cursor: pointer;
+  transition: background-color 150ms;
+}
+
+.switch::before {
+  content: "";
+  position: absolute;
+  top: 1.2px;
+  left: 1.2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #f1f1ef;
+  transition: transform 150ms;
+}
+
+.switch:checked {
+  background: var(--link);
+}
+
+.switch:checked::before {
+  transform: translateX(13.6px);
+}
+
+.switch:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
 }
 
 .field:focus-visible {
