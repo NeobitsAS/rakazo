@@ -68,16 +68,11 @@ export function SoftwareUpdatePanel({
   return (
     <div className="mt-3 space-y-3">
       <div className="flex flex-wrap gap-2">
-        <Button
-          variant="secondary"
-          className="rounded-full"
-          disabled={busy !== null}
-          onClick={onCheck}
-        >
+        <Button variant="secondary" disabled={busy !== null} onClick={onCheck}>
           {busy === "check" ? <Trans>Checking…</Trans> : <Trans>Check for updates</Trans>}
         </Button>
         {updateAvailable ? (
-          <Button className="rounded-full" disabled={busy !== null} onClick={onApply}>
+          <Button disabled={busy !== null} onClick={onApply}>
             {busy === "apply" ? <Trans>Updating…</Trans> : <Trans>Update</Trans>}
           </Button>
         ) : null}

@@ -393,7 +393,6 @@ export function McpServersOverlay({ onClose }: { onClose: () => void }) {
                             type="button"
                             variant={selected ? "default" : "outline"}
                             size="xs"
-                            className="rounded-full"
                             aria-pressed={selected}
                             onClick={() => toggleBot(bot.id)}
                           >
@@ -461,7 +460,6 @@ export function McpServersOverlay({ onClose }: { onClose: () => void }) {
                                 type="button"
                                 variant={assigned ? "default" : "outline"}
                                 size="xs"
-                                className="rounded-full"
                                 aria-pressed={assigned}
                                 onClick={() => void toggleAssignment(server, bot.id)}
                               >

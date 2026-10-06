@@ -169,7 +169,6 @@ function SessionUnavailable({ refetch }: { refetch: () => Promise<void> }) {
         <div className="mt-4">
           <Button
             variant="secondary"
-            className="rounded-full"
             onClick={() => {
               retryImmediately.current = true;
               setAttempt(0);
