@@ -8,7 +8,11 @@ import { WindowStrip } from "./WindowChrome";
  */
 export function EntryFrame({ title, children }: { title: ReactNode; children: ReactNode }) {
   return (
-    <div className="flex min-h-full flex-col bg-background text-foreground">
+    // The desktop app waits for a marked surface before it shows the page.
+    <div
+      data-rakazo-surface="entry"
+      className="flex min-h-full flex-col bg-background text-foreground"
+    >
       <WindowStrip />
       <div className="flex flex-1 items-center justify-center px-6 pb-16">
         <div className="flex w-[460px] max-w-full flex-col items-center">

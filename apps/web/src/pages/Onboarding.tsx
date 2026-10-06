@@ -499,6 +499,7 @@ export function OnboardingPage() {
   return (
     <div
       ref={accentRef}
+      data-rakazo-surface="onboarding"
       className="flex min-h-full flex-col bg-background text-foreground [--link:var(--brand-accent)] [--ring:var(--brand-accent)] md:flex-row"
     >
       <aside className="shrink-0 border-b border-sidebar-border bg-sidebar text-sidebar-foreground md:w-1/3 md:border-r md:border-b-0">
