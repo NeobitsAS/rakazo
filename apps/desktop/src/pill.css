@@ -40,7 +40,7 @@ body {
   transform: none;
 }
 
-/* Holds the status dot, or the settings button in its place, without resizing the pill. */
+/* Holds the status dot, or the reconnect button in its place, without resizing the pill. */
 .pill-slot {
   display: inline-grid;
   place-items: center;
@@ -71,8 +71,8 @@ body {
   background: var(--destructive);
 }
 
-.pill-settings {
-  display: none;
+.pill-button {
+  display: grid;
   place-items: center;
   width: 16px;
   height: 16px;
@@ -83,20 +83,24 @@ body {
   cursor: pointer;
 }
 
-.pill-settings svg {
+.pill-button svg {
   width: 14px;
   height: 14px;
 }
 
-.pill-settings:hover {
+.pill-button:hover {
   color: var(--foreground);
+}
+
+.pill-reconnect {
+  display: none;
 }
 
 .pill[data-status="lost"]:is(:hover, :focus-within) .pill-icon {
   display: none;
 }
 
-.pill[data-status="lost"]:is(:hover, :focus-within) .pill-settings {
+.pill[data-status="lost"]:is(:hover, :focus-within) .pill-reconnect {
   display: grid;
 }
 

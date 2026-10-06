@@ -3,7 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 // tsc only emits the TypeScript sources; the preload bridges and the static assets
-// of the setup window and the connection pill have to be copied into dist alongside them.
+// of the setup window and the shell's overlays have to be copied into dist alongside them.
 const STATIC_FILES = [
   "preload.cjs",
   "setup-preload.cjs",
@@ -14,6 +14,10 @@ const STATIC_FILES = [
   "pill.html",
   "pill.css",
   "pill.js",
+  "settings-button-preload.cjs",
+  "settings-button.html",
+  "settings-button.css",
+  "settings-button-page.js",
 ];
 const TOKENS_FILE = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
