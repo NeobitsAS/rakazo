@@ -21,6 +21,10 @@ msgstr " (읽지 않음)"
 msgid "Ask the server owner to set up Composio or Pipedream to connect apps."
 msgstr "앱을 연결하려면 서버 소유자에게 Composio 또는 Pipedream 설정을 요청하세요."
 
+#: src/pages/AccountSettingsOverlay.tsx
+msgid "At least 8 characters"
+msgstr "8자 이상"
+
 #: src/pages/Onboarding.tsx
 msgid "Choose your default model"
 msgstr "기본 AI 모델 선택"
@@ -46,8 +50,8 @@ msgid "Opening your first agent…"
 msgstr "첫 에이전트를 여는 중…"
 
 #: src/components/integrations/IntegrationSetup.tsx
-msgid "Paste your Composio API key"
-msgstr "Composio API 키를 붙여넣으세요"
+msgid "Paste your Composio project API key (ak_…)"
+msgstr "Composio 프로젝트 API 키를 붙여넣으세요 (ak_…)"
 
 #: src/components/integrations/IntegrationSetup.tsx
 msgid "Paste your Executor access token"
@@ -93,9 +97,17 @@ msgstr "Composio 또는 Pipedream을 설정하면 해당 앱이 여기에 표시
 msgid "Try your agent"
 msgstr "에이전트 사용해 보기"
 
+#: src/pages/AccountSettingsOverlay.tsx
+msgid "Type the new password again"
+msgstr "새 비밀번호를 다시 입력하세요"
+
 #: src/pages/Onboarding.tsx
 msgid "Your bots use this model to think and reply. Choose a provider and a model, then sign in with your subscription or paste an API key. It is saved for you in this space, and you can connect more models later in Settings → Models."
 msgstr "Bot은 이 AI 모델로 생각하고 답합니다. 제공업체와 모델을 고른 뒤 구독으로 로그인하거나 API 키를 붙여넣으세요. 이 스페이스에 내 설정으로 저장되며, 나중에 설정 → AI 모델에서 다른 모델도 연결할 수 있습니다."
+
+#: src/pages/AccountSettingsOverlay.tsx
+msgid "Your current password"
+msgstr "현재 비밀번호"
 
 #. placeholder {0}: group.entries.length
 #: src/pages/ModelSettingsOverlay.tsx
@@ -233,10 +245,6 @@ msgstr ""
 msgid "{title}, {label}"
 msgstr "{title}, {label}"
 
-#: src/pages/PluginsOverlay.tsx
-msgid "{toolCount, plural, one {# tool} other {# tools}}"
-msgstr ""
-
 #: src/pages/Shell.tsx
 msgid "{workingBotName} is working"
 msgstr "{workingBotName} 작업 중"
@@ -268,10 +276,6 @@ msgstr ""
 msgid "Access token"
 msgstr ""
 
-#: src/pages/McpServersOverlay.tsx
-msgid "Access token (optional)"
-msgstr "액세스 토큰(선택 사항)"
-
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Account"
 msgstr "계정"
@@ -281,16 +285,8 @@ msgid "Account default"
 msgstr "계정 기본값"
 
 #: src/pages/PluginsOverlay.tsx
-msgid "Account label"
-msgstr ""
-
-#: src/pages/PluginsOverlay.tsx
 msgid "Accounts"
 msgstr ""
-
-#: src/components/ApprovalRulesSettings.tsx
-msgid "Action confirmations"
-msgstr "작업 실행 전 확인"
 
 #. placeholder {0}: bot.name
 #. placeholder {0}: group.spaceName
@@ -338,33 +334,9 @@ msgstr ""
 msgid "Add a schedule, webhook, GitHub, or message trigger to run this routine."
 msgstr ""
 
-#: src/pages/McpServersOverlay.tsx
-msgid "Add a server name."
-msgstr "서버 이름을 입력하세요."
-
-#: src/pages/McpServersOverlay.tsx
-msgid "Add a stdio command."
-msgstr "stdio 명령을 입력하세요."
-
-#: src/pages/McpServersOverlay.tsx
-msgid "Add an HTTPS server URL."
-msgstr "HTTPS 서버 URL을 입력하세요."
-
 #: src/pages/PluginsOverlay.tsx
 msgid "Add another"
 msgstr ""
-
-#: src/pages/PluginsOverlay.tsx
-msgid "Add Executor"
-msgstr "Executor 추가"
-
-#: src/pages/PluginsOverlay.tsx
-msgid "Add GraphQL"
-msgstr "GraphQL 추가"
-
-#: src/pages/PluginsOverlay.tsx
-msgid "Add GraphQL endpoint"
-msgstr "GraphQL 엔드포인트 추가"
 
 #: src/pages/ScratchpadSection.tsx
 msgid "Add item"
@@ -375,18 +347,6 @@ msgstr "항목 추가"
 msgid "Add MCP server"
 msgstr "MCP 서버 추가"
 
-#: src/pages/PluginsOverlay.tsx
-msgid "Add OpenAPI"
-msgstr "OpenAPI 추가"
-
-#: src/pages/PluginsOverlay.tsx
-msgid "Add remote MCP server"
-msgstr "원격 MCP 서버 추가"
-
-#: src/pages/McpServersOverlay.tsx
-msgid "Add server"
-msgstr "서버 추가"
-
 #: src/components/integrations/IntegrationSetup.tsx
 msgid "Add server URL"
 msgstr ""
@@ -394,10 +354,6 @@ msgstr ""
 #: src/components/teach/SkillDraftCard.tsx
 msgid "Add to routine"
 msgstr "자동 실행에 추가"
-
-#: src/pages/PluginsOverlay.tsx
-msgid "Add Treg"
-msgstr "Treg 추가"
 
 #: src/pages/RoutineEditor.tsx
 msgid "Add trigger"
@@ -433,10 +389,6 @@ msgstr "Agent 컴퓨터"
 #: src/pages/MessagingSettingsOverlay.tsx
 msgid "Agent connections"
 msgstr "Agent 연결"
-
-#: src/pages/McpServersOverlay.tsx
-msgid "Agents:"
-msgstr "사용 Bot:"
 
 #: src/pages/Artifacts.tsx
 msgid "All bots"
@@ -660,10 +612,6 @@ msgstr "보관됨"
 msgid "Archived. Chat, memory, and files kept."
 msgstr "보관되었습니다. 대화, 기억, 파일은 유지됩니다."
 
-#: src/pages/McpServersOverlay.tsx
-msgid "Arguments"
-msgstr "인자"
-
 #: src/pages/Artifacts.tsx
 #: src/pages/Shell.tsx
 msgid "Artifacts"
@@ -827,10 +775,6 @@ msgstr "봇 작업 중"
 
 #: src/pages/memory-providers/SerenitySettingsForm.tsx
 msgid "Brain label"
-msgstr ""
-
-#: src/pages/PluginsOverlay.tsx
-msgid "Browse MCP servers"
 msgstr ""
 
 #: src/components/computer/ComputerWorkspace.tsx
@@ -1004,14 +948,6 @@ msgstr "컴퓨터 닫기"
 msgid "Close image preview"
 msgstr "이미지 미리보기 닫기"
 
-#: src/pages/PluginsOverlay.tsx
-msgid "Close integrations"
-msgstr "앱·도구 연동 닫기"
-
-#: src/pages/McpServersOverlay.tsx
-msgid "Close MCP servers"
-msgstr "MCP 서버 설정 닫기"
-
 #: src/pages/MemorySettingsOverlay.tsx
 #: src/pages/SettingsOverlay.tsx
 msgid "Close memory settings"
@@ -1073,10 +1009,6 @@ msgstr "색상 {color}"
 msgid "Coming soon"
 msgstr "준비 중"
 
-#: src/pages/McpServersOverlay.tsx
-msgid "Command"
-msgstr "실행 명령"
-
 #: src/pages/ScratchpadSection.tsx
 msgid "Complete"
 msgstr "완료"
@@ -1115,10 +1047,6 @@ msgstr "컴퓨터가 꺼져 있습니다. SANDBOX_PROVIDER=docker와 SANDBOX_SUP
 msgid "Configured by deployment"
 msgstr "서버에서 설정됨"
 
-#: src/pages/McpServersOverlay.tsx
-msgid "Configured servers"
-msgstr "연결된 서버"
-
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/McpServersOverlay.tsx
 msgid "Confirm delete"
@@ -1140,25 +1068,13 @@ msgstr "연결"
 msgid "Connect API key"
 msgstr "API 키 연결"
 
-#: src/pages/PluginsOverlay.tsx
-msgid "Connect Executor"
-msgstr "Executor 연결"
-
 #: src/pages/shell/message-cards.tsx
 msgid "Connect MCP server “{name}”"
 msgstr "MCP 서버 ‘{name}’ 연결"
 
-#: src/pages/McpServersOverlay.tsx
-msgid "Connect OAuth"
-msgstr "OAuth 연결"
-
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "Connect this provider to use it as your personal model."
 msgstr "이 AI 서비스를 연결하면 내 기본 모델로 사용할 수 있습니다."
-
-#: src/pages/PluginsOverlay.tsx
-msgid "Connect Treg"
-msgstr "Treg 연결"
 
 #: src/components/integrations/IntegrationSetup.tsx
 #: src/pages/McpOAuthCallback.tsx
@@ -1235,10 +1151,6 @@ msgstr "복사"
 #: src/pages/ScratchpadSection.tsx
 msgid "Could not add"
 msgstr "추가하지 못했습니다."
-
-#: src/pages/McpServersOverlay.tsx
-msgid "Could not add MCP server"
-msgstr "MCP 서버를 추가하지 못했습니다."
 
 #: src/pages/shell/message-cards.tsx
 msgid "Could not approve this server"
@@ -1331,10 +1243,6 @@ msgstr "Bot을 삭제하지 못했습니다."
 msgid "Could not delete group"
 msgstr "그룹을 삭제할 수 없습니다"
 
-#: src/pages/McpServersOverlay.tsx
-msgid "Could not delete MCP server"
-msgstr "MCP 서버를 삭제하지 못했습니다."
-
 #: src/pages/shell/dialogs.tsx
 msgid "Could not delete routine"
 msgstr "자동 실행을 삭제하지 못했습니다."
@@ -1354,10 +1262,6 @@ msgstr ""
 #: src/pages/MemorySettingsOverlay.tsx
 msgid "Could not disconnect memory provider"
 msgstr "기억 서비스 연결을 해제하지 못했습니다."
-
-#: src/pages/McpServersOverlay.tsx
-msgid "Could not disconnect OAuth"
-msgstr "OAuth 연결을 해제하지 못했습니다."
 
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "Could not disconnect this provider"
@@ -1388,10 +1292,6 @@ msgstr "{name}을 다운로드하지 못했습니다. 다시 시도해 주세요
 msgid "Could not download file"
 msgstr ""
 
-#: src/pages/PluginsOverlay.tsx
-msgid "Could not install connector"
-msgstr "도구 연결을 추가하지 못했습니다."
-
 #: src/components/computer/FilesApp.tsx
 msgid "Could not list files"
 msgstr ""
@@ -1420,10 +1320,6 @@ msgstr ""
 #: src/pages/PluginsOverlay.tsx
 msgid "Could not load integrations"
 msgstr "연동 목록을 불러오지 못했습니다."
-
-#: src/pages/McpServersOverlay.tsx
-msgid "Could not load MCP servers"
-msgstr "MCP 서버 목록을 불러오지 못했습니다."
 
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "Could not load model settings"
@@ -1581,10 +1477,6 @@ msgstr "재설정 이메일을 보낼 수 없습니다"
 msgid "Could not send that"
 msgstr "메시지를 보내지 못했습니다."
 
-#: src/pages/McpServersOverlay.tsx
-msgid "Could not start OAuth"
-msgstr "OAuth 인증을 시작하지 못했습니다."
-
 #: src/components/teach/TeachComputerOverlay.tsx
 msgid "Could not start teaching"
 msgstr "가르치기를 시작하지 못했습니다."
@@ -1600,10 +1492,6 @@ msgstr "직접 조작으로 전환하지 못했습니다."
 #: src/pages/ScratchpadSection.tsx
 msgid "Could not update"
 msgstr "업데이트하지 못했습니다."
-
-#: src/pages/McpServersOverlay.tsx
-msgid "Could not update agent access"
-msgstr "Bot의 서버 사용 권한을 변경하지 못했습니다."
 
 #: src/components/ComputerMaintenanceActions.tsx
 msgid "Could not update computer"
@@ -1691,11 +1579,6 @@ msgstr "만드는 중…"
 #: src/pages/PluginsOverlay.tsx
 msgid "Credential"
 msgstr "인증 정보"
-
-#: src/pages/McpServersOverlay.tsx
-#: src/pages/PluginsOverlay.tsx
-msgid "credential saved"
-msgstr "인증 정보 저장됨"
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Credentials are encrypted and never sent to the model."
@@ -1883,10 +1766,6 @@ msgstr "오류 닫기"
 msgid "Dismissed. Reconnect anytime from MCP settings."
 msgstr "지금은 연결하지 않았습니다. MCP 설정에서 언제든 다시 연결할 수 있습니다."
 
-#: src/pages/PluginsOverlay.tsx
-msgid "Display name"
-msgstr "표시 이름"
-
 #: src/pages/HostComputerPrompt.tsx
 msgid "Docker"
 msgstr "Docker"
@@ -2015,10 +1894,6 @@ msgstr "매월"
 #: src/pages/RoutineSchedule.tsx
 msgid "Every week"
 msgstr "매주"
-
-#: src/pages/PluginsOverlay.tsx
-msgid "Executor token"
-msgstr "Executor 토큰"
 
 #: src/pages/shell/message-cards.tsx
 msgid "Expand"
@@ -2197,10 +2072,6 @@ msgstr "header"
 msgid "Header name"
 msgstr "헤더 이름"
 
-#: src/pages/McpServersOverlay.tsx
-msgid "Header value"
-msgstr "헤더 값"
-
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "Hear a sample"
 msgstr "샘플 듣기"
@@ -2264,10 +2135,6 @@ msgstr ""
 msgid "Image upload area"
 msgstr "이미지 업로드 영역"
 
-#: src/pages/PluginsOverlay.tsx
-msgid "Import OpenAPI JSON"
-msgstr "OpenAPI JSON 가져오기"
-
 #: src/pages/shell/message-cards.tsx
 msgid "Inbox & email"
 msgstr ""
@@ -2288,18 +2155,9 @@ msgstr "인스턴스 API 키"
 msgid "Instruction"
 msgstr "실행할 내용"
 
-#: src/pages/PluginsOverlay.tsx
-msgid "Integration domain"
-msgstr ""
-
 #: src/components/integrations/IntegrationSetup.tsx
 msgid "Integration options"
 msgstr ""
-
-#: src/pages/PluginsOverlay.tsx
-#: src/pages/Shell.tsx
-msgid "Integrations"
-msgstr "앱·도구 연동"
 
 #: src/pages/RoutineEditor.tsx
 #: src/pages/RoutineSchedule.tsx
@@ -2418,10 +2276,6 @@ msgstr "이전 실행 불러오기"
 msgid "Loading activity…"
 msgstr "활동을 불러오는 중…"
 
-#: src/pages/PluginsOverlay.tsx
-msgid "Loading integrations…"
-msgstr "연동 목록을 불러오는 중…"
-
 #: src/pages/MemorySettingsOverlay.tsx
 msgid "Loading memory settings…"
 msgstr "기억 설정을 불러오는 중…"
@@ -2433,10 +2287,6 @@ msgstr "모델 목록을 불러오는 중…"
 #: src/components/ArtifactFileCard.tsx
 msgid "Loading preview…"
 msgstr "미리보기를 불러오는 중…"
-
-#: src/components/ApprovalRulesSettings.tsx
-msgid "Loading rules…"
-msgstr "확인 규칙을 불러오는 중…"
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Loading tools…"
@@ -2486,10 +2336,6 @@ msgstr "낮음"
 msgid "Make sure nothing is still running on this computer."
 msgstr "이 컴퓨터에서 실행 중인 작업이 없는지 확인하세요."
 
-#: src/pages/PluginsOverlay.tsx
-msgid "Manage MCP servers"
-msgstr "MCP 서버 관리"
-
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Manage messaging settings"
 msgstr "메시징 설정 관리"
@@ -2497,14 +2343,6 @@ msgstr "메시징 설정 관리"
 #: src/pages/MemorySettingsOverlay.tsx
 msgid "Manage the Space semantic memory provider."
 msgstr "작업공간에서 사용할 장기 기억 서비스를 관리합니다."
-
-#: src/pages/PluginsOverlay.tsx
-msgid "Manual"
-msgstr ""
-
-#: src/pages/PluginsOverlay.tsx
-msgid "Manual setup required"
-msgstr ""
 
 #: src/pages/BotContextMenu.tsx
 msgid "Mark as Read"
@@ -2541,10 +2379,6 @@ msgstr "최대 출력 토큰 수"
 #: src/pages/memory-providers/SerenitySettingsForm.tsx
 msgid "MCP endpoint"
 msgstr ""
-
-#: src/pages/McpServersOverlay.tsx
-msgid "MCP servers"
-msgstr "MCP 서버"
 
 #. js-lingui-explicit-id
 #: src/lib/model-catalog.ts
@@ -2788,10 +2622,6 @@ msgid "No artifacts found."
 msgstr ""
 
 #: src/pages/PluginsOverlay.tsx
-msgid "no auth"
-msgstr "인증 없음"
-
-#: src/pages/PluginsOverlay.tsx
 msgid "No authentication"
 msgstr "인증 없음"
 
@@ -2830,14 +2660,6 @@ msgstr ""
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "No matching models"
 msgstr "일치하는 모델 없음"
-
-#: src/pages/PluginsOverlay.tsx
-msgid "No MCP or API tool sources installed yet."
-msgstr "아직 추가된 MCP 또는 API 도구가 없습니다."
-
-#: src/pages/McpServersOverlay.tsx
-msgid "No MCP servers yet."
-msgstr "아직 연결된 MCP 서버가 없습니다."
 
 #: src/pages/PeerMessagesOverlay.tsx
 msgid "No messages with {peerBotName} yet."
@@ -2917,17 +2739,9 @@ msgstr "이제 {0} 모델을 사용합니다."
 msgid "OAuth authorization was cancelled."
 msgstr "OAuth 인증이 취소되었습니다."
 
-#: src/pages/McpServersOverlay.tsx
-msgid "OAuth connected"
-msgstr "OAuth 연결됨"
-
 #: src/pages/McpOAuthCallback.tsx
 msgid "OAuth connection failed"
 msgstr "OAuth 연결 실패"
-
-#: src/pages/McpServersOverlay.tsx
-msgid "OAuth expired"
-msgstr ""
 
 #. placeholder {0}: call.botName
 #: src/components/call/CallCard.tsx
@@ -3011,10 +2825,6 @@ msgstr "작업공간을 여는 중…"
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "Optional"
 msgstr "선택 사항"
-
-#: src/pages/McpServersOverlay.tsx
-msgid "Optional header value"
-msgstr "선택 사항인 헤더 값"
 
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "Or connect an API key"
@@ -3176,10 +2986,6 @@ msgstr ""
 #: src/pages/ActivityList.tsx
 msgid "Recent"
 msgstr "최근"
-
-#: src/pages/McpServersOverlay.tsx
-msgid "Reconnect OAuth"
-msgstr "OAuth 다시 연결"
 
 #: src/App.tsx
 #: src/components/ComputerUpdateProgress.tsx
@@ -3541,10 +3347,6 @@ msgstr ""
 msgid "Search bots and switch conversations"
 msgstr ""
 
-#: src/pages/PluginsOverlay.tsx
-msgid "Search by domain"
-msgstr ""
-
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "Search models"
 msgstr "모델 검색"
@@ -3599,10 +3401,6 @@ msgstr ""
 #: src/pages/LocalSettings.tsx
 msgid "Server integrations"
 msgstr ""
-
-#: src/pages/McpServersOverlay.tsx
-msgid "Server name"
-msgstr "서버 이름"
 
 #: src/components/integrations/IntegrationSetup.tsx
 #: src/pages/McpServersOverlay.tsx
@@ -3802,10 +3600,6 @@ msgstr "가르치기 종료"
 msgid "Stopped."
 msgstr "중지되었습니다."
 
-#: src/pages/McpServersOverlay.tsx
-msgid "Stored encrypted"
-msgstr "암호화해 저장"
-
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "Stored securely. Never shown here."
 msgstr "안전하게 저장됩니다. 이 화면에 표시되지 않습니다."
@@ -3956,14 +3750,6 @@ msgstr "이 재설정 링크는 유효하지 않거나 만료되었습니다"
 msgid "This server cannot be assigned without a bot."
 msgstr "연결할 Bot이 없어 이 서버를 배정할 수 없습니다."
 
-#: src/pages/McpServersOverlay.tsx
-msgid "This server did not request browser authorization."
-msgstr "이 서버는 브라우저 인증을 요청하지 않았습니다."
-
-#: src/pages/McpServersOverlay.tsx
-msgid "This server is already connected. Disconnect it first to authorize again."
-msgstr "이 서버는 이미 연결되어 있습니다. 다시 인증하려면 먼저 연결을 해제하세요."
-
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "This subscription sign-in is not available in Rakazo yet. Use a deployment credential or choose another provider."
 msgstr "이 구독 로그인 방식은 아직 Rakazo에서 지원되지 않습니다. 서버에 설정된 인증 정보를 사용하거나 다른 서비스를 선택하세요."
@@ -3989,10 +3775,6 @@ msgid "Today"
 msgstr ""
 
 #: src/pages/PluginsOverlay.tsx
-msgid "Tool sources"
-msgstr "도구 소스"
-
-#: src/pages/PluginsOverlay.tsx
 msgid "Tools"
 msgstr ""
 
@@ -4003,10 +3785,6 @@ msgstr "대화 기록"
 #: src/pages/ExternalConversationSettings.tsx
 msgid "Treat like a person"
 msgstr ""
-
-#: src/pages/PluginsOverlay.tsx
-msgid "Treg token"
-msgstr "Treg 토큰"
 
 #: src/pages/Onboarding.tsx
 msgid "Try again"
@@ -4027,10 +3805,6 @@ msgstr "섹션 없음"
 #: src/components/SoftwareUpdateSection.tsx
 msgid "Unavailable"
 msgstr "사용할 수 없음"
-
-#: src/pages/PluginsOverlay.tsx
-msgid "Uninstall"
-msgstr ""
 
 #: src/pages/MessagingSettingsOverlay.tsx
 msgid "Unlink"
@@ -4136,14 +3910,6 @@ msgstr "이 모델 사용"
 #: src/components/AskCard.tsx
 msgid "Username"
 msgstr ""
-
-#: src/pages/PluginsOverlay.tsx
-msgid "Verify and add"
-msgstr "확인 후 추가"
-
-#: src/pages/PluginsOverlay.tsx
-msgid "Verifying…"
-msgstr "확인 중…"
 
 #: src/pages/Artifacts.tsx
 msgid "Version"
@@ -4265,3 +4031,255 @@ msgstr "이름"
 #: src/pages/ResizableSidePanel.tsx
 msgid "Resize panel"
 msgstr "패널 크기 조절"
+
+#: src/pages/SettingsOverlay.tsx
+msgid "Your account and password, how Rakazo looks, and the language it speaks."
+msgstr "계정과 비밀번호, Rakazo의 모양, 그리고 사용하는 언어."
+
+#: src/pages/SettingsOverlay.tsx
+msgid "Choose the model your bots think with, and connect the providers that run it."
+msgstr "봇이 생각할 때 사용할 모델을 고르고, 그 모델을 실행하는 제공업체를 연결하세요."
+
+#: src/pages/SettingsOverlay.tsx
+msgid "Your bots keep shared notes in MEMORY.md. Add a provider so they can also recall past conversations."
+msgstr "봇은 MEMORY.md에 공유 메모를 남깁니다. 제공업체를 추가하면 지난 대화도 기억할 수 있습니다."
+
+#: src/pages/SettingsOverlay.tsx
+msgid "Connect a voice provider so your bots can read replies aloud and understand what you say."
+msgstr "음성 제공업체를 연결하면 봇이 답변을 소리 내어 읽고 사용자의 말을 알아들을 수 있습니다."
+
+#: src/pages/SettingsOverlay.tsx
+msgid "How much your bots have run, and how many tokens they have used."
+msgstr "봇이 얼마나 실행되었고 토큰을 얼마나 사용했는지 보여 줍니다."
+
+#: src/pages/SettingsOverlay.tsx
+msgid "Give your bots a computer to run code and work with files."
+msgstr "봇에게 코드를 실행하고 파일을 다룰 컴퓨터를 제공하세요."
+
+#: src/pages/SettingsOverlay.tsx
+msgid "See which version you are running, and install new releases when they are out."
+msgstr "사용 중인 버전을 확인하고, 새 버전이 나오면 설치하세요."
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Could not remove the server"
+msgstr "서버를 삭제할 수 없습니다"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Signed in"
+msgstr "로그인됨"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Needs sign-in again"
+msgstr "다시 로그인해야 함"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Not signed in"
+msgstr "로그인 안 됨"
+
+#: src/components/integrations/AddIntegration.tsx
+msgid "MCP server"
+msgstr "MCP 서버"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "{botCount, plural, one {# bot} other {# bots}}"
+msgstr "{botCount, plural, other {봇 #개}}"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "All your bots"
+msgstr "모든 봇"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Edit {name}"
+msgstr "{name} 편집"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Remove {name}"
+msgstr "{name} 삭제"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Could not change who can use it"
+msgstr "사용할 수 있는 대상을 변경할 수 없습니다"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Could not change the sign-in"
+msgstr "로그인을 변경할 수 없습니다"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Signed in with the service."
+msgstr "서비스에 로그인되어 있습니다."
+
+#: src/pages/PluginsOverlay.tsx
+msgid "The sign-in has expired."
+msgstr "로그인이 만료되었습니다."
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Uses an access token."
+msgstr "액세스 토큰을 사용합니다."
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Not signed in."
+msgstr "로그인되어 있지 않습니다."
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Sign out"
+msgstr "로그아웃"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Signing out…"
+msgstr "로그아웃 중…"
+
+#: src/components/integrations/AddIntegration.tsx
+msgid "Can use this server's tools."
+msgstr "이 서버의 도구를 사용할 수 있습니다."
+
+#: src/components/integrations/AddIntegration.tsx
+msgid "Can't use this server."
+msgstr "이 서버를 사용할 수 없습니다."
+
+#: src/components/integrations/AddIntegration.tsx
+msgid "Let {0} use this server"
+msgstr "{0}이(가) 이 서버를 사용하도록 허용"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Remove server"
+msgstr "서버 삭제"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Nothing connected yet. Pick an app from the catalog, or add a server of your own."
+msgstr "아직 연결된 것이 없습니다. 카탈로그에서 앱을 고르거나 직접 서버를 추가하세요."
+
+#: src/pages/PluginsOverlay.tsx
+msgid "App"
+msgstr "앱"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Account name"
+msgstr "계정 이름"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Waiting for sign-in."
+msgstr "로그인을 기다리는 중입니다."
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Signed in."
+msgstr "로그인되어 있습니다."
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Rename {0}"
+msgstr "{0} 이름 변경"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "{0, plural, one {# tool} other {# tools}}"
+msgstr "{0, plural, other {도구 #개}}"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Show fewer"
+msgstr "간단히 보기"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Show all {0}"
+msgstr "{0}개 모두 보기"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Remove app"
+msgstr "앱 삭제"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "App catalog"
+msgstr "앱 카탈로그"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Choose the service that provides the catalog and signs people in to its apps."
+msgstr "카탈로그를 제공하고 앱 로그인을 처리하는 서비스를 선택하세요."
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Add a server"
+msgstr "서버 추가"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Connect an MCP server, or an OpenAPI or GraphQL endpoint, of your own."
+msgstr "직접 운영하는 MCP 서버나 OpenAPI 또는 GraphQL 엔드포인트를 연결하세요."
+
+#: src/pages/PluginsOverlay.tsx
+msgid "An app from the catalog."
+msgstr "카탈로그의 앱입니다."
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Apps"
+msgstr "앱"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "The apps and servers your bots can use."
+msgstr "봇이 사용할 수 있는 앱과 서버입니다."
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Close apps"
+msgstr "앱 닫기"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Catalog"
+msgstr "카탈로그"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Search the catalog"
+msgstr "카탈로그 검색"
+
+#: src/components/integrations/AddIntegration.tsx
+msgid "Sign in with the service"
+msgstr "서비스에 로그인"
+
+#: src/components/integrations/AddIntegration.tsx
+msgid "Could not add the integration"
+msgstr "통합을 추가할 수 없습니다"
+
+#: src/components/integrations/AddIntegration.tsx
+msgid "Find a server"
+msgstr "서버 찾기"
+
+#: src/components/integrations/AddIntegration.tsx
+msgid "Results from integrations.sh."
+msgstr "integrations.sh의 결과입니다."
+
+#: src/components/integrations/AddIntegration.tsx
+msgid "Or add it manually"
+msgstr "또는 직접 추가"
+
+#: src/components/integrations/AddIntegration.tsx
+msgid "What kind of server"
+msgstr "서버 종류"
+
+#: src/components/integrations/AddIntegration.tsx
+msgid "Server type"
+msgstr "서버 유형"
+
+#: src/components/integrations/AddIntegration.tsx
+msgid "Fill in for:"
+msgstr "자동 입력:"
+
+#: src/components/integrations/AddIntegration.tsx
+msgid "What your bots will call it"
+msgstr "봇이 부를 이름"
+
+#: src/components/integrations/AddIntegration.tsx
+msgid "Address"
+msgstr "주소"
+
+#: src/components/integrations/AddIntegration.tsx
+msgid "How to connect"
+msgstr "연결 방법"
+
+#: src/components/integrations/AddIntegration.tsx
+msgid "Paste the token"
+msgstr "토큰을 붙여넣으세요"
+
+#: src/components/integrations/AddIntegration.tsx
+msgid "Sign in from the server's page once it is added. Some services, like GitHub, only accept a token."
+msgstr "서버를 추가한 뒤 서버 페이지에서 로그인하세요. GitHub 같은 일부 서비스는 토큰만 받습니다."
+
+#: src/components/integrations/AddIntegration.tsx
+msgid "Who can use it"
+msgstr "사용할 수 있는 대상"
+
+#: src/components/integrations/AddIntegration.tsx
+msgid "All your bots in this space can use it."
+msgstr "이 공간의 모든 봇이 사용할 수 있습니다."
