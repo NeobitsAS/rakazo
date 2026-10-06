@@ -189,7 +189,7 @@ export function IntegrationSetup({
   if (serverSetup && !state?.canConfigure) return error ? <p role="alert">{error}</p> : null;
 
   return (
-    <div className="w-full space-y-6">
+    <div className="@container w-full space-y-6">
       {page ? null : (
         <h1 className="text-[32px] font-medium text-foreground">
           {serverSetup ? t`Server integrations` : t`Add MCP server`}
@@ -200,7 +200,7 @@ export function IntegrationSetup({
           aria-label={t`Integration options`}
           className={
             page
-              ? "grid grid-cols-2 gap-3 sm:grid-cols-4"
+              ? "grid grid-cols-2 gap-3 @lg:grid-cols-4"
               : "overflow-hidden rounded-xl border border-border"
           }
         >

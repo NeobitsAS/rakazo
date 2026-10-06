@@ -48,7 +48,7 @@ export function IntegrationSetupPage() {
   if (!ready && !error) return <PageLoader />;
 
   return (
-    <EntryFrame title={serverSetup ? t`Server integrations` : t`Add MCP server`}>
+    <EntryFrame wide align="top" title={serverSetup ? t`Server integrations` : t`Add MCP server`}>
       <div className="w-full">
         {bots.length > 1 ? (
           <NativeSelect
