@@ -157,6 +157,7 @@ function account(provider: string, modelId: string) {
     defaultModel: modelId,
     hostCredentialProvider: null,
     hostCredentialSource: null,
+    serverCredentials: null,
     computerHost: null,
     canChooseHostComputer: false,
     sandboxProvider: "docker",
