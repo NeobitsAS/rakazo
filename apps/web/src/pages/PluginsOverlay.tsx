@@ -17,7 +17,6 @@ import {
   Button,
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
   Dialog,
@@ -29,7 +28,7 @@ import {
   NativeSelect,
   NativeSelectOption,
 } from "@rakazo/ui-web";
-import { ChevronDown, ChevronLeft, ChevronUp, X } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronUp, Settings, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { IntegrationSetup } from "../components/integrations/IntegrationSetup";
 import { optionalCatalogFeedProbe } from "../lib/optional-catalog-feed";
@@ -83,6 +82,8 @@ export function PluginsOverlay({
 }) {
   const { t } = useLingui();
   const [setupOpen, setSetupOpen] = useState(false);
+  /** The owner's server setup (the catalog's provider), shown instead of the list. */
+  const [serverSetupOpen, setServerSetupOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [visibleCount, setVisibleCount] = useState(CONNECTION_CATALOG_PAGE_SIZE);
   const [catalog, setCatalog] = useState<ConnectionCatalogItem[]>([]);
@@ -681,17 +682,56 @@ export function PluginsOverlay({
         className="flex h-[760px] max-h-[calc(100%-2rem)] w-[1080px] max-w-[calc(100%-2rem)] flex-col gap-0 overflow-hidden rounded-2xl bg-card p-0 sm:max-w-[1080px]"
       >
         <DialogHeader className="flex-row items-start justify-between px-8 pt-7">
-          <DialogTitle className="text-2xl text-foreground">
-            <Trans>Integrations</Trans>
-          </DialogTitle>
-          <DialogClose
-            render={<Button variant="ghost" size="icon-sm" aria-label={t`Close integrations`} />}
-          >
-            <X />
-          </DialogClose>
+          <div className="flex items-center gap-2">
+            {serverSetupOpen ? (
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label={t`Back`}
+                onClick={() => setServerSetupOpen(false)}
+              >
+                <ChevronLeft />
+              </Button>
+            ) : null}
+            <DialogTitle className="text-2xl text-foreground">
+              {serverSetupOpen ? <Trans>Server integrations</Trans> : <Trans>Integrations</Trans>}
+            </DialogTitle>
+          </div>
+          <div className="flex items-center gap-1">
+            {isDeploymentOwner && !serverSetupOpen ? (
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label={t`Server integrations`}
+                title={t`Server integrations`}
+                onClick={() => setServerSetupOpen(true)}
+              >
+                <Settings />
+              </Button>
+            ) : null}
+            <DialogClose
+              render={<Button variant="ghost" size="icon-sm" aria-label={t`Close integrations`} />}
+            >
+              <X />
+            </DialogClose>
+          </div>
         </DialogHeader>
 
-        {!detailItem ? (
+        {serverSetupOpen ? (
+          <div className="rk-scroll flex-1 overflow-y-auto px-8 py-6">
+            <IntegrationSetup
+              serverSetup
+              managedOnly
+              layout="page"
+              onSaved={() => {
+                setServerSetupOpen(false);
+                refreshAfterSetup();
+              }}
+            />
+          </div>
+        ) : null}
+
+        {!detailItem && !serverSetupOpen ? (
           <div className="px-8 pt-4">
             <Input
               value={query}
@@ -706,7 +746,11 @@ export function PluginsOverlay({
           </div>
         ) : null}
 
-        <div id="integration-list" className="rk-scroll flex-1 overflow-y-auto px-8 py-6">
+        <div
+          id="integration-list"
+          hidden={serverSetupOpen}
+          className="rk-scroll flex-1 overflow-y-auto px-8 py-6"
+        >
           <Button
             variant="outline"
             className="mb-4"
@@ -745,24 +789,13 @@ export function PluginsOverlay({
                 <div className="mb-6" data-testid="featured-connectors">
                   {!loading && catalog.length === 0 ? (
                     isDeploymentOwner ? (
-                      <Card data-testid="integrations-server-setup">
-                        <CardHeader>
-                          <CardTitle>
-                            <Trans>Server integrations</Trans>
-                          </CardTitle>
-                          <CardDescription>
-                            <Trans>Set up Composio or Pipedream to bring their apps here.</Trans>
-                          </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                          <IntegrationSetup
-                            serverSetup
-                            managedOnly
-                            layout="page"
-                            onSaved={refreshAfterSetup}
-                          />
-                        </CardContent>
-                      </Card>
+                      <p className="flex flex-wrap items-center gap-x-3 text-[13.5px] leading-6 text-muted-foreground/80">
+                        <Trans>Set up Composio or Pipedream to bring their apps here.</Trans>
+                        <Button variant="text" size="sm" onClick={() => setServerSetupOpen(true)}>
+                          <Settings />
+                          <Trans>Server integrations</Trans>
+                        </Button>
+                      </p>
                     ) : (
                       <p className="text-[13.5px] leading-6 text-muted-foreground/80">
                         <Trans>
@@ -869,23 +902,6 @@ export function PluginsOverlay({
                 </summary>
 
                 <div className="mt-4 space-y-4">
-                  {isDeploymentOwner && catalog.length > 0 ? (
-                    <Card data-testid="integrations-server-setup">
-                      <CardHeader>
-                        <CardTitle>
-                          <Trans>Server integrations</Trans>
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <IntegrationSetup
-                          serverSetup
-                          managedOnly
-                          layout="page"
-                          onSaved={refreshAfterSetup}
-                        />
-                      </CardContent>
-                    </Card>
-                  ) : null}
                   {catalogFeedEnabled ? (
                     <Card data-testid="integrations-catalog-feed">
                       <CardHeader>
