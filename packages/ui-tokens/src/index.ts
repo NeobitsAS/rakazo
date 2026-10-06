@@ -13,6 +13,8 @@ export const UI_APPEARANCE_STORAGE_KEY = "rakazo.uiAppearance";
  */
 export type ColorTokens = {
   background: string;
+  /** Modals: a step lighter than the page so they read as raised above it. */
+  dialog: string;
   foreground: string;
   card: string;
   cardForeground: string;
@@ -48,6 +50,7 @@ export type ColorTokens = {
 
 export const darkTokens = {
   background: "#0B0C0E",
+  dialog: "#0E0F11",
   foreground: "#ECECEE",
   card: "#141518",
   cardForeground: "#ECECEE",
@@ -65,7 +68,7 @@ export const darkTokens = {
   accentForeground: "#ECECEE",
   destructive: "#EF4444",
   destructiveForeground: "#FFFFFF",
-  border: "#2E313A",
+  border: "#1E2026",
   input: "#18191E",
   ring: "#3B82F6",
   sidebar: "#111215",
@@ -83,6 +86,7 @@ export const darkTokens = {
 
 export const lightTokens = {
   background: "#FAFAF8",
+  dialog: "#FFFFFF",
   foreground: "#1A1A1A",
   card: "#FFFFFF",
   cardForeground: "#1A1A1A",
