@@ -22,6 +22,7 @@ import {
 } from "@rakazo/core";
 import {
   Button,
+  Disclosure,
   Field,
   FieldLabel,
   Input,
@@ -840,10 +841,10 @@ export function OnboardingPage() {
               ) : null}
               {acceptsKey ? (
                 isOpenAiCompatible ? (
-                  <details className="mt-4 text-sm text-muted-foreground">
-                    <summary className="w-fit cursor-pointer select-none">
-                      <Trans>API key</Trans>
-                    </summary>
+                  <Disclosure
+                    className="mt-4 text-sm text-muted-foreground"
+                    summary={<Trans>API key</Trans>}
+                  >
                     <Input
                       aria-label={t`API key`}
                       value={apiKey}
@@ -853,7 +854,7 @@ export function OnboardingPage() {
                       autoComplete="new-password"
                       className="mt-2"
                     />
-                  </details>
+                  </Disclosure>
                 ) : (
                   <Field className="mt-4">
                     <FieldLabel htmlFor={`${fieldId}-api-key`}>

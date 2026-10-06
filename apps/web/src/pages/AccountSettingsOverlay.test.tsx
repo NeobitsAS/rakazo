@@ -17,6 +17,19 @@ vi.mock("@rakazo/ui-web", () => ({
       {children}
     </button>
   ),
+  Disclosure: ({
+    summary,
+    children,
+    ...props
+  }: Omit<React.ComponentProps<"details">, "children"> & {
+    summary: ReactNode;
+    children?: ReactNode;
+  }) => (
+    <details {...props}>
+      <summary>{summary}</summary>
+      {children}
+    </details>
+  ),
   Field: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
   FieldGroup: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
   FieldLabel: ({ children, htmlFor }: { children?: ReactNode; htmlFor?: string }) => (
