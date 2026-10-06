@@ -53,6 +53,74 @@ msgstr "Sunucunun kimlik bilgileri kontrol edilemedi"
 msgid "Uses this server's own {hostCredentialSource} credentials to access {selectedProviderName}."
 msgstr "{selectedProviderName} erişimi için bu sunucunun kendi {hostCredentialSource} kimlik bilgilerini kullanır."
 
+#: src/pages/Onboarding.tsx
+msgid "Choose your default model"
+msgstr "Varsayılan modelini seç"
+
+#: src/pages/Onboarding.tsx
+msgid "Connect tools your bots can use"
+msgstr "Botlarının kullanabileceği araçları bağla"
+
+#: src/pages/Onboarding.tsx
+msgid "Integrations give your bots tools beyond chat, such as reading email or opening issues. Connect a single tool server (MCP) directly, or set up Composio or Pipedream once to give everyone on this server access to hundreds of apps. You can skip this and add integrations later from Integrations in the sidebar."
+msgstr "Entegrasyonlar botlarına sohbetin ötesinde araçlar verir; örneğin e-posta okuma veya kayıt açma. Tek bir araç sunucusunu (MCP) doğrudan bağla ya da Composio veya Pipedream'i bir kez kurarak bu sunucudaki herkese yüzlerce uygulamaya erişim ver. Bu adımı atlayıp entegrasyonları daha sonra kenar çubuğundaki Entegrasyonlar bölümünden ekleyebilirsin."
+
+#: src/pages/Onboarding.tsx
+msgid "Onboarding steps"
+msgstr "Başlangıç adımları"
+
+#: src/pages/Onboarding.tsx
+msgid "Opening your first agent…"
+msgstr "İlk ajanın açılıyor…"
+
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Paste your Composio API key"
+msgstr "Composio API anahtarını yapıştır"
+
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Paste your Executor access token"
+msgstr "Executor erişim belirtecini yapıştır"
+
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Paste your Pipedream client ID"
+msgstr "Pipedream istemci kimliğini yapıştır"
+
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Paste your Pipedream client secret"
+msgstr "Pipedream istemci gizli anahtarını yapıştır"
+
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Paste your Pipedream project ID"
+msgstr "Pipedream proje kimliğini yapıştır"
+
+#: src/pages/Onboarding.tsx
+msgid "Pick the model your bots run on"
+msgstr "Botlarının çalışacağı modeli seç"
+
+#: src/pages/Onboarding.tsx
+msgid "Rakazo creates your first bot and opens a chat with it. You can add more bots at any time."
+msgstr "Rakazo ilk botunu oluşturur ve onunla bir sohbet açar. İstediğin zaman daha fazla bot ekleyebilirsin."
+
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Results from integrations.sh"
+msgstr "integrations.sh sonuçları"
+
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Search for an app, e.g. GitHub or Linear"
+msgstr "Bir uygulama ara, ör. GitHub veya Linear"
+
+#: src/pages/Onboarding.tsx
+msgid "Try your agent"
+msgstr "Ajanını dene"
+
+#: src/pages/Onboarding.tsx
+msgid "Your bots use this model to think and reply. Choose a provider and a model, then sign in with your subscription or paste an API key. It is saved for you in this space, and you can connect more models later in Settings → Models."
+msgstr "Botların düşünmek ve yanıt vermek için bu modeli kullanır. Bir sağlayıcı ve model seç, ardından aboneliğinle giriş yap ya da bir API anahtarı yapıştır. Model bu alanda senin için kaydedilir; daha fazla modeli sonra Ayarlar → Modeller bölümünden bağlayabilirsin."
+
+#: src/pages/Onboarding.tsx
+msgid "Your first agent opens in a chat"
+msgstr "İlk ajanın bir sohbette açılır"
+
 #. placeholder {0}: group.entries.length
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "{0, plural, one {# model} other {# models}}"
@@ -1096,10 +1164,6 @@ msgstr "Parolayı doğrulayın"
 msgid "Connect"
 msgstr "Bağlan"
 
-#: src/pages/Onboarding.tsx
-msgid "Connect a model"
-msgstr "Model bağla"
-
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "Connect API key"
 msgstr "API anahtarıyla bağlan"
@@ -1707,6 +1771,7 @@ msgstr ""
 
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/Onboarding.tsx
+#: src/pages/shell/avatar-studio-popover.tsx
 msgid "Default"
 msgstr "Varsayılan"
 
@@ -3116,8 +3181,12 @@ msgid "Read replies aloud"
 msgstr "Yanıtları sesli oku"
 
 #: src/pages/KnowledgeSection.tsx
-msgid "read-only"
-msgstr "salt okunur"
+msgid "Built-in"
+msgstr "Yerleşik"
+
+#: src/pages/KnowledgeSection.tsx
+msgid "Plugin"
+msgstr "Eklenti"
 
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/Onboarding.tsx
@@ -3504,10 +3573,6 @@ msgstr ""
 msgid "Search by domain"
 msgstr ""
 
-#: src/components/integrations/IntegrationSetup.tsx
-msgid "Search integrations.sh"
-msgstr ""
-
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "Search models"
 msgstr ""
@@ -3663,7 +3728,6 @@ msgid "Sign in to Rakazo"
 msgstr "Rakazo'da oturum aç"
 
 #: src/pages/Auth.tsx
-#: src/pages/Welcome.tsx
 msgid "Sign up"
 msgstr "Kaydol"
 
@@ -3673,8 +3737,8 @@ msgid "Skill {0}"
 msgstr "Beceri: {0}"
 
 #: src/pages/KnowledgeSection.tsx
-msgid "Skills"
-msgstr "Beceriler"
+msgid "Shared skills"
+msgstr "Paylaşılan beceriler"
 
 #: src/components/integrations/IntegrationSetup.tsx
 #: src/pages/Shell.tsx
@@ -4225,10 +4289,6 @@ msgstr "E-posta adresin"
 #: src/pages/Auth.tsx
 msgid "Your name"
 msgstr "Adın"
-
-#: src/pages/Welcome.tsx
-msgid "Your team of always-on agents<0/>that you can give real work to."
-msgstr "Gerçek işler verebileceğin,<0/>her zaman açık agent takımın."
 
 #: src/pages/ResizableSidePanel.tsx
 msgid "Resize panel"

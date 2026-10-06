@@ -53,6 +53,74 @@ msgstr "सर्वर के क्रेडेंशियल की जा�
 msgid "Uses this server's own {hostCredentialSource} credentials to access {selectedProviderName}."
 msgstr "{selectedProviderName} तक पहुँचने के लिए इस सर्वर के अपने {hostCredentialSource} क्रेडेंशियल का उपयोग करता है।"
 
+#: src/pages/Onboarding.tsx
+msgid "Choose your default model"
+msgstr "अपना डिफ़ॉल्ट मॉडल चुनें"
+
+#: src/pages/Onboarding.tsx
+msgid "Connect tools your bots can use"
+msgstr "ऐसे टूल कनेक्ट करें जिनका उपयोग आपके बॉट कर सकें"
+
+#: src/pages/Onboarding.tsx
+msgid "Integrations give your bots tools beyond chat, such as reading email or opening issues. Connect a single tool server (MCP) directly, or set up Composio or Pipedream once to give everyone on this server access to hundreds of apps. You can skip this and add integrations later from Integrations in the sidebar."
+msgstr "इंटीग्रेशन आपके बॉट को चैट से आगे के टूल देते हैं, जैसे ईमेल पढ़ना या इश्यू खोलना। किसी एक टूल सर्वर (MCP) को सीधे कनेक्ट करें, या Composio या Pipedream को एक बार सेट करें ताकि इस सर्वर पर सभी को सैकड़ों ऐप्स मिल सकें। आप इसे छोड़ सकते हैं और बाद में साइडबार में इंटीग्रेशन से इंटीग्रेशन जोड़ सकते हैं।"
+
+#: src/pages/Onboarding.tsx
+msgid "Onboarding steps"
+msgstr "ऑनबोर्डिंग चरण"
+
+#: src/pages/Onboarding.tsx
+msgid "Opening your first agent…"
+msgstr "आपका पहला एजेंट खुल रहा है…"
+
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Paste your Composio API key"
+msgstr "अपनी Composio API कुंजी पेस्ट करें"
+
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Paste your Executor access token"
+msgstr "अपना Executor एक्सेस टोकन पेस्ट करें"
+
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Paste your Pipedream client ID"
+msgstr "अपना Pipedream क्लाइंट ID पेस्ट करें"
+
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Paste your Pipedream client secret"
+msgstr "अपना Pipedream क्लाइंट सीक्रेट पेस्ट करें"
+
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Paste your Pipedream project ID"
+msgstr "अपना Pipedream प्रोजेक्ट ID पेस्ट करें"
+
+#: src/pages/Onboarding.tsx
+msgid "Pick the model your bots run on"
+msgstr "वह मॉडल चुनें जिस पर आपके बॉट चलते हैं"
+
+#: src/pages/Onboarding.tsx
+msgid "Rakazo creates your first bot and opens a chat with it. You can add more bots at any time."
+msgstr "Rakazo आपका पहला बॉट बनाता है और उसके साथ एक चैट खोलता है। आप कभी भी और बॉट जोड़ सकते हैं।"
+
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Results from integrations.sh"
+msgstr "integrations.sh से परिणाम"
+
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Search for an app, e.g. GitHub or Linear"
+msgstr "कोई ऐप खोजें, जैसे GitHub या Linear"
+
+#: src/pages/Onboarding.tsx
+msgid "Try your agent"
+msgstr "अपने एजेंट को आज़माएँ"
+
+#: src/pages/Onboarding.tsx
+msgid "Your bots use this model to think and reply. Choose a provider and a model, then sign in with your subscription or paste an API key. It is saved for you in this space, and you can connect more models later in Settings → Models."
+msgstr "आपके बॉट सोचने और जवाब देने के लिए इसी मॉडल का उपयोग करते हैं। कोई प्रदाता और मॉडल चुनें, फिर अपनी सदस्यता से साइन इन करें या API कुंजी पेस्ट करें। यह इस स्पेस में आपके लिए सहेजा जाता है, और आप बाद में सेटिंग्स → मॉडल्स में और मॉडल कनेक्ट कर सकते हैं।"
+
+#: src/pages/Onboarding.tsx
+msgid "Your first agent opens in a chat"
+msgstr "आपका पहला एजेंट एक चैट में खुलता है"
+
 #. placeholder {0}: group.entries.length
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "{0, plural, one {# model} other {# models}}"
@@ -1096,10 +1164,6 @@ msgstr "पासवर्ड की पुष्टि करें"
 msgid "Connect"
 msgstr "कनेक्ट करें"
 
-#: src/pages/Onboarding.tsx
-msgid "Connect a model"
-msgstr "एक मॉडल कनेक्ट करें"
-
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "Connect API key"
 msgstr "API कुंजी कनेक्ट करें"
@@ -1707,6 +1771,7 @@ msgstr ""
 
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/Onboarding.tsx
+#: src/pages/shell/avatar-studio-popover.tsx
 msgid "Default"
 msgstr "डिफ़ॉल्ट"
 
@@ -3116,8 +3181,12 @@ msgid "Read replies aloud"
 msgstr "उत्तर पढ़कर सुनाएं"
 
 #: src/pages/KnowledgeSection.tsx
-msgid "read-only"
-msgstr "केवल पढ़ने योग्य"
+msgid "Built-in"
+msgstr "अंतर्निहित"
+
+#: src/pages/KnowledgeSection.tsx
+msgid "Plugin"
+msgstr "प्लगइन"
 
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/Onboarding.tsx
@@ -3504,10 +3573,6 @@ msgstr ""
 msgid "Search by domain"
 msgstr ""
 
-#: src/components/integrations/IntegrationSetup.tsx
-msgid "Search integrations.sh"
-msgstr ""
-
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "Search models"
 msgstr ""
@@ -3663,7 +3728,6 @@ msgid "Sign in to Rakazo"
 msgstr "Rakazo में साइन इन करें"
 
 #: src/pages/Auth.tsx
-#: src/pages/Welcome.tsx
 msgid "Sign up"
 msgstr "साइन अप करें"
 
@@ -3673,8 +3737,8 @@ msgid "Skill {0}"
 msgstr "स्किल {0}"
 
 #: src/pages/KnowledgeSection.tsx
-msgid "Skills"
-msgstr "स्किल्स"
+msgid "Shared skills"
+msgstr "साझा स्किल्स"
 
 #: src/components/integrations/IntegrationSetup.tsx
 #: src/pages/Shell.tsx
@@ -4225,10 +4289,6 @@ msgstr "आपका ईमेल पता"
 #: src/pages/Auth.tsx
 msgid "Your name"
 msgstr "आपका नाम"
-
-#: src/pages/Welcome.tsx
-msgid "Your team of always-on agents<0/>that you can give real work to."
-msgstr "हमेशा चालू रहने वाले एजेंटों की आपकी टीम<0/>जिन्हें आप असली काम सौंप सकते हैं।"
 
 #: src/pages/ResizableSidePanel.tsx
 msgid "Resize panel"

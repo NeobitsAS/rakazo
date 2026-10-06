@@ -52,12 +52,12 @@ describe("window chrome", () => {
     expect(windowChromeKind(desktop("linux"))).toBe("controls");
   });
 
-  it("does not paint fake traffic lights into the browser shell or welcome page", () => {
+  it("does not paint fake traffic lights into the browser shell or entry pages", () => {
     const root = path.join(path.dirname(fileURLToPath(import.meta.url)), "../pages");
     const shell = readFileSync(path.join(root, "Shell.tsx"), "utf8");
-    const welcome = readFileSync(path.join(root, "Welcome.tsx"), "utf8");
+    const entry = readFileSync(path.join(root, "EntryFrame.tsx"), "utf8");
     expect(shell).not.toContain("FF5F57");
-    expect(welcome).not.toContain("FF5F57");
+    expect(entry).not.toContain("FF5F57");
   });
 
   it("keeps conversation header controls clickable", () => {
