@@ -16,7 +16,7 @@ type SkillDraftBlock = {
 
 function fieldLabel(id: string, title: React.ReactNode) {
   return (
-    <Label htmlFor={id} className="mt-3 mb-1 text-[13px] font-normal text-muted-foreground">
+    <Label htmlFor={id} className="mt-3 mb-2">
       {title}
     </Label>
   );

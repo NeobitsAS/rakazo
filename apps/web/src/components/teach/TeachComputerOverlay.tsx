@@ -220,10 +220,7 @@ export function TeachComputerOverlayControl({
       >
         {goalOpen ? (
           <>
-            <Label
-              htmlFor="teach-goal-input"
-              className="text-[13px] font-normal text-muted-foreground"
-            >
+            <Label htmlFor="teach-goal-input">
               <Trans>What result will you demonstrate?</Trans>
             </Label>
             <Textarea
