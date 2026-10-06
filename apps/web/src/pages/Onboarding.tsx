@@ -37,6 +37,7 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { IntegrationSetup } from "../components/integrations/IntegrationSetup";
 import { LivelyLogo } from "../components/LivelyLogo";
+import { PageLoader } from "../components/PageLoader";
 import {
   ServerCredentialsUnavailable,
   serverCredentialsBlocker,
@@ -506,17 +507,17 @@ export function OnboardingPage() {
     {
       model: {
         title: t`Choose your default model`,
-        description: t`Pick the model your bots run on`,
+        description: t`Pick the AI model your bots think and reply with. Sign in with a subscription or paste an API key, and change it any time.`,
         body: t`Your bots use this model to think and reply. Choose a provider and a model, then sign in with your subscription or paste an API key. It is saved for you in this space, and you can connect more models later in Settings → Models.`,
       },
       integrations: {
         title: t`Server integrations`,
-        description: t`Connect tools your bots can use`,
+        description: t`Give your bots tools for real work, such as email, calendars and issue trackers. It's optional, and you can add more later from Integrations in the sidebar.`,
         body: t`Integrations give your bots tools beyond chat, such as reading email or opening issues. Connect a single tool server (MCP) directly, or set up Composio or Pipedream once to give everyone on this server access to hundreds of apps. You can skip this and add integrations later from Integrations in the sidebar.`,
       },
       bot: {
         title: t`Try your agent`,
-        description: t`Your first agent opens in a chat`,
+        description: t`Rakazo sets up your first agent and opens a chat with it, so you can give it something to do right away.`,
         body: t`Rakazo creates your first bot and opens a chat with it. You can add more bots at any time.`,
       },
     };
@@ -525,6 +526,9 @@ export function OnboardingPage() {
     if (step !== "bot") return;
     void createFirstBot();
   }, [step]);
+
+  // Until the server says which steps apply there is nothing real to show.
+  if (step === "loading") return <PageLoader />;
 
   return (
     <div
@@ -563,17 +567,8 @@ export function OnboardingPage() {
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="app-drag h-12 shrink-0" />
         <main className="mx-auto w-full max-w-[640px] px-6 pt-10 pb-16">
-          {step === "loading" ? null : (
-            <>
-              <h1 className="text-3xl font-medium tracking-tight">{stepDetails[step].title}</h1>
-              <p className="mt-3 mb-8 text-sm text-muted-foreground">{stepDetails[step].body}</p>
-            </>
-          )}
-          {step === "loading" ? (
-            <p className="text-muted-foreground">
-              <Trans>Loading…</Trans>
-            </p>
-          ) : null}
+          <h1 className="text-3xl font-medium tracking-tight">{stepDetails[step].title}</h1>
+          <p className="mt-3 mb-8 text-sm text-muted-foreground">{stepDetails[step].body}</p>
           {step === "model" ? (
             <div>
               <div className="block text-sm font-medium text-foreground">

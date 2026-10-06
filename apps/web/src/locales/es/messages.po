@@ -58,12 +58,16 @@ msgid "Choose your default model"
 msgstr "Elige tu modelo predeterminado"
 
 #: src/pages/Onboarding.tsx
-msgid "Connect tools your bots can use"
-msgstr "Conecta herramientas que tus bots pueden usar"
+msgid "Give your bots tools for real work, such as email, calendars and issue trackers. It's optional, and you can add more later from Integrations in the sidebar."
+msgstr "Da a tus bots herramientas para trabajo real, como correo, calendarios y gestores de incidencias. Es opcional y puedes añadir más después desde Integraciones en la barra lateral."
 
 #: src/pages/Onboarding.tsx
 msgid "Integrations give your bots tools beyond chat, such as reading email or opening issues. Connect a single tool server (MCP) directly, or set up Composio or Pipedream once to give everyone on this server access to hundreds of apps. You can skip this and add integrations later from Integrations in the sidebar."
 msgstr "Las integraciones dan a tus bots herramientas más allá del chat, como leer correos o abrir incidencias. Conecta un único servidor de herramientas (MCP) directamente, o configura Composio o Pipedream una vez para dar a todos en este servidor acceso a cientos de apps. Puedes omitir este paso y añadir integraciones más tarde desde Integraciones en la barra lateral."
+
+#: src/components/PageLoader.tsx
+msgid "Loading"
+msgstr "Cargando"
 
 #: src/pages/Onboarding.tsx
 msgid "Onboarding steps"
@@ -94,12 +98,16 @@ msgid "Paste your Pipedream project ID"
 msgstr "Pega tu ID de proyecto de Pipedream"
 
 #: src/pages/Onboarding.tsx
-msgid "Pick the model your bots run on"
-msgstr "Elige el modelo con el que trabajan tus bots"
+msgid "Pick the AI model your bots think and reply with. Sign in with a subscription or paste an API key, and change it any time."
+msgstr "Elige el modelo de IA con el que tus bots piensan y responden. Inicia sesión con una suscripción o pega una clave de API; puedes cambiarlo cuando quieras."
 
 #: src/pages/Onboarding.tsx
 msgid "Rakazo creates your first bot and opens a chat with it. You can add more bots at any time."
 msgstr "Rakazo crea tu primer bot y abre un chat con él. Puedes añadir más bots en cualquier momento."
+
+#: src/pages/Onboarding.tsx
+msgid "Rakazo sets up your first agent and opens a chat with it, so you can give it something to do right away."
+msgstr "Rakazo prepara tu primer agente y abre un chat con él para que puedas encargarle algo enseguida."
 
 #: src/components/integrations/IntegrationSetup.tsx
 msgid "Results from integrations.sh"
@@ -116,10 +124,6 @@ msgstr "Prueba tu agente"
 #: src/pages/Onboarding.tsx
 msgid "Your bots use this model to think and reply. Choose a provider and a model, then sign in with your subscription or paste an API key. It is saved for you in this space, and you can connect more models later in Settings → Models."
 msgstr "Tus bots usan este modelo para pensar y responder. Elige un proveedor y un modelo, y luego inicia sesión con tu suscripción o pega una clave de API. Se guarda para ti en este espacio, y puedes conectar más modelos más tarde en Configuración → Modelos."
-
-#: src/pages/Onboarding.tsx
-msgid "Your first agent opens in a chat"
-msgstr "Tu primer agente se abre en un chat"
 
 #. placeholder {0}: group.entries.length
 #: src/pages/ModelSettingsOverlay.tsx
