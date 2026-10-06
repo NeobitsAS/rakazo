@@ -3349,7 +3349,7 @@ export function ShellPage() {
         <Popover open={menuOpen} onOpenChange={setMenuOpen}>
           <PopoverTrigger
             data-testid="user-menu-trigger"
-            className="flex items-center gap-[11px] px-[18px] py-3.5"
+            className="flex items-center gap-[11px] px-[18px] pt-3.5 pb-[18px]"
           >
             <span className="grid h-8 w-8 place-items-center rounded-full bg-accent text-[12px] text-foreground/75">
               {initials}
