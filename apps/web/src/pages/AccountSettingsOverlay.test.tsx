@@ -18,28 +18,35 @@ vi.mock("@rakazo/ui-web", () => ({
     </button>
   ),
   Field: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
+  FieldGroup: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
   FieldLabel: ({ children, htmlFor }: { children?: ReactNode; htmlFor?: string }) => (
     <label htmlFor={htmlFor}>{children}</label>
   ),
   Input: (props: React.ComponentProps<"input">) => <input {...props} />,
+  OptionSelect: () => null,
   Label: ({ children, htmlFor }: { children?: ReactNode; htmlFor?: string }) => (
     <label htmlFor={htmlFor}>{children}</label>
   ),
-  Switch: ({
+  SwitchField: ({
+    label,
     checked,
     onCheckedChange,
-    ...props
+    "data-testid": testId,
   }: {
+    label: ReactNode;
     checked: boolean;
-    onCheckedChange?: (checked: boolean) => void;
-  } & React.ComponentProps<"button">) => (
+    onCheckedChange: (checked: boolean) => void;
+    "data-testid"?: string;
+  }) => (
     <button
       type="button"
       role="switch"
       aria-checked={checked}
-      onClick={() => onCheckedChange?.(!checked)}
-      {...props}
-    />
+      data-testid={testId}
+      onClick={() => onCheckedChange(!checked)}
+    >
+      {label}
+    </button>
   ),
   Toggle: ({
     children,

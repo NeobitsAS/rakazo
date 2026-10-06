@@ -44,8 +44,7 @@ function useElapsed(startedAtMs?: number): string {
 }
 
 /** Pixel-grid loader with shimmering label and live elapsed timer. */
-function DefaultLoadingState({ label, startedAt }: { label: string; startedAt?: number }) {
-  const elapsed = useElapsed(startedAt);
+function DefaultLoadingState({ label }: { label: string }) {
   return (
     <>
       <span aria-hidden className="grid grid-cols-[repeat(3,4px)] gap-[1.5px]">
@@ -60,8 +59,14 @@ function DefaultLoadingState({ label, startedAt }: { label: string; startedAt?: 
       <span className="text-[13.5px] font-medium">
         <Shimmer>{label}</Shimmer>
       </span>
-      <span className="font-mono text-[12px] tabular-nums text-muted-foreground">{elapsed}</span>
     </>
+  );
+}
+
+function Elapsed({ startedAt }: { startedAt?: number }) {
+  const elapsed = useElapsed(startedAt);
+  return (
+    <span className="font-mono text-[12px] tabular-nums text-muted-foreground">{elapsed}</span>
   );
 }
 
@@ -69,11 +74,14 @@ export function LoadingState({
   indicator,
   label = "working",
   startedAt,
+  showElapsed = true,
 }: {
   indicator?: React.ReactNode;
   label?: string;
   /** Epoch ms when the run started. Falls back to mount time when omitted. */
   startedAt?: number;
+  /** Counts the time since it started; off where the wait is too short to time. */
+  showElapsed?: boolean;
 }) {
   if (indicator) {
     return (
@@ -85,7 +93,8 @@ export function LoadingState({
   }
   return (
     <span className="flex w-fit items-center gap-2.5">
-      <DefaultLoadingState label={label} startedAt={startedAt} />
+      <DefaultLoadingState label={label} />
+      {showElapsed ? <Elapsed startedAt={startedAt} /> : null}
     </span>
   );
 }

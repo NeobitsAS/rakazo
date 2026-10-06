@@ -1,9 +1,10 @@
 import { useLingui } from "@lingui/react/macro";
 import type { AvatarStyle, SpaceMemoryConfig } from "@rakazo/contracts";
-import { Button, Dialog, DialogClose, DialogContent, DialogTitle } from "@rakazo/ui-web";
-import { Brain, CloudDownload, Cpu, Gauge, Monitor, Settings, Volume2, XIcon } from "lucide-react";
+import { Dialog, DialogContent } from "@rakazo/ui-web";
+import { Brain, CloudDownload, Cpu, Gauge, Monitor, Settings, Volume2 } from "lucide-react";
 import { type ComponentType, useEffect, useRef, useState } from "react";
 import { computersAreUnavailable } from "../components/ComputersUnavailableHint";
+import { DialogPageHeader } from "../components/DialogPageHeader";
 import {
   ComputerSettingsPanel,
   GeneralSettingsPanels,
@@ -26,6 +27,8 @@ export type SettingsSection =
 type NavItem = {
   id: SettingsSection;
   label: string;
+  /** Shown under the page title: what the page is for. */
+  description: string;
   icon: ComponentType<{ className?: string; strokeWidth?: number }>;
 };
 
@@ -80,18 +83,56 @@ export function SettingsOverlay({
   }, [section]);
 
   const navItems: NavItem[] = [
-    { id: "general", label: t`General`, icon: Settings },
-    { id: "models", label: t`Models`, icon: Cpu },
-    { id: "memory", label: t`Memory`, icon: Brain },
-    { id: "voice", label: t`Voice`, icon: Volume2 },
-    { id: "usage", label: t`Usage`, icon: Gauge },
-    ...(showComputer ? [{ id: "computer" as const, label: t`Computer`, icon: Monitor }] : []),
-    { id: "updates", label: t`Updates`, icon: CloudDownload },
+    {
+      id: "general",
+      label: t`General`,
+      description: t`Your account and password, how Rakazo looks, and the language it speaks.`,
+      icon: Settings,
+    },
+    {
+      id: "models",
+      label: t`Models`,
+      description: t`Choose the model your bots think with, and connect the providers that run it.`,
+      icon: Cpu,
+    },
+    {
+      id: "memory",
+      label: t`Memory`,
+      description: t`Your bots keep shared notes in MEMORY.md. Add a provider so they can also recall past conversations.`,
+      icon: Brain,
+    },
+    {
+      id: "voice",
+      label: t`Voice`,
+      description: t`Connect a voice provider so your bots can read replies aloud and understand what you say.`,
+      icon: Volume2,
+    },
+    {
+      id: "usage",
+      label: t`Usage`,
+      description: t`How much your bots have run, and how many tokens they have used.`,
+      icon: Gauge,
+    },
+    ...(showComputer
+      ? [
+          {
+            id: "computer" as const,
+            label: t`Computer`,
+            description: t`Give your bots a computer to run code and work with files.`,
+            icon: Monitor,
+          },
+        ]
+      : []),
+    {
+      id: "updates",
+      label: t`Updates`,
+      description: t`See which version you are running, and install new releases when they are out.`,
+      icon: CloudDownload,
+    },
   ];
 
-  const sectionTitle =
-    navItems.find((item) => item.id === section)?.label ??
-    (section === "general" ? t`General` : t`Settings`);
+  const sectionItem = navItems.find((item) => item.id === section);
+  const sectionTitle = sectionItem?.label ?? (section === "general" ? t`General` : t`Settings`);
 
   const closeLabel =
     section === "models"
@@ -115,8 +156,6 @@ export function SettingsOverlay({
     leaveSettings(onClose);
   }
 
-  const widePane = section === "models" || section === "voice";
-
   return (
     <Dialog
       open
@@ -137,17 +176,13 @@ export function SettingsOverlay({
         initialFocus={() =>
           section === "usage" ? (usageRef.current ?? panelRef.current) : panelRef.current
         }
-        className={`flex max-h-[calc(100%-2rem)] flex-col gap-0 overflow-hidden rounded-2xl p-0 sm:max-h-[calc(100%-5rem)] ${
-          widePane
-            ? "h-[min(760px,calc(100%-2rem))] w-[min(1080px,calc(100%-2rem))] sm:max-w-[1080px]"
-            : "h-[min(720px,calc(100%-2rem))] w-[min(920px,calc(100%-2rem))] sm:max-w-[920px]"
-        }`}
+        className="flex h-[min(760px,calc(100%-2rem))] max-h-[calc(100%-2rem)] w-[min(1080px,calc(100%-2rem))] flex-col gap-0 overflow-hidden rounded-2xl p-0 sm:max-h-[calc(100%-5rem)] sm:max-w-[1080px]"
       >
         <div className="flex min-h-0 flex-1 flex-col md:flex-row">
           <nav
             data-testid="settings-nav"
             aria-label={t`Settings`}
-            className="flex shrink-0 flex-row gap-1 overflow-x-auto border-b border-border px-3 py-3 md:w-[200px] md:flex-col md:overflow-y-auto md:border-b-0 md:border-e md:px-3 md:py-4"
+            className="flex shrink-0 flex-row gap-1 overflow-x-auto border-b border-border bg-sidebar px-3 py-3 md:w-[200px] md:flex-col md:overflow-y-auto md:border-b-0 md:border-e md:px-3 md:py-4"
           >
             {navItems.map((item) => {
               const Icon = item.icon;
@@ -162,8 +197,8 @@ export function SettingsOverlay({
                   onClick={() => setSection(item.id)}
                   className={`flex shrink-0 items-center gap-2.5 rounded-lg px-2.5 py-2 text-start text-[13.5px] transition-colors disabled:pointer-events-none disabled:opacity-50 ${
                     active
-                      ? "bg-muted text-foreground"
-                      : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                      ? "bg-sidebar-accent text-foreground"
+                      : "text-muted-foreground hover:bg-sidebar-accent hover:text-foreground"
                   }`}
                 >
                   <Icon className="size-4 shrink-0" strokeWidth={1.75} />
@@ -174,24 +209,18 @@ export function SettingsOverlay({
           </nav>
 
           <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-            <div className="flex items-start justify-between gap-4 px-6 pt-6 sm:px-8 sm:pt-7">
-              <DialogTitle className="text-2xl font-medium text-foreground">
-                {sectionTitle}
-              </DialogTitle>
-              <DialogClose
-                aria-label={closeLabel}
-                disabled={panelBusy}
-                render={<Button variant="ghost" size="icon-sm" />}
-              >
-                <XIcon />
-              </DialogClose>
-            </div>
+            <DialogPageHeader
+              title={sectionTitle}
+              description={sectionItem?.description}
+              closeLabel={closeLabel}
+              closeDisabled={panelBusy}
+            />
 
             <div
               className={`min-h-0 flex-1 ${
                 section === "models" || section === "voice" || section === "memory"
                   ? "flex flex-col overflow-hidden"
-                  : "rk-scroll overflow-y-auto overscroll-contain px-6 pb-6 pt-5 sm:px-8 sm:pb-8"
+                  : "rk-scroll overflow-y-auto overscroll-contain px-6 pb-6 sm:px-8 sm:pb-8"
               }`}
             >
               {section === "general" ? (

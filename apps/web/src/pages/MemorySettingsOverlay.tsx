@@ -9,8 +9,7 @@ import {
   DialogTitle,
   Field,
   FieldLabel,
-  NativeSelect,
-  NativeSelectOption,
+  OptionSelect,
   Toggle,
 } from "@rakazo/ui-web";
 import { XIcon } from "lucide-react";
@@ -172,13 +171,11 @@ export function MemorySettingsOverlay({
             <XIcon />
           </DialogClose>
         </div>
-      ) : (
-        <p className="px-6 pt-1 text-[13.5px] text-muted-foreground/70 sm:px-8">
-          {registration?.description ?? <Trans>Manage the Space semantic memory provider.</Trans>}
-        </p>
-      )}
+      ) : null}
 
-      <div className="rk-scroll min-h-0 flex-1 overflow-y-auto px-6 py-6 sm:px-8">
+      <div
+        className={`rk-scroll min-h-0 flex-1 overflow-y-auto px-6 pb-6 sm:px-8 ${embedded ? "" : "pt-6"}`}
+      >
         {error ? <p className="mb-4 text-sm text-destructive">{error}</p> : null}
 
         {config === undefined ? (
@@ -218,19 +215,16 @@ export function MemorySettingsOverlay({
                 <FieldLabel htmlFor={providerSelectId}>
                   <Trans>Provider</Trans>
                 </FieldLabel>
-                <NativeSelect
+                <OptionSelect
                   id={providerSelectId}
-                  className="w-full"
                   value={selectedProvider}
                   disabled={busy}
-                  onChange={(event) => setSelectedProvider(event.target.value)}
-                >
-                  {MEMORY_PROVIDER_SETTINGS.map((entry) => (
-                    <NativeSelectOption key={entry.id} value={entry.id}>
-                      {entry.name}
-                    </NativeSelectOption>
-                  ))}
-                </NativeSelect>
+                  onValueChange={setSelectedProvider}
+                  options={MEMORY_PROVIDER_SETTINGS.map((entry) => ({
+                    value: entry.id,
+                    label: entry.name,
+                  }))}
+                />
               </Field>
             ) : null}
 
