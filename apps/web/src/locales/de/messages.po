@@ -17,6 +17,74 @@ msgstr ""
 msgid " (unread)"
 msgstr " (ungelesen)"
 
+#: src/pages/Onboarding.tsx
+msgid "Choose your default model"
+msgstr "Standardmodell auswählen"
+
+#: src/pages/Onboarding.tsx
+msgid "Connect tools your bots can use"
+msgstr "Verbinde Tools, die deine Bots nutzen können"
+
+#: src/pages/Onboarding.tsx
+msgid "Integrations give your bots tools beyond chat, such as reading email or opening issues. Connect a single tool server (MCP) directly, or set up Composio or Pipedream once to give everyone on this server access to hundreds of apps. You can skip this and add integrations later from Integrations in the sidebar."
+msgstr "Integrationen geben deinen Bots Werkzeuge über den Chat hinaus, etwa um E-Mails zu lesen oder Issues anzulegen. Verbinde einen einzelnen Tool-Server (MCP) direkt, oder richte Composio oder Pipedream einmal ein, um allen auf diesem Server Zugriff auf Hunderte Apps zu geben. Du kannst das überspringen und Integrationen später über Integrationen in der Seitenleiste hinzufügen."
+
+#: src/pages/Onboarding.tsx
+msgid "Onboarding steps"
+msgstr "Einrichtungsschritte"
+
+#: src/pages/Onboarding.tsx
+msgid "Opening your first agent…"
+msgstr "Dein erster Agent wird geöffnet…"
+
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Paste your Composio API key"
+msgstr "Composio-API-Schlüssel einfügen"
+
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Paste your Executor access token"
+msgstr "Executor-Zugriffstoken einfügen"
+
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Paste your Pipedream client ID"
+msgstr "Pipedream-Client-ID einfügen"
+
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Paste your Pipedream client secret"
+msgstr "Pipedream-Client-Secret einfügen"
+
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Paste your Pipedream project ID"
+msgstr "Pipedream-Projekt-ID einfügen"
+
+#: src/pages/Onboarding.tsx
+msgid "Pick the model your bots run on"
+msgstr "Wähle das Modell, mit dem deine Bots arbeiten"
+
+#: src/pages/Onboarding.tsx
+msgid "Rakazo creates your first bot and opens a chat with it. You can add more bots at any time."
+msgstr "Rakazo erstellt deinen ersten Bot und öffnet einen Chat mit ihm. Du kannst jederzeit weitere Bots hinzufügen."
+
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Results from integrations.sh"
+msgstr "Ergebnisse von integrations.sh"
+
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Search for an app, e.g. GitHub or Linear"
+msgstr "Nach einer App suchen, z. B. GitHub oder Linear"
+
+#: src/pages/Onboarding.tsx
+msgid "Try your agent"
+msgstr "Probiere deinen Agenten aus"
+
+#: src/pages/Onboarding.tsx
+msgid "Your bots use this model to think and reply. Choose a provider and a model, then sign in with your subscription or paste an API key. It is saved for you in this space, and you can connect more models later in Settings → Models."
+msgstr "Deine Bots nutzen dieses Modell zum Denken und Antworten. Wähle einen Anbieter und ein Modell, melde dich dann mit deinem Abo an oder füge einen API-Schlüssel ein. Es wird für dich in diesem Space gespeichert, und weitere Modelle kannst du später unter Einstellungen → Modelle verbinden."
+
+#: src/pages/Onboarding.tsx
+msgid "Your first agent opens in a chat"
+msgstr "Dein erster Agent öffnet sich in einem Chat"
+
 #. placeholder {0}: group.entries.length
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "{0, plural, one {# model} other {# models}}"
@@ -1059,10 +1127,6 @@ msgstr "Passwort bestätigen"
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "Connect"
 msgstr "Verbinden"
-
-#: src/pages/Onboarding.tsx
-msgid "Connect a model"
-msgstr "Modell verbinden"
 
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "Connect API key"
@@ -3473,10 +3537,6 @@ msgstr ""
 msgid "Search by domain"
 msgstr ""
 
-#: src/components/integrations/IntegrationSetup.tsx
-msgid "Search integrations.sh"
-msgstr ""
-
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "Search models"
 msgstr "Modelle suchen"
@@ -3632,7 +3692,6 @@ msgid "Sign in to Rakazo"
 msgstr "Bei Rakazo anmelden"
 
 #: src/pages/Auth.tsx
-#: src/pages/Welcome.tsx
 msgid "Sign up"
 msgstr "Registrieren"
 
@@ -4194,10 +4253,6 @@ msgstr "Deine E-Mail-Adresse"
 #: src/pages/Auth.tsx
 msgid "Your name"
 msgstr "Dein Name"
-
-#: src/pages/Welcome.tsx
-msgid "Your team of always-on agents<0/>that you can give real work to."
-msgstr "Dein Team aus jederzeit verfügbaren Agents<0/>für echte Aufgaben."
 
 #: src/pages/ResizableSidePanel.tsx
 msgid "Resize panel"

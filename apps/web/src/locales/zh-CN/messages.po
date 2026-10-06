@@ -17,6 +17,74 @@ msgstr ""
 msgid " (unread)"
 msgstr "（未读）"
 
+#: src/pages/Onboarding.tsx
+msgid "Choose your default model"
+msgstr "选择你的默认模型"
+
+#: src/pages/Onboarding.tsx
+msgid "Connect tools your bots can use"
+msgstr "连接你的 Bot 可以使用的工具"
+
+#: src/pages/Onboarding.tsx
+msgid "Integrations give your bots tools beyond chat, such as reading email or opening issues. Connect a single tool server (MCP) directly, or set up Composio or Pipedream once to give everyone on this server access to hundreds of apps. You can skip this and add integrations later from Integrations in the sidebar."
+msgstr "集成让你的 Bot 拥有聊天之外的工具，比如阅读邮件或创建 issue。你可以直接连接单个工具服务器（MCP），或者设置一次 Composio 或 Pipedream，让这个服务器上的所有人都能使用数百个应用。你可以先跳过，之后在侧边栏的“集成”中添加。"
+
+#: src/pages/Onboarding.tsx
+msgid "Onboarding steps"
+msgstr "入门步骤"
+
+#: src/pages/Onboarding.tsx
+msgid "Opening your first agent…"
+msgstr "正在打开你的第一个智能体…"
+
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Paste your Composio API key"
+msgstr "粘贴你的 Composio API 密钥"
+
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Paste your Executor access token"
+msgstr "粘贴你的 Executor 访问令牌"
+
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Paste your Pipedream client ID"
+msgstr "粘贴你的 Pipedream 客户端 ID"
+
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Paste your Pipedream client secret"
+msgstr "粘贴你的 Pipedream 客户端密钥"
+
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Paste your Pipedream project ID"
+msgstr "粘贴你的 Pipedream 项目 ID"
+
+#: src/pages/Onboarding.tsx
+msgid "Pick the model your bots run on"
+msgstr "选择你的 Bot 所用的模型"
+
+#: src/pages/Onboarding.tsx
+msgid "Rakazo creates your first bot and opens a chat with it. You can add more bots at any time."
+msgstr "Rakazo 会创建你的第一个 Bot 并与它开启聊天。你可以随时添加更多 Bot。"
+
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Results from integrations.sh"
+msgstr "结果来自 integrations.sh"
+
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Search for an app, e.g. GitHub or Linear"
+msgstr "搜索应用，例如 GitHub 或 Linear"
+
+#: src/pages/Onboarding.tsx
+msgid "Try your agent"
+msgstr "试用你的智能体"
+
+#: src/pages/Onboarding.tsx
+msgid "Your bots use this model to think and reply. Choose a provider and a model, then sign in with your subscription or paste an API key. It is saved for you in this space, and you can connect more models later in Settings → Models."
+msgstr "你的 Bot 用这个模型来思考和回复。选择提供商和模型，然后用你的订阅登录或粘贴 API 密钥。它会在这个空间里为你保存，之后你可以在 设置 → 模型 中连接更多模型。"
+
+#: src/pages/Onboarding.tsx
+msgid "Your first agent opens in a chat"
+msgstr "你的第一个智能体会在聊天中打开"
+
 #. placeholder {0}: group.entries.length
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "{0, plural, one {# model} other {# models}}"
@@ -1059,10 +1127,6 @@ msgstr "确认密码"
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "Connect"
 msgstr "连接"
-
-#: src/pages/Onboarding.tsx
-msgid "Connect a model"
-msgstr "连接模型"
 
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "Connect API key"
@@ -3473,10 +3537,6 @@ msgstr ""
 msgid "Search by domain"
 msgstr ""
 
-#: src/components/integrations/IntegrationSetup.tsx
-msgid "Search integrations.sh"
-msgstr ""
-
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "Search models"
 msgstr "搜索模型"
@@ -3632,7 +3692,6 @@ msgid "Sign in to Rakazo"
 msgstr "登录 Rakazo"
 
 #: src/pages/Auth.tsx
-#: src/pages/Welcome.tsx
 msgid "Sign up"
 msgstr "注册"
 
@@ -4194,10 +4253,6 @@ msgstr "你的邮箱"
 #: src/pages/Auth.tsx
 msgid "Your name"
 msgstr "你的名字"
-
-#: src/pages/Welcome.tsx
-msgid "Your team of always-on agents<0/>that you can give real work to."
-msgstr "你的一支随时在线的 Agent 团队<0/>可以交给它们真正的工作。"
 
 #: src/pages/ResizableSidePanel.tsx
 msgid "Resize panel"

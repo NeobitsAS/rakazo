@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { IntegrationSetup } from "../components/integrations/IntegrationSetup";
 import { rpc } from "../lib/rpc";
+import { EntryFrame } from "./EntryFrame";
 
 export function IntegrationSetupPage() {
   const navigate = useNavigate();
@@ -44,8 +45,8 @@ export function IntegrationSetupPage() {
     };
   }, [serverSetup, navigate]);
   return (
-    <div className="min-h-full bg-background px-6 py-12">
-      <div className="mx-auto max-w-[560px]">
+    <EntryFrame title={serverSetup ? t`Server integrations` : t`Add MCP server`}>
+      <div className="w-full">
         {bots.length > 1 ? (
           <NativeSelect
             aria-label={t`Bot`}
@@ -63,6 +64,7 @@ export function IntegrationSetupPage() {
         {ready ? (
           <IntegrationSetup
             key={serverSetup ? "server" : "mcp"}
+            layout="page"
             serverSetup={serverSetup}
             initialState={setupState}
             botId={botId || undefined}
@@ -72,6 +74,6 @@ export function IntegrationSetupPage() {
           <p>{error ? t`Could not load bots. Reload to try again.` : t`Loading…`}</p>
         )}
       </div>
-    </div>
+    </EntryFrame>
   );
 }

@@ -1,17 +1,16 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import { readBoundedJsonResponse, signupRequiresEmailVerification } from "@rakazo/core";
 import { Button, Input, Label } from "@rakazo/ui-web";
-import { Eye, EyeOff } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { authClient } from "../lib/auth";
 import { clearSpaceSelection } from "../lib/rpc";
+import { EntryFrame } from "./EntryFrame";
 
 type AuthMode = "in" | "up" | "forgot";
 type PasswordResetCapabilities = { passwordReset: boolean; resetUrl: string | null };
 
-const fieldClass = "mt-2 h-12 rounded-xl px-4 text-base md:text-base";
-const submitClass = "mt-3 h-12 w-full rounded-xl text-base";
+const submitClass = "mt-3 w-full";
 const AUTH_CAPABILITIES_TIMEOUT_MS = 8_000;
 const MAX_AUTH_CAPABILITIES_RESPONSE_BYTES = 64 * 1024;
 
@@ -22,7 +21,6 @@ export function AuthPage({ mode }: { mode: AuthMode }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [resetSent, setResetSent] = useState(false);
@@ -142,7 +140,8 @@ export function AuthPage({ mode }: { mode: AuthMode }) {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder={t`Your name`}
-                className={fieldClass}
+                size="xl"
+                className="mt-2"
               />
             </div>
           ) : null}
@@ -159,7 +158,8 @@ export function AuthPage({ mode }: { mode: AuthMode }) {
               placeholder={t`Your email address`}
               type="email"
               required
-              className={fieldClass}
+              size="xl"
+              className="mt-2"
             />
           </div>
           {mode !== "forgot" ? (
@@ -167,31 +167,19 @@ export function AuthPage({ mode }: { mode: AuthMode }) {
               <Label htmlFor={passwordFieldId} className="text-muted-foreground">
                 <Trans>Password</Trans>
               </Label>
-              <div className="relative">
-                <Input
-                  id={passwordFieldId}
-                  name="password"
-                  autoComplete={mode === "in" ? "current-password" : "new-password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder={t`Password`}
-                  type={showPassword ? "text" : "password"}
-                  required
-                  minLength={8}
-                  className={`${fieldClass} pr-12`}
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setShowPassword((shown) => !shown)}
-                  aria-label={showPassword ? t`Hide password` : t`Show password`}
-                  aria-pressed={showPassword}
-                  className="absolute inset-y-0 right-2 my-auto text-muted-foreground"
-                >
-                  {showPassword ? <EyeOff /> : <Eye />}
-                </Button>
-              </div>
+              <Input
+                id={passwordFieldId}
+                name="password"
+                autoComplete={mode === "in" ? "current-password" : "new-password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder={t`Password`}
+                type="password"
+                required
+                minLength={8}
+                size="xl"
+                className="mt-2"
+              />
               {mode === "in" && reset?.passwordReset ? (
                 <div className="mt-2 text-right text-sm">
                   <Link to="/forgot-password" className="font-medium text-foreground">
@@ -206,7 +194,7 @@ export function AuthPage({ mode }: { mode: AuthMode }) {
               {error}
             </p>
           ) : null}
-          <Button type="submit" size="lg" disabled={pending} className={submitClass}>
+          <Button type="submit" size="xl" disabled={pending} className={submitClass}>
             {pending ? (
               <Trans>Working…</Trans>
             ) : mode === "in" ? (
@@ -312,7 +300,7 @@ export function PasswordResetPage() {
           ) : null}
           <Button
             type="submit"
-            size="lg"
+            size="xl"
             disabled={pending || !params.get("token")}
             className={submitClass}
           >
@@ -337,18 +325,11 @@ function AuthFrame({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-full items-center justify-center bg-background px-6 py-16 text-foreground">
-      <form onSubmit={onSubmit} className="flex w-[460px] flex-col items-center">
-        <div className="flex h-[74px] w-[74px] items-center justify-center gap-[11px] rounded-full bg-muted">
-          <span className="h-5 w-[9px] rounded-full bg-primary" />
-          <span className="h-5 w-[9px] rounded-full bg-primary" />
-        </div>
-        <h1 aria-live="polite" className="mb-9 mt-7 text-4xl font-medium tracking-tight">
-          {title}
-        </h1>
+    <EntryFrame title={title}>
+      <form onSubmit={onSubmit} className="flex w-full flex-col items-center">
         {children}
       </form>
-    </div>
+    </EntryFrame>
   );
 }
 
@@ -379,7 +360,8 @@ function PasswordField({
         minLength={8}
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className={fieldClass}
+        size="xl"
+        className="mt-2"
       />
     </div>
   );

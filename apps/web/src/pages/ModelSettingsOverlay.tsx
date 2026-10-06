@@ -839,7 +839,8 @@ export function ModelSettingsOverlay({
                 placeholder={credential?.hasKey ? t`Paste a replacement key` : "sk-…"}
                 type="password"
                 autoComplete="new-password"
-                className="mt-2 h-10 text-foreground"
+                size="lg"
+                className="mt-2 text-foreground"
               />
             </label>
           ) : null}
@@ -889,7 +890,8 @@ export function ModelSettingsOverlay({
           placeholder={credential?.hasKey ? t`Paste a replacement key` : t`Optional`}
           type="password"
           autoComplete="new-password"
-          className="mt-2 h-10 text-foreground"
+          size="lg"
+          className="mt-2 text-foreground"
         />
       </details>
       <Button
