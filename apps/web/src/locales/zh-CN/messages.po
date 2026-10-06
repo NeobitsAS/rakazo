@@ -22,12 +22,16 @@ msgid "Choose your default model"
 msgstr "选择你的默认模型"
 
 #: src/pages/Onboarding.tsx
-msgid "Connect tools your bots can use"
-msgstr "连接你的 Bot 可以使用的工具"
+msgid "Give your bots tools for real work, such as email, calendars and issue trackers. It's optional, and you can add more later from Integrations in the sidebar."
+msgstr "为你的 Bot 连接用于实际工作的工具，比如邮件、日历和问题跟踪器。这一步是可选的，之后可以在侧边栏的“集成”中添加更多。"
 
 #: src/pages/Onboarding.tsx
 msgid "Integrations give your bots tools beyond chat, such as reading email or opening issues. Connect a single tool server (MCP) directly, or set up Composio or Pipedream once to give everyone on this server access to hundreds of apps. You can skip this and add integrations later from Integrations in the sidebar."
 msgstr "集成让你的 Bot 拥有聊天之外的工具，比如阅读邮件或创建 issue。你可以直接连接单个工具服务器（MCP），或者设置一次 Composio 或 Pipedream，让这个服务器上的所有人都能使用数百个应用。你可以先跳过，之后在侧边栏的“集成”中添加。"
+
+#: src/components/PageLoader.tsx
+msgid "Loading"
+msgstr "正在加载"
 
 #: src/pages/Onboarding.tsx
 msgid "Onboarding steps"
@@ -58,12 +62,16 @@ msgid "Paste your Pipedream project ID"
 msgstr "粘贴你的 Pipedream 项目 ID"
 
 #: src/pages/Onboarding.tsx
-msgid "Pick the model your bots run on"
-msgstr "选择你的 Bot 所用的模型"
+msgid "Pick the AI model your bots think and reply with. Sign in with a subscription or paste an API key, and change it any time."
+msgstr "选择你的 Bot 用来思考和回复的 AI 模型。用订阅登录或粘贴 API 密钥，之后随时可以更改。"
 
 #: src/pages/Onboarding.tsx
 msgid "Rakazo creates your first bot and opens a chat with it. You can add more bots at any time."
 msgstr "Rakazo 会创建你的第一个 Bot 并与它开启聊天。你可以随时添加更多 Bot。"
+
+#: src/pages/Onboarding.tsx
+msgid "Rakazo sets up your first agent and opens a chat with it, so you can give it something to do right away."
+msgstr "Rakazo 会准备好你的第一个智能体并打开与它的聊天，让你马上就能给它安排任务。"
 
 #: src/components/integrations/IntegrationSetup.tsx
 msgid "Results from integrations.sh"
@@ -80,10 +88,6 @@ msgstr "试用你的智能体"
 #: src/pages/Onboarding.tsx
 msgid "Your bots use this model to think and reply. Choose a provider and a model, then sign in with your subscription or paste an API key. It is saved for you in this space, and you can connect more models later in Settings → Models."
 msgstr "你的 Bot 用这个模型来思考和回复。选择提供商和模型，然后用你的订阅登录或粘贴 API 密钥。它会在这个空间里为你保存，之后你可以在 设置 → 模型 中连接更多模型。"
-
-#: src/pages/Onboarding.tsx
-msgid "Your first agent opens in a chat"
-msgstr "你的第一个智能体会在聊天中打开"
 
 #. placeholder {0}: group.entries.length
 #: src/pages/ModelSettingsOverlay.tsx

@@ -22,12 +22,16 @@ msgid "Choose your default model"
 msgstr "기본 AI 모델 선택"
 
 #: src/pages/Onboarding.tsx
-msgid "Connect tools your bots can use"
-msgstr "Bot이 쓸 수 있는 도구를 연결하세요"
+msgid "Give your bots tools for real work, such as email, calendars and issue trackers. It's optional, and you can add more later from Integrations in the sidebar."
+msgstr "이메일, 캘린더, 이슈 트래커처럼 실제 업무에 쓸 도구를 Bot에 연결하세요. 선택 사항이며, 나중에 사이드바의 앱·도구 연동에서 더 추가할 수 있습니다."
 
 #: src/pages/Onboarding.tsx
 msgid "Integrations give your bots tools beyond chat, such as reading email or opening issues. Connect a single tool server (MCP) directly, or set up Composio or Pipedream once to give everyone on this server access to hundreds of apps. You can skip this and add integrations later from Integrations in the sidebar."
 msgstr "앱·도구 연동으로 Bot이 채팅 너머의 도구를 쓸 수 있습니다. 예를 들어 이메일을 읽거나 이슈를 만들 수 있습니다. 도구 서버(MCP) 하나를 직접 연결하거나, Composio 또는 Pipedream을 한 번 설정해 이 서버의 모든 사용자가 수백 개의 앱을 쓸 수 있게 하세요. 지금은 건너뛰고 나중에 사이드바의 앱·도구 연동에서 추가할 수도 있습니다."
+
+#: src/components/PageLoader.tsx
+msgid "Loading"
+msgstr "불러오는 중"
 
 #: src/pages/Onboarding.tsx
 msgid "Onboarding steps"
@@ -58,12 +62,16 @@ msgid "Paste your Pipedream project ID"
 msgstr "Pipedream 프로젝트 ID를 붙여넣으세요"
 
 #: src/pages/Onboarding.tsx
-msgid "Pick the model your bots run on"
-msgstr "Bot이 사용할 AI 모델을 고르세요"
+msgid "Pick the AI model your bots think and reply with. Sign in with a subscription or paste an API key, and change it any time."
+msgstr "Bot이 생각하고 답할 때 쓸 AI 모델을 고르세요. 구독으로 로그인하거나 API 키를 붙여넣으면 되고, 언제든 바꿀 수 있습니다."
 
 #: src/pages/Onboarding.tsx
 msgid "Rakazo creates your first bot and opens a chat with it. You can add more bots at any time."
 msgstr "Rakazo가 첫 Bot을 만들고 채팅을 엽니다. Bot은 언제든 더 추가할 수 있습니다."
+
+#: src/pages/Onboarding.tsx
+msgid "Rakazo sets up your first agent and opens a chat with it, so you can give it something to do right away."
+msgstr "Rakazo가 첫 에이전트를 준비하고 채팅을 열어 바로 일을 맡길 수 있게 합니다."
 
 #: src/components/integrations/IntegrationSetup.tsx
 msgid "Results from integrations.sh"
@@ -80,10 +88,6 @@ msgstr "에이전트 사용해 보기"
 #: src/pages/Onboarding.tsx
 msgid "Your bots use this model to think and reply. Choose a provider and a model, then sign in with your subscription or paste an API key. It is saved for you in this space, and you can connect more models later in Settings → Models."
 msgstr "Bot은 이 AI 모델로 생각하고 답합니다. 제공업체와 모델을 고른 뒤 구독으로 로그인하거나 API 키를 붙여넣으세요. 이 스페이스에 내 설정으로 저장되며, 나중에 설정 → AI 모델에서 다른 모델도 연결할 수 있습니다."
-
-#: src/pages/Onboarding.tsx
-msgid "Your first agent opens in a chat"
-msgstr "첫 에이전트가 채팅으로 열립니다"
 
 #. placeholder {0}: group.entries.length
 #: src/pages/ModelSettingsOverlay.tsx

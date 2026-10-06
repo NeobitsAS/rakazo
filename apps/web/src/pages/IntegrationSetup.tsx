@@ -4,6 +4,7 @@ import { NativeSelect, NativeSelectOption } from "@rakazo/ui-web";
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { IntegrationSetup } from "../components/integrations/IntegrationSetup";
+import { PageLoader } from "../components/PageLoader";
 import { rpc } from "../lib/rpc";
 import { EntryFrame } from "./EntryFrame";
 
@@ -44,6 +45,8 @@ export function IntegrationSetupPage() {
       cancelled = true;
     };
   }, [serverSetup, navigate]);
+  if (!ready && !error) return <PageLoader />;
+
   return (
     <EntryFrame title={serverSetup ? t`Server integrations` : t`Add MCP server`}>
       <div className="w-full">
@@ -71,7 +74,7 @@ export function IntegrationSetupPage() {
             onDone={() => navigate(bots.length ? "/app" : "/onboarding")}
           />
         ) : (
-          <p>{error ? t`Could not load bots. Reload to try again.` : t`Loading…`}</p>
+          <p>{t`Could not load bots. Reload to try again.`}</p>
         )}
       </div>
     </EntryFrame>

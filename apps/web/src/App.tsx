@@ -4,6 +4,7 @@ import { Button, Skeleton } from "@rakazo/ui-web";
 import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Navigate, Route, Routes, useSearchParams } from "react-router-dom";
 import { LoadingState } from "./components/ai/primitives";
+import { PageLoader } from "./components/PageLoader";
 import { authClient } from "./lib/auth";
 import { markAfterPaint, markOnce } from "./lib/performance";
 import {
@@ -58,19 +59,14 @@ function SessionApp() {
     return window.location.pathname.startsWith("/app") ? (
       <ShellSkeleton />
     ) : (
-      <div
-        className="grid h-full place-items-center text-muted-foreground/80"
-        data-rakazo-app-state="session-pending"
-      >
-        <Trans>Loading…</Trans>
-      </div>
+      <PageLoader data-rakazo-app-state="session-pending" />
     );
   }
 
   const user = session.data?.user;
   return (
     <div className="h-full" data-rakazo-app-state="ready">
-      <Suspense fallback={<div className="h-full bg-background" />}>
+      <Suspense fallback={<PageLoader />}>
         <Routes>
           <Route path="/" element={<Navigate to={user ? "/app" : "/sign-in"} replace />} />
           <Route
