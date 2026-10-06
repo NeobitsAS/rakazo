@@ -182,7 +182,8 @@ html[data-platform="darwin"] .titlebar-close {
   position: relative;
   flex: none;
   width: 32px;
-  height: 18.4px;
+  /* Whole pixels, so the thumb sits as far from the top as from the bottom. */
+  height: 18px;
   margin: 0;
   border-radius: 999px;
   /* Visible against the page while off. */
@@ -194,8 +195,8 @@ html[data-platform="darwin"] .titlebar-close {
 .switch::before {
   content: "";
   position: absolute;
-  top: 1.2px;
-  left: 1.2px;
+  top: 1px;
+  left: 1px;
   width: 16px;
   height: 16px;
   border-radius: 50%;
@@ -208,7 +209,7 @@ html[data-platform="darwin"] .titlebar-close {
 }
 
 .switch:checked::before {
-  transform: translateX(13.6px);
+  transform: translateX(14px);
 }
 
 .switch:focus-visible {
