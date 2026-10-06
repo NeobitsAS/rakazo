@@ -5,7 +5,7 @@ contextBridge.exposeInMainWorld("rakazoSetup", {
   state: () => ipcRenderer.invoke("desktop.setup.state"),
   test: (url, tunnel) => ipcRenderer.invoke("desktop.setup.test", url, tunnel),
   save: (setup) => ipcRenderer.invoke("desktop.setup.save", setup),
-  quit: () => ipcRenderer.invoke("desktop.setup.quit"),
+  cancel: () => ipcRenderer.invoke("desktop.setup.cancel"),
   openLink: (link) => ipcRenderer.invoke("desktop.setup.openLink", link),
   stack: {
     state: () => ipcRenderer.invoke("desktop.setup.stack.state"),

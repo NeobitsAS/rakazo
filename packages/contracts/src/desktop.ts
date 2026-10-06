@@ -93,6 +93,8 @@ export interface DesktopSetupState {
   saved: DesktopSetup | null;
   /** Present when a saved or newly selected server could not be reopened. */
   error?: string;
+  /** An app window is open behind setup, so Cancel can go back to it unchanged. */
+  canCancel: boolean;
 }
 
 export interface DesktopReachability {
@@ -151,7 +153,8 @@ export interface RakazoSetup {
   /** Starts `tunnel` first when given, so the check reaches the server through it. */
   test: (url: string, tunnel?: DesktopTunnel) => Promise<DesktopReachability>;
   save: (setup: DesktopSetup) => Promise<{ ok: boolean; error?: string }>;
-  quit: () => Promise<void>;
+  /** Closes setup without saving and goes back to the app window. */
+  cancel: () => Promise<void>;
   /** Opens one of the Docker install pages in the system browser. */
   openLink: (link: DesktopSetupLink) => Promise<void>;
   /** The Docker Compose stack this app installs and runs for mode `new`. */

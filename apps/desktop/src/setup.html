@@ -12,12 +12,12 @@
   </head>
   <body>
     <header class="titlebar">
-      <span class="titlebar-name">Rakazo</span>
-      <button id="quit" class="titlebar-quit" type="button" title="Quit Rakazo">Quit</button>
+      <!-- macOS draws its own close button; elsewhere the window has no frame, so this is it. -->
+      <button id="close" class="titlebar-close" type="button" aria-label="Quit Rakazo" title="Quit Rakazo"></button>
     </header>
 
     <main class="shell">
-      <h1 class="heading">Welcome to Rakazo</h1>
+      <h1 id="heading" class="heading">Welcome to Rakazo</h1>
       <p class="subheading">Choose which server this app should use.</p>
 
       <form id="setup" novalidate>
@@ -85,33 +85,39 @@
             autocomplete="off"
             placeholder="https://rakazo.example.com"
           />
-          <details id="tunnel" class="tunnel">
-            <summary class="tunnel-summary">Connect through a tunnel</summary>
-            <label class="field-label" for="tunnel-command">Connection command</label>
-            <input
-              id="tunnel-command"
-              class="field"
-              type="text"
-              spellcheck="false"
-              autocomplete="off"
-              placeholder="aws ssm start-session --target i-… --document-name AWS-StartPortForwardingSessionToRemoteHost …"
-            />
-            <label class="field-label" for="tunnel-sign-in">Sign-in command</label>
-            <input
-              id="tunnel-sign-in"
-              class="field"
-              type="text"
-              spellcheck="false"
-              autocomplete="off"
-              placeholder="aws sso login --profile …"
-            />
-          </details>
+          <div class="tunnel">
+            <label class="toggle" for="tunnel-toggle">
+              <input id="tunnel-toggle" class="switch" type="checkbox" role="switch" />
+              <span>Connect through a tunnel</span>
+            </label>
+            <div id="tunnel-fields" class="tunnel-fields" hidden>
+              <label class="field-label" for="tunnel-command">Connection command</label>
+              <input
+                id="tunnel-command"
+                class="field"
+                type="text"
+                spellcheck="false"
+                autocomplete="off"
+                placeholder="aws ssm start-session --target i-… --document-name AWS-StartPortForwardingSessionToRemoteHost …"
+              />
+              <label class="field-label" for="tunnel-sign-in">Sign-in command</label>
+              <input
+                id="tunnel-sign-in"
+                class="field"
+                type="text"
+                spellcheck="false"
+                autocomplete="off"
+                placeholder="aws sso login --profile …"
+              />
+            </div>
+          </div>
         </section>
 
         <p id="status" class="status" role="status" aria-live="polite"></p>
 
         <div class="actions">
           <button id="check" class="button button-secondary" type="button">Check connection</button>
+          <button id="cancel" class="button button-secondary" type="button" hidden>Cancel</button>
           <button id="continue" class="button button-primary" type="submit">Continue</button>
         </div>
       </form>
