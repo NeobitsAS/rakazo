@@ -29,7 +29,6 @@ function harness(options: {
   signInCommand?: string;
   /** Called for every started command; print lines or end it here. */
   onRun?: (process: FakeProcess, print: (line: string) => void) => void;
-  wait?: (ms: number) => Promise<void>;
 }) {
   const runs: FakeProcess[] = [];
   const states: TunnelState[] = [];
@@ -45,7 +44,7 @@ function harness(options: {
       return process;
     },
     // Yield to the event loop so a healthy tunnel's monitor loop cannot spin forever.
-    wait: options.wait ?? (() => new Promise((resolve) => setImmediate(resolve))),
+    wait: () => new Promise((resolve) => setImmediate(resolve)),
   });
   return { supervisor, runs, states, health };
 }
@@ -105,35 +104,39 @@ describe("TunnelSupervisor", () => {
     expect(states.map((state) => state.phase)).toContain("signing-in");
   });
 
-  it("reconnects after the command stops", async () => {
-    const { supervisor, runs, states, health } = harness({});
-    active = supervisor;
-    health.ok = true;
-    await supervisor.connect();
-
-    runs[0]!.exit();
-
-    await vi.waitFor(() => expect(runs).toHaveLength(2));
-    await vi.waitFor(() => expect(supervisor.state()).toEqual({ phase: "connected" }));
-    expect(states.map((state) => state.phase)).toContain("reconnecting");
-  });
-
-  it("retries right away when restarted while waiting to reconnect", async () => {
+  it("reports a drop once and does not reconnect by itself", async () => {
     const { supervisor, runs, health } = harness({
-      // Every reconnect delay lasts until the test ends; health polls run straight away.
-      wait: (ms) =>
-        ms >= 1_000 ? new Promise(() => {}) : new Promise((resolve) => setImmediate(resolve)),
+      onRun: (_process, print) => print("Exiting session with sessionId: user-0123."),
     });
     active = supervisor;
     health.ok = true;
     await supervisor.connect();
+
     runs[0]!.exit();
-    await vi.waitFor(() => expect(supervisor.state()).toEqual({ phase: "reconnecting" }));
 
-    supervisor.restart();
+    await vi.waitFor(() =>
+      expect(supervisor.state()).toEqual({
+        phase: "failed",
+        message: "Exiting session with sessionId: user-0123.",
+      }),
+    );
+    await new Promise((resolve) => setImmediate(resolve));
+    expect(runs).toHaveLength(1);
+  });
 
-    await vi.waitFor(() => expect(supervisor.state()).toEqual({ phase: "connected" }));
-    expect(runs).toHaveLength(2);
+  it("reports a drop when the server stops answering through a running command", async () => {
+    const { supervisor, runs, health } = harness({});
+    active = supervisor;
+    health.ok = true;
+    await supervisor.connect();
+
+    health.ok = false;
+
+    await vi.waitFor(() =>
+      expect(supervisor.state()).toEqual({ phase: "failed", message: "The connection dropped." }),
+    );
+    expect(runs[0]!.stopped).toBe(true);
+    expect(runs).toHaveLength(1);
   });
 
   it("ends the command and stays stopped", async () => {

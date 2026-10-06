@@ -2,17 +2,11 @@ import { spawn } from "node:child_process";
 import { createInterface } from "node:readline";
 import type { DesktopTunnel } from "@rakazo/contracts";
 
-export type TunnelPhase =
-  | "starting"
-  | "signing-in"
-  | "connected"
-  | "reconnecting"
-  | "failed"
-  | "stopped";
+export type TunnelPhase = "starting" | "signing-in" | "connected" | "failed" | "stopped";
 
 export interface TunnelState {
   phase: TunnelPhase;
-  /** Why the tunnel failed: the command's last line of output, when it printed one. */
+  /** Why the tunnel failed or dropped: the command's last line of output, when it printed one. */
   message?: string;
 }
 
@@ -37,25 +31,24 @@ const MONITOR_INTERVAL_MS = 15_000;
 /** A connected tunnel counts as dropped after this many failed checks in a row. */
 const MONITOR_MISSES = 2;
 const SIGN_IN_TIMEOUT_MS = 5 * 60_000;
-/** A first connection tries twice: once as configured, once after signing in. */
-const CONNECT_DELAYS_MS = [0, 0] as const;
-const RECONNECT_DELAYS_MS = [1_000, 2_000, 4_000, 8_000, 15_000, 30_000] as const;
+/** A connection tries twice: once as configured, once after signing in. */
+const CONNECT_ATTEMPTS = 2;
 const STOPPED_MESSAGE = "The tunnel was stopped.";
 const NO_OUTPUT_MESSAGE = "The connection command stopped before the server answered.";
+const DROPPED_MESSAGE = "The connection dropped.";
 
 /**
- * Runs a user-configured tunnel command (an SSH or cloud port-forward, for example) and keeps
- * it up: it starts the command, waits until the server answers through it, restarts it with
- * backoff when it stops or the server stops answering, and runs the optional sign-in command
- * once per attempt series when the tunnel cannot connect.
+ * Runs a user-configured tunnel command (an SSH or cloud port-forward, for example): it starts
+ * the command, waits until the server answers through it, and runs the optional sign-in command
+ * once when the first attempt fails. Once connected it watches the tunnel and reports `failed`
+ * when the command stops or the server stops answering. It does not reconnect by itself:
+ * reconnecting is the user's call, with a new supervisor.
  */
 export class TunnelSupervisor {
   private readonly stopped = new AbortController();
   private process: TunnelProcess | null = null;
   private lastLine = "";
   private current: TunnelState = { phase: "starting" };
-  /** Ends the wait before the next reconnect attempt, while there is one. */
-  private retryNow: (() => void) | null = null;
 
   constructor(private readonly deps: TunnelDeps) {}
 
@@ -69,18 +62,9 @@ export class TunnelSupervisor {
 
   /** Resolves with null once the server answers through the tunnel, or with why it could not. */
   async connect(): Promise<string | null> {
-    const error = await this.establish("starting", CONNECT_DELAYS_MS);
-    if (error === null) void this.supervise();
+    const error = await this.establish();
+    if (error === null) void this.watch();
     return error;
-  }
-
-  /**
-   * Ends the current command; supervision then reconnects as after any drop. While it is
-   * already waiting to reconnect, it tries again right away instead.
-   */
-  restart(): void {
-    this.process?.stop();
-    this.retryNow?.();
   }
 
   stop(): void {
@@ -104,39 +88,23 @@ export class TunnelSupervisor {
     return (this.deps.wait ?? defaultWait)(ms);
   }
 
-  private backoff(ms: number): Promise<void> {
-    return new Promise<void>((resolve) => {
-      this.retryNow = resolve;
-      void this.wait(ms).then(resolve);
-    }).finally(() => {
-      this.retryNow = null;
-    });
-  }
-
   private run(command: string): TunnelProcess {
     return (this.deps.run ?? runShellCommand)(command, (line) => {
       if (line.trim() !== "") this.lastLine = line.trim();
     });
   }
 
-  private async supervise(): Promise<void> {
-    while (!this.isStopped) {
-      await this.untilDropped();
-      if (this.isStopped) return;
-      const error = await this.establish("reconnecting", RECONNECT_DELAYS_MS);
-      if (error !== null) return;
-    }
+  private async watch(): Promise<void> {
+    await this.untilDropped();
+    if (this.isStopped) return;
+    this.setState({ phase: "failed", message: this.lastLine || DROPPED_MESSAGE });
   }
 
   /** Tries until the server answers, signing in once after the first failed attempt. */
-  private async establish(
-    phase: "starting" | "reconnecting",
-    delays: readonly number[],
-  ): Promise<string | null> {
+  private async establish(): Promise<string | null> {
     let signedIn = false;
-    for (const delay of delays) {
-      this.setState({ phase });
-      await this.backoff(delay);
+    for (let attempt = 0; attempt < CONNECT_ATTEMPTS; attempt++) {
+      this.setState({ phase: "starting" });
       if (this.isStopped) return STOPPED_MESSAGE;
       if (await this.attempt()) {
         this.setState({ phase: "connected" });
