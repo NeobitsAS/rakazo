@@ -19,7 +19,8 @@ export const APP_DOCUMENT_STATE_SCRIPT = `(() => {
       performance.getEntriesByName("rk:renderer:shell-ready").length > 0,
   );
   const entrySurface = Boolean(
-    document.querySelector("[data-rakazo-surface]") ||
+    // A marked surface or the onboarding step guide is ready, whichever step it opens on.
+    document.querySelector('[data-rakazo-surface], [data-slot="stepper"]') ||
       document.querySelector(
         'form input[type="email"], form input[name="email"], form input#email',
       ) ||
