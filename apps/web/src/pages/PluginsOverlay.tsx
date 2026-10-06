@@ -17,6 +17,7 @@ import {
   Button,
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
   Dialog,
@@ -744,17 +745,24 @@ export function PluginsOverlay({
                 <div className="mb-6" data-testid="featured-connectors">
                   {!loading && catalog.length === 0 ? (
                     isDeploymentOwner ? (
-                      <div className="space-y-4">
-                        <p className="text-[13.5px] leading-6 text-muted-foreground/80">
-                          <Trans>Set up Composio or Pipedream to bring their apps here.</Trans>
-                        </p>
-                        <IntegrationSetup
-                          serverSetup
-                          managedOnly
-                          layout="page"
-                          onSaved={refreshAfterSetup}
-                        />
-                      </div>
+                      <Card data-testid="integrations-server-setup">
+                        <CardHeader>
+                          <CardTitle>
+                            <Trans>Server integrations</Trans>
+                          </CardTitle>
+                          <CardDescription>
+                            <Trans>Set up Composio or Pipedream to bring their apps here.</Trans>
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <IntegrationSetup
+                            serverSetup
+                            managedOnly
+                            layout="page"
+                            onSaved={refreshAfterSetup}
+                          />
+                        </CardContent>
+                      </Card>
                     ) : (
                       <p className="text-[13.5px] leading-6 text-muted-foreground/80">
                         <Trans>

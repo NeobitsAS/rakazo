@@ -204,7 +204,7 @@ export function IntegrationSetup({
           aria-label={t`Integration options`}
           className={
             page
-              ? "grid grid-cols-2 gap-3 @lg:grid-cols-4"
+              ? "grid max-w-[592px] grid-cols-2 gap-3 @lg:grid-cols-4"
               : "overflow-hidden rounded-xl border border-border"
           }
         >
