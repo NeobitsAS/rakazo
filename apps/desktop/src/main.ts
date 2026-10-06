@@ -485,8 +485,10 @@ async function waitForMountedAppDocument(contents: Electron.WebContents) {
         (shell && shell.getAttribute("data-ready") === "true") ||
           performance.getEntriesByName("rk:renderer:shell-ready").length > 0,
       );
+      // A page that marks itself as a surface (older servers: the welcome page) or shows the
+      // onboarding step guide is ready, whichever step it opens on.
       const authOrWelcomeSurface = Boolean(
-        document.querySelector('[data-rakazo-surface="welcome"]') ||
+        document.querySelector('[data-rakazo-surface], [data-slot="stepper"]') ||
           document.querySelector(
             'form input[type="email"], form input[name="email"], form input#email',
           ) ||
