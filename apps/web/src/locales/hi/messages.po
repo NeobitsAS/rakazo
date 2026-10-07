@@ -693,6 +693,7 @@ msgid "Avatars"
 msgstr ""
 
 #: src/components/computer/FilesApp.tsx
+#: src/components/integrations/IntegrationSetup.tsx
 #: src/pages/Board.tsx
 #: src/pages/PluginsOverlay.tsx
 #: src/pages/RoutineEditor.tsx
@@ -955,6 +956,10 @@ msgstr "फ़ाइल चुनें"
 msgid "Choose which connected model Rakazo uses."
 msgstr "चुनें कि Rakazo किस कनेक्टेड मॉडल का उपयोग करे।"
 
+#: src/pages/Onboarding.tsx
+msgid "Choose your default model"
+msgstr "अपना डिफ़ॉल्ट मॉडल चुनें"
+
 #: src/pages/shell/dialogs.tsx
 msgid "Clear"
 msgstr "साफ़ करें"
@@ -1173,10 +1178,6 @@ msgstr "पुष्टि करें कि यह URL इस ब्राउ
 msgid "Connect"
 msgstr "कनेक्ट करें"
 
-#: src/pages/Onboarding.tsx
-msgid "Connect a model"
-msgstr "एक मॉडल कनेक्ट करें"
-
 #: src/pages/ModelBackupsSettings.tsx
 msgid "Connect a provider to add backups."
 msgstr "बैकअप जोड़ने के लिए किसी प्रदाता को कनेक्ट करें।"
@@ -1205,6 +1206,8 @@ msgstr "इस प्रोवाइडर को अपने व्यक्�
 msgid "Connect Treg"
 msgstr "Treg कनेक्ट करें"
 
+#: src/components/integrations/ChoiceCard.tsx
+#: src/components/integrations/ConnectedStatus.tsx
 #: src/components/integrations/IntegrationSetup.tsx
 #: src/pages/McpOAuthCallback.tsx
 #: src/pages/MemorySettingsOverlay.tsx
@@ -1982,6 +1985,7 @@ msgstr ""
 msgid "Disabled tools"
 msgstr ""
 
+#: src/components/integrations/ConnectedStatus.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/MemorySettingsOverlay.tsx
 #: src/pages/ModelSettingsOverlay.tsx
@@ -1998,6 +2002,7 @@ msgstr ""
 msgid "Disconnected {0}."
 msgstr ""
 
+#: src/components/integrations/ConnectedStatus.tsx
 #: src/pages/MemorySettingsOverlay.tsx
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/VoiceSettingsOverlay.tsx
@@ -2040,6 +2045,7 @@ msgstr "खाता नहीं है?"
 
 #: src/lib/ticket-status.ts
 #: src/pages/ActivityList.tsx
+#: src/pages/Onboarding.tsx
 #: src/pages/shell/avatar-studio-popover.tsx
 msgid "Done"
 msgstr "पूर्ण"
@@ -2657,7 +2663,6 @@ msgstr "आवाज़ प्रोवाइडर्स लोड हो र�
 #: src/pages/Auth.tsx
 #: src/pages/IntegrationSetup.tsx
 #: src/pages/ModelBackupsSettings.tsx
-#: src/pages/Onboarding.tsx
 #: src/pages/Shell.tsx
 msgid "Loading…"
 msgstr "लोड हो रहा है…"
@@ -3222,6 +3227,10 @@ msgstr ""
 msgid "on the 1st at {0}"
 msgstr "1 तारीख को {0} बजे"
 
+#: src/pages/Onboarding.tsx
+msgid "Onboarding steps"
+msgstr "ऑनबोर्डिंग चरण"
+
 #: src/pages/Shell.tsx
 msgid "Only empty spaces can be deleted. Delete its bots and groups first."
 msgstr ""
@@ -3289,6 +3298,10 @@ msgstr "इसका थ्रेड खोला।"
 #: src/pages/Onboarding.tsx
 msgid "Opening chat…"
 msgstr "चैट खुल रही है…"
+
+#: src/pages/Onboarding.tsx
+msgid "Opening your first agent…"
+msgstr "आपका पहला एजेंट खुल रहा है…"
 
 #: src/App.tsx
 msgid "Opening your Space…"
@@ -3382,6 +3395,26 @@ msgstr "अपनी API कुंजी पेस्ट करें"
 #: src/lib/model-connection-preflight.ts
 msgid "Paste your API key, then test again."
 msgstr "अपनी API कुंजी पेस्ट करें, फिर फिर से परीक्षण करें।"
+
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Paste your Composio project API key (ak_…)"
+msgstr "अपने Composio प्रोजेक्ट की API कुंजी पेस्ट करें (ak_…)"
+
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Paste your Executor access token"
+msgstr "अपना Executor एक्सेस टोकन पेस्ट करें"
+
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Paste your Pipedream client ID"
+msgstr "अपना Pipedream क्लाइंट ID पेस्ट करें"
+
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Paste your Pipedream client secret"
+msgstr "अपना Pipedream क्लाइंट सीक्रेट पेस्ट करें"
+
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Paste your Pipedream project ID"
+msgstr "अपना Pipedream प्रोजेक्ट ID पेस्ट करें"
 
 #: src/pages/RoutineEditor.tsx
 msgid "Paused"
@@ -3673,6 +3706,10 @@ msgstr "पुनः खोलें"
 msgid "Replace API key"
 msgstr "API कुंजी बदलें"
 
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Replace credentials"
+msgstr "क्रेडेंशियल बदलें"
+
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "Replace key"
 msgstr "कुंजी बदलें"
@@ -3750,6 +3787,10 @@ msgstr "अंतिम सहेजे गए वर्कस्पेस क�
 #: src/components/ComputerUpdateProgress.tsx
 msgid "Restoring your workspace"
 msgstr ""
+
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Results from integrations.sh"
+msgstr "integrations.sh से परिणाम"
 
 #: src/components/AccountAccess.tsx
 #: src/pages/Auth.tsx
@@ -3887,6 +3928,10 @@ msgstr "सहेजा गया, लेकिन सूची रिफ़्�
 msgid "Saved."
 msgstr "सहेजा गया।"
 
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Saved. Paste a new one to replace it."
+msgstr "सहेजा गया। बदलने के लिए नया पेस्ट करें।"
+
 #: src/pages/RoutineEditor.tsx
 msgid "Saved. Rotate to reveal."
 msgstr ""
@@ -3900,6 +3945,7 @@ msgid "Saving..."
 msgstr ""
 
 #: src/components/AskCard.tsx
+#: src/components/integrations/IntegrationSetup.tsx
 #: src/components/teach/SkillDraftCard.tsx
 #: src/pages/GroupPanel.tsx
 #: src/pages/ModelBackupsSettings.tsx
@@ -3914,6 +3960,7 @@ msgstr "सहेजा जा रहा है…"
 msgid "Say yes or no, or answer in a sentence."
 msgstr "हां या ना कहें, या एक वाक्य में उत्तर दें।"
 
+#: src/components/integrations/IntegrationSetup.tsx
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/PluginsOverlay.tsx
 #: src/pages/Shell.tsx
@@ -3944,8 +3991,8 @@ msgid "Search by domain"
 msgstr ""
 
 #: src/components/integrations/IntegrationSetup.tsx
-msgid "Search integrations.sh"
-msgstr ""
+msgid "Search for an app, e.g. GitHub or Linear"
+msgstr "कोई ऐप खोजें, जैसे GitHub या Linear"
 
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "Search models"
@@ -4016,6 +4063,7 @@ msgstr ""
 #: src/components/integrations/IntegrationSetup.tsx
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/LocalSettings.tsx
+#: src/pages/Onboarding.tsx
 msgid "Server integrations"
 msgstr ""
 
@@ -4551,6 +4599,10 @@ msgstr "फिर से कोशिश करें"
 #: src/lib/model-connection-preflight.ts
 msgid "Try the test again."
 msgstr "परीक्षण फिर से आज़माएँ।"
+
+#: src/pages/Onboarding.tsx
+msgid "Try your agent"
+msgstr "अपने एजेंट को आज़माएँ"
 
 #: src/pages/shell/bot-credentials.tsx
 msgid "Type"

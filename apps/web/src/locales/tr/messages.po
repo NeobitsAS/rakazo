@@ -693,6 +693,7 @@ msgid "Avatars"
 msgstr ""
 
 #: src/components/computer/FilesApp.tsx
+#: src/components/integrations/IntegrationSetup.tsx
 #: src/pages/Board.tsx
 #: src/pages/PluginsOverlay.tsx
 #: src/pages/RoutineEditor.tsx
@@ -955,6 +956,10 @@ msgstr "Dosya seç"
 msgid "Choose which connected model Rakazo uses."
 msgstr "Rakazo'nun hangi bağlı modeli kullanacağını seç."
 
+#: src/pages/Onboarding.tsx
+msgid "Choose your default model"
+msgstr "Varsayılan modelini seç"
+
 #: src/pages/shell/dialogs.tsx
 msgid "Clear"
 msgstr "Temizle"
@@ -1173,10 +1178,6 @@ msgstr "URL'nin bu tarayıcı oturumundan erişilebilir olduğunu doğrula, sonr
 msgid "Connect"
 msgstr "Bağlan"
 
-#: src/pages/Onboarding.tsx
-msgid "Connect a model"
-msgstr "Model bağla"
-
 #: src/pages/ModelBackupsSettings.tsx
 msgid "Connect a provider to add backups."
 msgstr "Yedek eklemek için bir sağlayıcı bağlayın."
@@ -1205,6 +1206,8 @@ msgstr "Kişisel modelin olarak kullanmak için bu sağlayıcıyı bağla."
 msgid "Connect Treg"
 msgstr "Treg'i bağla"
 
+#: src/components/integrations/ChoiceCard.tsx
+#: src/components/integrations/ConnectedStatus.tsx
 #: src/components/integrations/IntegrationSetup.tsx
 #: src/pages/McpOAuthCallback.tsx
 #: src/pages/MemorySettingsOverlay.tsx
@@ -1982,6 +1985,7 @@ msgstr ""
 msgid "Disabled tools"
 msgstr ""
 
+#: src/components/integrations/ConnectedStatus.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/MemorySettingsOverlay.tsx
 #: src/pages/ModelSettingsOverlay.tsx
@@ -1998,6 +2002,7 @@ msgstr ""
 msgid "Disconnected {0}."
 msgstr ""
 
+#: src/components/integrations/ConnectedStatus.tsx
 #: src/pages/MemorySettingsOverlay.tsx
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/VoiceSettingsOverlay.tsx
@@ -2040,6 +2045,7 @@ msgstr "Hesabın yok mu?"
 
 #: src/lib/ticket-status.ts
 #: src/pages/ActivityList.tsx
+#: src/pages/Onboarding.tsx
 #: src/pages/shell/avatar-studio-popover.tsx
 msgid "Done"
 msgstr "Bitti"
@@ -2657,7 +2663,6 @@ msgstr "Ses sağlayıcıları yükleniyor…"
 #: src/pages/Auth.tsx
 #: src/pages/IntegrationSetup.tsx
 #: src/pages/ModelBackupsSettings.tsx
-#: src/pages/Onboarding.tsx
 #: src/pages/Shell.tsx
 msgid "Loading…"
 msgstr "Yükleniyor…"
@@ -3222,6 +3227,10 @@ msgstr ""
 msgid "on the 1st at {0}"
 msgstr "her ayın 1'inde saat {0}"
 
+#: src/pages/Onboarding.tsx
+msgid "Onboarding steps"
+msgstr "Başlangıç adımları"
+
 #: src/pages/Shell.tsx
 msgid "Only empty spaces can be deleted. Delete its bots and groups first."
 msgstr ""
@@ -3289,6 +3298,10 @@ msgstr "Sohbeti açıldı."
 #: src/pages/Onboarding.tsx
 msgid "Opening chat…"
 msgstr "Sohbet açılıyor…"
+
+#: src/pages/Onboarding.tsx
+msgid "Opening your first agent…"
+msgstr "İlk ajanın açılıyor…"
 
 #: src/App.tsx
 msgid "Opening your Space…"
@@ -3382,6 +3395,26 @@ msgstr "API anahtarını yapıştır"
 #: src/lib/model-connection-preflight.ts
 msgid "Paste your API key, then test again."
 msgstr "API anahtarını yapıştır, sonra yeniden test et."
+
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Paste your Composio project API key (ak_…)"
+msgstr "Composio proje API anahtarını yapıştır (ak_…)"
+
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Paste your Executor access token"
+msgstr "Executor erişim belirtecini yapıştır"
+
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Paste your Pipedream client ID"
+msgstr "Pipedream istemci kimliğini yapıştır"
+
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Paste your Pipedream client secret"
+msgstr "Pipedream istemci gizli anahtarını yapıştır"
+
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Paste your Pipedream project ID"
+msgstr "Pipedream proje kimliğini yapıştır"
 
 #: src/pages/RoutineEditor.tsx
 msgid "Paused"
@@ -3673,6 +3706,10 @@ msgstr "Yeniden aç"
 msgid "Replace API key"
 msgstr "API anahtarını değiştir"
 
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Replace credentials"
+msgstr "Kimlik bilgilerini değiştir"
+
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "Replace key"
 msgstr "Anahtarı değiştir"
@@ -3750,6 +3787,10 @@ msgstr ""
 #: src/components/ComputerUpdateProgress.tsx
 msgid "Restoring your workspace"
 msgstr ""
+
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Results from integrations.sh"
+msgstr "integrations.sh sonuçları"
 
 #: src/components/AccountAccess.tsx
 #: src/pages/Auth.tsx
@@ -3887,6 +3928,10 @@ msgstr "Kaydedildi ama liste yenilenemedi"
 msgid "Saved."
 msgstr "Kaydedildi."
 
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Saved. Paste a new one to replace it."
+msgstr "Kaydedildi. Değiştirmek için yenisini yapıştırın."
+
 #: src/pages/RoutineEditor.tsx
 msgid "Saved. Rotate to reveal."
 msgstr ""
@@ -3900,6 +3945,7 @@ msgid "Saving..."
 msgstr ""
 
 #: src/components/AskCard.tsx
+#: src/components/integrations/IntegrationSetup.tsx
 #: src/components/teach/SkillDraftCard.tsx
 #: src/pages/GroupPanel.tsx
 #: src/pages/ModelBackupsSettings.tsx
@@ -3914,6 +3960,7 @@ msgstr "Kaydediliyor…"
 msgid "Say yes or no, or answer in a sentence."
 msgstr "Evet ya da hayır de veya bir cümleyle yanıtla."
 
+#: src/components/integrations/IntegrationSetup.tsx
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/PluginsOverlay.tsx
 #: src/pages/Shell.tsx
@@ -3944,8 +3991,8 @@ msgid "Search by domain"
 msgstr ""
 
 #: src/components/integrations/IntegrationSetup.tsx
-msgid "Search integrations.sh"
-msgstr ""
+msgid "Search for an app, e.g. GitHub or Linear"
+msgstr "Bir uygulama ara, ör. GitHub veya Linear"
 
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "Search models"
@@ -4016,6 +4063,7 @@ msgstr ""
 #: src/components/integrations/IntegrationSetup.tsx
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/LocalSettings.tsx
+#: src/pages/Onboarding.tsx
 msgid "Server integrations"
 msgstr ""
 
@@ -4551,6 +4599,10 @@ msgstr "Tekrar dene"
 #: src/lib/model-connection-preflight.ts
 msgid "Try the test again."
 msgstr "Testi yeniden dene."
+
+#: src/pages/Onboarding.tsx
+msgid "Try your agent"
+msgstr "Ajanını dene"
 
 #: src/pages/shell/bot-credentials.tsx
 msgid "Type"

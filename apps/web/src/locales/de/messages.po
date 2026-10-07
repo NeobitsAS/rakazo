@@ -693,6 +693,7 @@ msgid "Avatars"
 msgstr ""
 
 #: src/components/computer/FilesApp.tsx
+#: src/components/integrations/IntegrationSetup.tsx
 #: src/pages/Board.tsx
 #: src/pages/PluginsOverlay.tsx
 #: src/pages/RoutineEditor.tsx
@@ -955,6 +956,10 @@ msgstr "Datei wählen"
 msgid "Choose which connected model Rakazo uses."
 msgstr "Wähle das verbundene Modell aus, das Rakazo verwendet."
 
+#: src/pages/Onboarding.tsx
+msgid "Choose your default model"
+msgstr "Standardmodell auswählen"
+
 #: src/pages/shell/dialogs.tsx
 msgid "Clear"
 msgstr "Leeren"
@@ -1173,10 +1178,6 @@ msgstr "Prüfe, ob die URL aus dieser Browsersitzung erreichbar ist, und teste e
 msgid "Connect"
 msgstr "Verbinden"
 
-#: src/pages/Onboarding.tsx
-msgid "Connect a model"
-msgstr "Modell verbinden"
-
 #: src/pages/ModelBackupsSettings.tsx
 msgid "Connect a provider to add backups."
 msgstr "Verbinde einen Anbieter, um Backups hinzuzufügen."
@@ -1205,6 +1206,8 @@ msgstr "Verbinde diesen Anbieter, um ihn als persönliches Modell zu verwenden."
 msgid "Connect Treg"
 msgstr "Treg verbinden"
 
+#: src/components/integrations/ChoiceCard.tsx
+#: src/components/integrations/ConnectedStatus.tsx
 #: src/components/integrations/IntegrationSetup.tsx
 #: src/pages/McpOAuthCallback.tsx
 #: src/pages/MemorySettingsOverlay.tsx
@@ -1982,6 +1985,7 @@ msgstr ""
 msgid "Disabled tools"
 msgstr ""
 
+#: src/components/integrations/ConnectedStatus.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/MemorySettingsOverlay.tsx
 #: src/pages/ModelSettingsOverlay.tsx
@@ -1998,6 +2002,7 @@ msgstr ""
 msgid "Disconnected {0}."
 msgstr ""
 
+#: src/components/integrations/ConnectedStatus.tsx
 #: src/pages/MemorySettingsOverlay.tsx
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/VoiceSettingsOverlay.tsx
@@ -2040,6 +2045,7 @@ msgstr "Du hast noch kein Konto?"
 
 #: src/lib/ticket-status.ts
 #: src/pages/ActivityList.tsx
+#: src/pages/Onboarding.tsx
 #: src/pages/shell/avatar-studio-popover.tsx
 msgid "Done"
 msgstr "Fertig"
@@ -2657,7 +2663,6 @@ msgstr "Stimmanbieter werden geladen…"
 #: src/pages/Auth.tsx
 #: src/pages/IntegrationSetup.tsx
 #: src/pages/ModelBackupsSettings.tsx
-#: src/pages/Onboarding.tsx
 #: src/pages/Shell.tsx
 msgid "Loading…"
 msgstr "Wird geladen…"
@@ -3222,6 +3227,10 @@ msgstr ""
 msgid "on the 1st at {0}"
 msgstr "am 1. um {0}"
 
+#: src/pages/Onboarding.tsx
+msgid "Onboarding steps"
+msgstr "Einrichtungsschritte"
+
 #: src/pages/Shell.tsx
 msgid "Only empty spaces can be deleted. Delete its bots and groups first."
 msgstr ""
@@ -3289,6 +3298,10 @@ msgstr "Thread geöffnet."
 #: src/pages/Onboarding.tsx
 msgid "Opening chat…"
 msgstr "Chat wird geöffnet…"
+
+#: src/pages/Onboarding.tsx
+msgid "Opening your first agent…"
+msgstr "Dein erster Agent wird geöffnet…"
 
 #: src/App.tsx
 msgid "Opening your Space…"
@@ -3382,6 +3395,26 @@ msgstr "Füge deinen API-Schlüssel ein"
 #: src/lib/model-connection-preflight.ts
 msgid "Paste your API key, then test again."
 msgstr "Füge deinen API-Schlüssel ein und teste erneut."
+
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Paste your Composio project API key (ak_…)"
+msgstr "Projekt-API-Schlüssel von Composio einfügen (ak_…)"
+
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Paste your Executor access token"
+msgstr "Executor-Zugriffstoken einfügen"
+
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Paste your Pipedream client ID"
+msgstr "Pipedream-Client-ID einfügen"
+
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Paste your Pipedream client secret"
+msgstr "Pipedream-Client-Secret einfügen"
+
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Paste your Pipedream project ID"
+msgstr "Pipedream-Projekt-ID einfügen"
 
 #: src/pages/RoutineEditor.tsx
 msgid "Paused"
@@ -3673,6 +3706,10 @@ msgstr "Erneut öffnen"
 msgid "Replace API key"
 msgstr "API-Schlüssel ersetzen"
 
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Replace credentials"
+msgstr "Zugangsdaten ersetzen"
+
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "Replace key"
 msgstr "Schlüssel ersetzen"
@@ -3750,6 +3787,10 @@ msgstr ""
 #: src/components/ComputerUpdateProgress.tsx
 msgid "Restoring your workspace"
 msgstr ""
+
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Results from integrations.sh"
+msgstr "Ergebnisse von integrations.sh"
 
 #: src/components/AccountAccess.tsx
 #: src/pages/Auth.tsx
@@ -3887,6 +3928,10 @@ msgstr "Gespeichert, aber die Liste konnte nicht aktualisiert werden"
 msgid "Saved."
 msgstr "Gespeichert."
 
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Saved. Paste a new one to replace it."
+msgstr "Gespeichert. Füge einen neuen ein, um ihn zu ersetzen."
+
 #: src/pages/RoutineEditor.tsx
 msgid "Saved. Rotate to reveal."
 msgstr ""
@@ -3900,6 +3945,7 @@ msgid "Saving..."
 msgstr ""
 
 #: src/components/AskCard.tsx
+#: src/components/integrations/IntegrationSetup.tsx
 #: src/components/teach/SkillDraftCard.tsx
 #: src/pages/GroupPanel.tsx
 #: src/pages/ModelBackupsSettings.tsx
@@ -3914,6 +3960,7 @@ msgstr "Wird gespeichert…"
 msgid "Say yes or no, or answer in a sentence."
 msgstr "Antworte mit Ja oder Nein oder in einem Satz."
 
+#: src/components/integrations/IntegrationSetup.tsx
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/PluginsOverlay.tsx
 #: src/pages/Shell.tsx
@@ -3944,8 +3991,8 @@ msgid "Search by domain"
 msgstr ""
 
 #: src/components/integrations/IntegrationSetup.tsx
-msgid "Search integrations.sh"
-msgstr ""
+msgid "Search for an app, e.g. GitHub or Linear"
+msgstr "Nach einer App suchen, z. B. GitHub oder Linear"
 
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "Search models"
@@ -4016,6 +4063,7 @@ msgstr ""
 #: src/components/integrations/IntegrationSetup.tsx
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/LocalSettings.tsx
+#: src/pages/Onboarding.tsx
 msgid "Server integrations"
 msgstr ""
 
@@ -4551,6 +4599,10 @@ msgstr "Erneut versuchen"
 #: src/lib/model-connection-preflight.ts
 msgid "Try the test again."
 msgstr "Teste erneut."
+
+#: src/pages/Onboarding.tsx
+msgid "Try your agent"
+msgstr "Probiere deinen Agenten aus"
 
 #: src/pages/shell/bot-credentials.tsx
 msgid "Type"

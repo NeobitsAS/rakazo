@@ -22,7 +22,7 @@ test("onboarding uses compact model selects without misleading latest labels", a
 
   const stamp = Date.now();
   await signup(page, `model-labels-${stamp}@rakazo.test`, "password12", `Model labels ${stamp}`);
-  await expect(page.getByRole("heading", { name: "Connect a model" })).toBeVisible({
+  await expect(page.getByRole("heading", { name: "Choose your default model" })).toBeVisible({
     timeout: 20_000,
   });
 
@@ -38,6 +38,8 @@ test("onboarding uses compact model selects without misleading latest labels", a
 
   const models = page.getByRole("combobox", { name: "Model", exact: true });
   await models.click();
+  // The menu renders its options as it opens; wait for this provider's before reading them.
+  await expect(page.getByRole("option", { name: /Claude/ }).first()).toBeVisible();
   const labels = await page.getByRole("option").allTextContents();
   // "latest" is an upstream alias marker, so it lands on families like Claude Opus 4.5 while
   // newer models carry no marker. Rendered as-is it tells the user the opposite of the truth.

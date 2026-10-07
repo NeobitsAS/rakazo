@@ -25,7 +25,7 @@ test("onboarding requires a model when the deployment has none", async ({ page }
     "password12",
     `Model required ${stamp}`,
   );
-  await expect(page.getByRole("heading", { name: "Connect a model" })).toBeVisible({
+  await expect(page.getByRole("heading", { name: "Choose your default model" })).toBeVisible({
     timeout: 20_000,
   });
 
@@ -52,7 +52,7 @@ for (const unavailable of ["empty", "failed"] as const) {
     );
     const stamp = Date.now();
     await signup(page, `catalog-${unavailable}-${stamp}@rakazo.test`, "password12", "Model setup");
-    await expect(page.getByRole("heading", { name: "Connect a model" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Choose your default model" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Continue", exact: true })).toBeDisabled();
     await expect(page.getByRole("heading", { name: "Create your first bot" })).toHaveCount(0);
     await expect(page.getByRole("combobox", { name: "Message Chief" })).toHaveCount(0);
