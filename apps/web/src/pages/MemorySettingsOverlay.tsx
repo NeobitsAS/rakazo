@@ -184,7 +184,7 @@ export function MemorySettingsOverlay({
           </p>
         ) : config ? (
           <div className="rounded-xl border border-border px-4 py-3">
-            <div className="text-[12.5px] uppercase tracking-[0.08em] text-muted-foreground/80">
+            <div className="text-[13.5px] text-muted-foreground">
               <Trans>Connected</Trans>
             </div>
             <div className="mt-1 text-[15px] text-foreground">
