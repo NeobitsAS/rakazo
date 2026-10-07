@@ -2617,6 +2617,10 @@ msgstr "Charger les exécutions précédentes"
 msgid "Load web images automatically"
 msgstr "Charger automatiquement les images web"
 
+#: src/components/PageLoader.tsx
+msgid "Loading"
+msgstr "Chargement"
+
 #: src/pages/ActivityList.tsx
 msgid "Loading activity…"
 msgstr "Chargement de l'activité…"
@@ -2649,7 +2653,6 @@ msgstr "Chargement des outils…"
 msgid "Loading voice providers…"
 msgstr "Chargement des fournisseurs vocaux…"
 
-#: src/App.tsx
 #: src/pages/Artifacts.tsx
 #: src/pages/Auth.tsx
 #: src/pages/IntegrationSetup.tsx
@@ -4114,7 +4117,6 @@ msgstr ""
 #: src/pages/Auth.tsx
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/Onboarding.tsx
-#: src/pages/Welcome.tsx
 msgid "Sign in"
 msgstr "Se connecter"
 
@@ -4137,7 +4139,6 @@ msgid "Sign in with the subscription, or test the API key instead."
 msgstr "Connectez-vous avec l'abonnement, ou testez la clé API à la place."
 
 #: src/pages/Auth.tsx
-#: src/pages/Welcome.tsx
 msgid "Sign up"
 msgstr "S'inscrire"
 
@@ -4864,7 +4865,3 @@ msgstr "Votre adresse e-mail"
 #: src/pages/Auth.tsx
 msgid "Your name"
 msgstr "Votre nom"
-
-#: src/pages/Welcome.tsx
-msgid "Your team of always-on agents<0/>that you can give real work to."
-msgstr "Votre équipe d'agents toujours actifs<0/>à qui vous pouvez confier de vrais travaux."

@@ -9,11 +9,12 @@ import { fetchAuthCapabilities } from "../lib/auth-capabilities";
 import { clearSpaceSelection } from "../lib/rpc";
 import { runSsoFlow } from "../lib/sso-flow";
 import { authErrorText, credentialIssueText } from "../lib/user-error";
+import { EntryFrame } from "./EntryFrame";
 
 type AuthMode = "in" | "up" | "forgot";
 
-const fieldClass = "mt-2 h-12 rounded-xl px-4 text-base md:text-base";
-export const submitClass = "mt-3 h-12 w-full rounded-xl text-base";
+/** The entry pages' full-width submit button; the paywall uses it too. */
+export const submitClass = "mt-3 w-full";
 
 export function AuthPage({ mode }: { mode: AuthMode }) {
   const { t } = useLingui();
@@ -177,6 +178,7 @@ export function AuthPage({ mode }: { mode: AuthMode }) {
           {reset?.sso && !reset.passwordAuth && mode !== "forgot" ? (
             <Button
               type="button"
+              size="xl"
               disabled={pending}
               className={submitClass}
               onClick={() => void signInWithSso()}
@@ -193,7 +195,7 @@ export function AuthPage({ mode }: { mode: AuthMode }) {
             <>
               {mode === "up" ? (
                 <div className="mb-4 w-full">
-                  <Label htmlFor="name" className="text-muted-foreground">
+                  <Label htmlFor="name">
                     <Trans>Name</Trans>
                   </Label>
                   <Input
@@ -203,12 +205,13 @@ export function AuthPage({ mode }: { mode: AuthMode }) {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder={t`Your name`}
-                    className={fieldClass}
+                    size="xl"
+                    className="mt-2"
                   />
                 </div>
               ) : null}
               <div className="w-full">
-                <Label htmlFor="email" className="text-muted-foreground">
+                <Label htmlFor="email">
                   <Trans>Email</Trans>
                 </Label>
                 <Input
@@ -220,12 +223,13 @@ export function AuthPage({ mode }: { mode: AuthMode }) {
                   placeholder={t`Your email address`}
                   type="email"
                   required
-                  className={fieldClass}
+                  size="xl"
+                  className="mt-2"
                 />
               </div>
               {mode !== "forgot" ? (
                 <div className="mt-4 w-full">
-                  <Label htmlFor={passwordFieldId} className="text-muted-foreground">
+                  <Label htmlFor={passwordFieldId}>
                     <Trans>Password</Trans>
                   </Label>
                   <Input
@@ -238,7 +242,8 @@ export function AuthPage({ mode }: { mode: AuthMode }) {
                     type="password"
                     required
                     minLength={8}
-                    className={fieldClass}
+                    size="xl"
+                    className="mt-2"
                   />
                   {mode === "in" && reset?.passwordReset ? (
                     <div className="mt-2 text-right text-sm">
@@ -254,7 +259,7 @@ export function AuthPage({ mode }: { mode: AuthMode }) {
                   {error}
                 </p>
               ) : null}
-              <Button type="submit" size="lg" disabled={pending} className={submitClass}>
+              <Button type="submit" size="xl" disabled={pending} className={submitClass}>
                 {pending ? (
                   <Trans>Working…</Trans>
                 ) : mode === "in" ? (
@@ -374,7 +379,7 @@ export function PasswordResetPage() {
           ) : null}
           <Button
             type="submit"
-            size="lg"
+            size="xl"
             disabled={pending || !params.get("token")}
             className={submitClass}
           >
@@ -399,18 +404,11 @@ export function AuthFrame({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-full items-center justify-center bg-background px-6 py-16 text-foreground">
-      <form onSubmit={onSubmit} className="flex w-[460px] flex-col items-center">
-        <div className="flex h-[74px] w-[74px] items-center justify-center gap-[11px] rounded-full bg-muted">
-          <span className="h-5 w-[9px] rounded-full bg-primary" />
-          <span className="h-5 w-[9px] rounded-full bg-primary" />
-        </div>
-        <h1 aria-live="polite" className="mb-9 mt-7 text-4xl font-medium tracking-tight">
-          {title}
-        </h1>
+    <EntryFrame title={title}>
+      <form onSubmit={onSubmit} className="flex w-full flex-col items-center">
         {children}
       </form>
-    </div>
+    </EntryFrame>
   );
 }
 
@@ -429,9 +427,7 @@ function PasswordField({
 }) {
   return (
     <div className={`w-full ${className}`}>
-      <Label htmlFor={id} className="text-muted-foreground">
-        {label}
-      </Label>
+      <Label htmlFor={id}>{label}</Label>
       <Input
         id={id}
         name={id}
@@ -441,7 +437,8 @@ function PasswordField({
         minLength={8}
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className={fieldClass}
+        size="xl"
+        className="mt-2"
       />
     </div>
   );

@@ -2617,6 +2617,10 @@ msgstr "Загрузить более ранние запуски"
 msgid "Load web images automatically"
 msgstr "Автоматически загружать изображения из интернета"
 
+#: src/components/PageLoader.tsx
+msgid "Loading"
+msgstr "Загрузка"
+
 #: src/pages/ActivityList.tsx
 msgid "Loading activity…"
 msgstr "Загрузка активности…"
@@ -2649,7 +2653,6 @@ msgstr "Загрузка инструментов…"
 msgid "Loading voice providers…"
 msgstr "Загрузка поставщиков голосовой связи…"
 
-#: src/App.tsx
 #: src/pages/Artifacts.tsx
 #: src/pages/Auth.tsx
 #: src/pages/IntegrationSetup.tsx
@@ -4114,7 +4117,6 @@ msgstr ""
 #: src/pages/Auth.tsx
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/Onboarding.tsx
-#: src/pages/Welcome.tsx
 msgid "Sign in"
 msgstr "Войти"
 
@@ -4137,7 +4139,6 @@ msgid "Sign in with the subscription, or test the API key instead."
 msgstr "Войдите по подписке или протестируйте API-ключ."
 
 #: src/pages/Auth.tsx
-#: src/pages/Welcome.tsx
 msgid "Sign up"
 msgstr "Зарегистрироваться"
 
@@ -4864,7 +4865,3 @@ msgstr "Ваш адрес электронной почты"
 #: src/pages/Auth.tsx
 msgid "Your name"
 msgstr "Ваше имя"
-
-#: src/pages/Welcome.tsx
-msgid "Your team of always-on agents<0/>that you can give real work to."
-msgstr "Ваша команда постоянно работающих агентов<0/>, которым вы можете дать настоящую работу."
