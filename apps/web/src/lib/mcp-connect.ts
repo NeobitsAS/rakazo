@@ -6,6 +6,8 @@ const MCP_OAUTH_TIMEOUT_MS = 2 * 60 * 1000;
 export type McpOauthResult =
   | "connected"
   | "cancelled"
+  /** The popup was blocked, so this tab went to the provider; the callback page brings it back. */
+  | "redirected"
   | "already_connected"
   | "authorization_not_requested";
 
@@ -29,7 +31,7 @@ export async function connectMcpOauth(serverId: string): Promise<McpOauthResult>
   if (!popup) {
     // Popup blocked: navigate this tab instead; the callback page returns to /app.
     window.location.assign(started.authorizationUrl);
-    return "cancelled";
+    return "redirected";
   }
   return await new Promise<McpOauthResult>((resolve) => {
     const channel = new BroadcastChannel(MCP_OAUTH_CHANNEL);

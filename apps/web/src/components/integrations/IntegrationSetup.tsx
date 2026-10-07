@@ -177,6 +177,8 @@ export function IntegrationSetup({
         await forgetIfNew();
         return;
       }
+      // This tab is on its way to the provider; the sign-in is still under way.
+      if (result === "redirected") return;
       if (botId) await rpc.mcp.assignments.approve({ botId, serverId: server.id });
       setConnected((current) =>
         new Map(current).set(url, { serverId: server.id, created: !existing }),
@@ -209,7 +211,8 @@ export function IntegrationSetup({
     setError(null);
   }
 
-  const footerLocked = busy || finishingLabel !== null;
+  // A server mid-connection counts too: finishing now would open the bot without it.
+  const footerLocked = busy || pendingUrl !== null || finishingLabel !== null;
   const skipButton = (
     <Button
       variant="ghost"
