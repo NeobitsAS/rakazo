@@ -2874,6 +2874,10 @@ msgstr "Daha eski çalıştırmaları yükle"
 msgid "Load web images automatically"
 msgstr "Web görsellerini otomatik yükle"
 
+#: src/components/PageLoader.tsx
+msgid "Loading"
+msgstr "Yükleniyor"
+
 #: src/pages/ActivityList.tsx
 msgid "Loading activity…"
 msgstr "Etkinlik yükleniyor…"
@@ -2906,7 +2910,6 @@ msgstr ""
 msgid "Loading voice providers…"
 msgstr "Ses sağlayıcıları yükleniyor…"
 
-#: src/App.tsx
 #: src/pages/Artifacts.tsx
 #: src/pages/Auth.tsx
 #: src/pages/IntegrationSetup.tsx
@@ -4451,7 +4454,6 @@ msgstr ""
 #: src/pages/Auth.tsx
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/Onboarding.tsx
-#: src/pages/Welcome.tsx
 msgid "Sign in"
 msgstr "Oturum aç"
 
@@ -4474,7 +4476,6 @@ msgid "Sign in with the subscription, or test the API key instead."
 msgstr "Abonelikle oturum aç veya bunun yerine API anahtarını test et."
 
 #: src/pages/Auth.tsx
-#: src/pages/Welcome.tsx
 msgid "Sign up"
 msgstr "Kaydol"
 

@@ -75,7 +75,7 @@ export function PaywallPage({ status }: { status: BillingStatus }) {
           </ul>
         ) : null}
         {status.canManage ? (
-          <Button type="submit" size="lg" disabled={pending || signingOut} className={submitClass}>
+          <Button type="submit" size="xl" disabled={pending || signingOut} className={submitClass}>
             {status.trialAvailable ? (
               <Trans>Start {trialDays}-day free trial</Trans>
             ) : (
@@ -86,7 +86,7 @@ export function PaywallPage({ status }: { status: BillingStatus }) {
         {showPortal ? (
           <Button
             type="button"
-            size="lg"
+            size="xl"
             variant="secondary"
             disabled={pending || signingOut}
             className={submitClass}

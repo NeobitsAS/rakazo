@@ -2874,6 +2874,10 @@ msgstr "이전 실행 불러오기"
 msgid "Load web images automatically"
 msgstr "웹 이미지 자동으로 불러오기"
 
+#: src/components/PageLoader.tsx
+msgid "Loading"
+msgstr "불러오는 중"
+
 #: src/pages/ActivityList.tsx
 msgid "Loading activity…"
 msgstr "활동을 불러오는 중…"
@@ -2906,7 +2910,6 @@ msgstr ""
 msgid "Loading voice providers…"
 msgstr "음성 서비스를 불러오는 중…"
 
-#: src/App.tsx
 #: src/pages/Artifacts.tsx
 #: src/pages/Auth.tsx
 #: src/pages/IntegrationSetup.tsx
@@ -4451,7 +4454,6 @@ msgstr ""
 #: src/pages/Auth.tsx
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/Onboarding.tsx
-#: src/pages/Welcome.tsx
 msgid "Sign in"
 msgstr "로그인"
 
@@ -4474,7 +4476,6 @@ msgid "Sign in with the subscription, or test the API key instead."
 msgstr "구독으로 로그인하거나 대신 API 키를 테스트하세요."
 
 #: src/pages/Auth.tsx
-#: src/pages/Welcome.tsx
 msgid "Sign up"
 msgstr "가입하기"
 

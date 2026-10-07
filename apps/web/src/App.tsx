@@ -15,6 +15,7 @@ import {
 import { Navigate, Outlet, Route, Routes, useSearchParams } from "react-router-dom";
 import { LoadingState } from "./components/ai/primitives";
 import { ErrorBoundary } from "./components/ErrorBoundary";
+import { PageLoader } from "./components/PageLoader";
 import { SubscriptionGate } from "./components/SubscriptionGate";
 import { authClient } from "./lib/auth";
 import { getTicketBoardEnabled, subscribeTicketBoardEnabled } from "./lib/bootstrap";
@@ -41,9 +42,6 @@ const PasswordResetPage = lazy(() =>
 );
 const OnboardingPage = lazy(() =>
   import("./pages/Onboarding").then((module) => ({ default: module.OnboardingPage })),
-);
-const WelcomePage = lazy(() =>
-  import("./pages/Welcome").then((module) => ({ default: module.WelcomePage })),
 );
 const ArtifactsPage = lazy(() =>
   import("./pages/Artifacts").then((module) => ({ default: module.ArtifactsPage })),
@@ -115,21 +113,16 @@ function SessionApp() {
     return window.location.pathname.startsWith("/app") ? (
       <ShellSkeleton />
     ) : (
-      <div
-        className="grid h-full place-items-center text-muted-foreground/80"
-        data-rakazo-app-state="session-pending"
-      >
-        <Trans>Loading…</Trans>
-      </div>
+      <PageLoader data-rakazo-app-state="session-pending" />
     );
   }
 
   const user = session.data?.user;
   return (
     <div className="h-full" data-rakazo-app-state="ready">
-      <Suspense fallback={<div className="h-full bg-background" />}>
+      <Suspense fallback={<PageLoader />}>
         <Routes>
-          <Route path="/" element={user ? <Navigate to="/app" replace /> : <WelcomePage />} />
+          <Route path="/" element={<Navigate to={user ? "/app" : "/sign-in"} replace />} />
           <Route
             path="/sign-in"
             element={
@@ -224,7 +217,6 @@ function SessionUnavailable({ refetch }: { refetch: () => Promise<void> }) {
         <div className="mt-4">
           <Button
             variant="secondary"
-            className="rounded-full"
             onClick={() => {
               retryImmediately.current = true;
               setAttempt(0);

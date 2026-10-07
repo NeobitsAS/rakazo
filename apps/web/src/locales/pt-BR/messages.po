@@ -2874,6 +2874,10 @@ msgstr "Carregar execuções anteriores"
 msgid "Load web images automatically"
 msgstr "Carregar imagens da web automaticamente"
 
+#: src/components/PageLoader.tsx
+msgid "Loading"
+msgstr "Carregando"
+
 #: src/pages/ActivityList.tsx
 msgid "Loading activity…"
 msgstr "Carregando minha atividade"
@@ -2906,7 +2910,6 @@ msgstr ""
 msgid "Loading voice providers…"
 msgstr "Carregando provedores de voz..."
 
-#: src/App.tsx
 #: src/pages/Artifacts.tsx
 #: src/pages/Auth.tsx
 #: src/pages/IntegrationSetup.tsx
@@ -4451,7 +4454,6 @@ msgstr ""
 #: src/pages/Auth.tsx
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/Onboarding.tsx
-#: src/pages/Welcome.tsx
 msgid "Sign in"
 msgstr "Entrar"
 
@@ -4474,7 +4476,6 @@ msgid "Sign in with the subscription, or test the API key instead."
 msgstr "Entre com a assinatura ou teste a chave de API."
 
 #: src/pages/Auth.tsx
-#: src/pages/Welcome.tsx
 msgid "Sign up"
 msgstr "Cadastre-se"
 
