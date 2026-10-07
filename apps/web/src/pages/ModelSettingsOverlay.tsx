@@ -63,6 +63,7 @@ import {
   modelPreflightTestingLabel,
 } from "../components/ModelConnectionPreflightNotice";
 import { Loader } from "../components/PageLoader";
+import { ProviderLogo } from "../components/ProviderLogo";
 import {
   ServerCredentialsUnavailable,
   serverCredentialsBlocker,
@@ -336,6 +337,9 @@ export function ModelSettingsOverlay({
   const currentEntry = catalog.find(
     (entry) => entry.provider === me?.defaultProvider && entry.id === me?.defaultModel,
   );
+  const activeProvider = me?.defaultProvider
+    ? { id: me.defaultProvider, name: currentEntry?.providerName ?? me.defaultProvider }
+    : null;
   const activeCredential = credentials.find(
     (entry) => entry.provider === me?.defaultProvider && entry.modelId === me?.defaultModel,
   );
@@ -752,6 +756,7 @@ export function ModelSettingsOverlay({
           group.id === provider ? "bg-muted" : "hover:bg-accent/50"
         }`}
       >
+        <ProviderLogo provider={group.id} name={group.name} />
         <span className="min-w-0 flex-1">
           <span className="block truncate text-[15px] text-foreground">{group.name}</span>
           {rowSubtitle ? (
@@ -1227,6 +1232,9 @@ export function ModelSettingsOverlay({
                 <Trans>Active model</Trans>
               </h3>
               <div className="flex items-center gap-3 rounded-xl border border-border px-4 py-3">
+                {activeProvider ? (
+                  <ProviderLogo provider={activeProvider.id} name={activeProvider.name} branded />
+                ) : null}
                 <div className="min-w-0">
                   <div className="truncate text-[15px] text-foreground">
                     {currentEntry?.label ?? me?.defaultModel ?? t`Deployment default`}
