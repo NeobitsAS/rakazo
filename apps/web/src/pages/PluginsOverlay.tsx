@@ -15,7 +15,16 @@ import {
   filterConnectionCatalogItems,
   humanizeToolName,
 } from "@rakazo/core";
-import { Button, Dialog, DialogContent, Input, Switch } from "@rakazo/ui-web";
+import {
+  Button,
+  ButtonGroup,
+  Dialog,
+  DialogContent,
+  Field,
+  FieldLabel,
+  Input,
+  Switch,
+} from "@rakazo/ui-web";
 import { Pencil, Plug, Plus, RotateCw, Settings, Trash } from "lucide-react";
 import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { DialogPageHeader } from "../components/DialogPageHeader";
@@ -95,6 +104,8 @@ export function PluginsOverlay({
   const [mcpServers, setMcpServers] = useState<McpServer[]>([]);
   const [assignments, setAssignments] = useState<BotMcpServer[]>([]);
   const [pending, setPending] = useState<string | null>(null);
+  /** An access token typed on a server's page, for services that do not sign in. */
+  const [serverToken, setServerToken] = useState("");
   const [catalogError, setCatalogError] = useState<string | null>(null);
   const [sourceError, setSourceError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -362,6 +373,8 @@ export function PluginsOverlay({
     try {
       await rpc.mcp.servers.remove({ id: server.id });
       setMcpServers((current) => current.filter((entry) => entry.id !== server.id));
+      // Its assignments go with it; replace() would otherwise send its id back.
+      setAssignments((current) => current.filter((entry) => entry.serverId !== server.id));
       setServerDetailId(null);
     } catch (err) {
       setSourceError(err instanceof Error ? err.message : t`Could not remove the server`);
@@ -486,8 +499,29 @@ export function PluginsOverlay({
     }
   }
 
+  /** Opens a server's page, or goes back from it; a token typed on another page is dropped. */
+  function openServer(id: string | null) {
+    setServerToken("");
+    setServerDetailId(id);
+  }
+
+  async function saveServerToken(server: McpServer) {
+    setPending(`token:${server.id}`);
+    setSourceError(null);
+    try {
+      await rpc.mcp.servers.update({ id: server.id, secret: serverToken.trim() });
+      setServerToken("");
+      setMcpServers(await rpc.mcp.servers.list());
+    } catch (err) {
+      setSourceError(err instanceof Error ? err.message : t`Could not save the access token`);
+    } finally {
+      setPending(null);
+    }
+  }
+
   function renderServerDetail(server: McpServer) {
     const signInPending = pending === `signin:${server.id}`;
+    const tokenPending = pending === `token:${server.id}`;
     return (
       <div data-testid="mcp-server-detail" className="space-y-8">
         <ul className="divide-y divide-border">
@@ -563,6 +597,35 @@ export function PluginsOverlay({
           })}
         </ul>
 
+        {server.oauthStatus === "connected" ? null : (
+          <Field>
+            <FieldLabel htmlFor={`server-token-${server.id}`}>
+              <Trans>Access token</Trans>
+            </FieldLabel>
+            <ButtonGroup className="w-full">
+              <Input
+                id={`server-token-${server.id}`}
+                type="password"
+                autoComplete="new-password"
+                value={serverToken}
+                onChange={(event) => setServerToken(event.target.value)}
+                placeholder={
+                  server.hasSecret
+                    ? t`Saved. Paste a new one to replace it.`
+                    : t`Paste an access token`
+                }
+              />
+              <Button
+                variant="secondary"
+                disabled={tokenPending || !serverToken.trim()}
+                onClick={() => void saveServerToken(server)}
+              >
+                {tokenPending ? <Trans>Saving…</Trans> : <Trans>Save</Trans>}
+              </Button>
+            </ButtonGroup>
+          </Field>
+        )}
+
         <Button
           variant="destructive"
           disabled={pending === server.id}
@@ -612,7 +675,7 @@ export function PluginsOverlay({
                 id: server.id,
                 name: server.name,
                 detail: mcpServerDetail(server),
-                onEdit: () => setServerDetailId(server.id),
+                onEdit: () => openServer(server.id),
                 onRemove: () => void removeMcpServer(server),
               }),
             )}
@@ -911,7 +974,7 @@ export function PluginsOverlay({
               title: serverDetail.name,
               description: serverDetail.endpoint ?? t`MCP server`,
               icon: <AppIcon name={serverDetail.name} />,
-              onBack: () => setServerDetailId(null),
+              onBack: () => openServer(null),
             }
           : detailItem
             ? {

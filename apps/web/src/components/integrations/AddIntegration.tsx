@@ -1,5 +1,5 @@
 import { Trans, useLingui } from "@lingui/react/macro";
-import type { Bot, IntegrationCatalogResult } from "@rakazo/contracts";
+import type { Bot, IntegrationCatalogResult, McpTransport } from "@rakazo/contracts";
 import {
   Button,
   ButtonGroup,
@@ -56,6 +56,9 @@ export function AddIntegration({
   const [kind, setKind] = useState<Kind>("mcp");
   const [name, setName] = useState("");
   const [url, setUrl] = useState("");
+  const [transport, setTransport] = useState<McpTransport>("streamable_http");
+  const [command, setCommand] = useState("");
+  const [args, setArgs] = useState("");
   const [auth, setAuth] = useState<Auth>("signin");
   const [headerName, setHeaderName] = useState("x-api-key");
   const [credential, setCredential] = useState("");
@@ -78,24 +81,43 @@ export function AddIntegration({
       .catch(() => setBots([]));
   }, []);
 
+  const local = kind === "mcp" && transport === "stdio";
   const authItems = useMemo<{ value: Auth; label: string }[]>(
     () =>
-      kind === "mcp"
+      local
         ? [
-            { value: "signin", label: t`Sign in with the service` },
             { value: "token", label: t`Access token` },
             { value: "none", label: t`No authentication` },
           ]
-        : [
-            { value: "token", label: t`Bearer token` },
-            { value: "header", label: t`API key header` },
-            { value: "none", label: t`No authentication` },
-          ],
-    [kind, t],
+        : kind === "mcp"
+          ? [
+              { value: "signin", label: t`Sign in with the service` },
+              { value: "token", label: t`Access token` },
+              { value: "header", label: t`API key header` },
+              { value: "none", label: t`No authentication` },
+            ]
+          : [
+              { value: "token", label: t`Bearer token` },
+              { value: "header", label: t`API key header` },
+              { value: "none", label: t`No authentication` },
+            ],
+    [kind, local, t],
   );
+  const transportItems: { value: McpTransport; label: string }[] = [
+    { value: "streamable_http", label: "HTTP" },
+    { value: "sse", label: "SSE" },
+    { value: "stdio", label: t`Local command` },
+  ];
+
+  function chooseTransport(next: McpTransport) {
+    setTransport(next);
+    // A local command cannot sign in through a browser or take request headers.
+    if (next === "stdio" && (auth === "signin" || auth === "header")) setAuth("none");
+  }
 
   function chooseKind(next: Kind) {
     setKind(next);
+    setTransport("streamable_http");
     setAuth(next === "mcp" ? "signin" : "token");
     setError(null);
   }
@@ -170,13 +192,29 @@ export function AddIntegration({
   }
 
   async function addMcpServer() {
-    const server = await rpc.mcp.servers.create({
+    const base = {
       slug: `integration-${newClientId().slice(0, 8)}`,
       name: name.trim() || t`MCP server`,
-      transport: "streamable_http",
-      endpoint: url.trim(),
       ...(auth === "token" && credential.trim() ? { secret: credential.trim() } : {}),
-    });
+    };
+    const server =
+      transport === "stdio"
+        ? await rpc.mcp.servers.create({
+            ...base,
+            transport,
+            command: command.trim(),
+            args: args.split(/\s+/).filter(Boolean),
+            env: {},
+          })
+        : await rpc.mcp.servers.create({
+            ...base,
+            transport,
+            endpoint: url.trim(),
+            headers:
+              auth === "header" && credential.trim()
+                ? { [headerName.trim()]: credential.trim() }
+                : {},
+          });
     await giveToBots(server.id);
   }
 
@@ -209,7 +247,7 @@ export function AddIntegration({
   ];
   const needsCredential = auth === "token" || auth === "header";
   const canAdd =
-    url.trim() !== "" &&
+    (local ? command.trim() !== "" : url.trim() !== "") &&
     (!needsCredential || credential.trim() !== "") &&
     (kind !== "mcp" || botIds.size > 0);
 
@@ -322,6 +360,7 @@ export function AddIntegration({
                   className="underline hover:text-foreground"
                   onClick={() => {
                     setName(preset.name);
+                    setTransport("streamable_http");
                     setUrl(preset.url);
                     setAuth(preset.auth);
                   }}
@@ -346,23 +385,63 @@ export function AddIntegration({
             placeholder={t`What your bots will call it`}
           />
         </Field>
-        <Field>
-          <FieldLabel htmlFor={`${fieldId}-url`}>
-            <Trans>Address</Trans>
-          </FieldLabel>
-          <Input
-            id={`${fieldId}-url`}
-            value={url}
-            onChange={(event) => setUrl(event.target.value)}
-            placeholder={
-              kind === "mcp"
-                ? "https://example.com/mcp"
-                : kind === "graphql"
-                  ? "https://example.com/graphql"
-                  : "https://example.com/openapi.json"
-            }
-          />
-        </Field>
+        {kind === "mcp" ? (
+          <Field>
+            <FieldLabel htmlFor={`${fieldId}-transport`}>
+              <Trans>Transport</Trans>
+            </FieldLabel>
+            <OptionSelect
+              id={`${fieldId}-transport`}
+              value={transport}
+              onValueChange={chooseTransport}
+              options={transportItems}
+            />
+          </Field>
+        ) : null}
+        {local ? (
+          <>
+            <Field>
+              <FieldLabel htmlFor={`${fieldId}-command`}>
+                <Trans>Command</Trans>
+              </FieldLabel>
+              <Input
+                id={`${fieldId}-command`}
+                value={command}
+                onChange={(event) => setCommand(event.target.value)}
+                placeholder="/opt/mcp-server"
+              />
+            </Field>
+            <Field>
+              <FieldLabel htmlFor={`${fieldId}-args`}>
+                <Trans>Arguments</Trans>
+              </FieldLabel>
+              <Input
+                id={`${fieldId}-args`}
+                value={args}
+                onChange={(event) => setArgs(event.target.value)}
+                placeholder="--stdio"
+              />
+            </Field>
+          </>
+        ) : (
+          <Field>
+            <FieldLabel htmlFor={`${fieldId}-url`}>
+              <Trans>Address</Trans>
+            </FieldLabel>
+            <Input
+              id={`${fieldId}-url`}
+              value={url}
+              onChange={(event) => setUrl(event.target.value)}
+              placeholder={
+                kind === "mcp"
+                  ? "https://example.com/mcp"
+                  : kind === "graphql"
+                    ? "https://example.com/graphql"
+                    : "https://example.com/openapi.json"
+              }
+            />
+          </Field>
+        )}
       </section>
 
       <section className="space-y-3">

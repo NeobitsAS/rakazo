@@ -4223,3 +4223,27 @@ msgstr "Quién puede usarlo"
 #: src/components/integrations/AddIntegration.tsx
 msgid "All your bots in this space can use it."
 msgstr "Todos tus bots de este espacio pueden usarlo."
+
+#: src/pages/McpServersOverlay.tsx
+msgid "Command"
+msgstr "Comando"
+
+#: src/pages/McpServersOverlay.tsx
+msgid "Arguments"
+msgstr "Argumentos"
+
+#: src/components/integrations/AddIntegration.tsx
+msgid "Transport"
+msgstr "Transporte"
+
+#: src/components/integrations/AddIntegration.tsx
+msgid "Local command"
+msgstr "Comando local"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Paste an access token"
+msgstr "Pega un token de acceso"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Could not save the access token"
+msgstr "No se pudo guardar el token de acceso"

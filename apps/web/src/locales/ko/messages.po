@@ -4223,3 +4223,27 @@ msgstr "사용할 수 있는 대상"
 #: src/components/integrations/AddIntegration.tsx
 msgid "All your bots in this space can use it."
 msgstr "이 공간의 모든 봇이 사용할 수 있습니다."
+
+#: src/pages/McpServersOverlay.tsx
+msgid "Command"
+msgstr "실행 명령"
+
+#: src/pages/McpServersOverlay.tsx
+msgid "Arguments"
+msgstr "인자"
+
+#: src/components/integrations/AddIntegration.tsx
+msgid "Transport"
+msgstr "전송 방식"
+
+#: src/components/integrations/AddIntegration.tsx
+msgid "Local command"
+msgstr "로컬 명령"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Paste an access token"
+msgstr "액세스 토큰을 붙여넣으세요"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Could not save the access token"
+msgstr "액세스 토큰을 저장할 수 없습니다"
