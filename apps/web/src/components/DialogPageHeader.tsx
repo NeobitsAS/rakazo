@@ -4,9 +4,9 @@ import { ChevronLeft, X } from "lucide-react";
 import type { ReactNode } from "react";
 
 /**
- * The top of a page inside a dialog: the title with a line below saying what the page is for,
- * a back arrow when the page sits under another, an icon when the page is about one thing (an
- * app's logo, say), and the close button. Every dialog page uses it so they all read the same.
+ * The top of a page inside a dialog: the title, a back arrow when the page sits under another,
+ * an icon and a detail line when the page is about one thing (a server's logo and address, say),
+ * and the close button. Every dialog page uses it so they all read the same.
  */
 export function DialogPageHeader({
   title,

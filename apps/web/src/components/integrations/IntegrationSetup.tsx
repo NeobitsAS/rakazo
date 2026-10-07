@@ -101,7 +101,9 @@ export function IntegrationSetup({
       ),
     ).values(),
   ];
-  const configured = state?.providers.find((provider) => provider.id === choice)?.configured;
+  const isConfigured = (id: Choice) =>
+    state?.providers.find((provider) => provider.id === id)?.configured === true;
+  const configured = isConfigured(choice);
   useEffect(() => {
     if (!serverSetup || initialState) return;
     void rpc.integrationSetup
@@ -238,6 +240,7 @@ export function IntegrationSetup({
                 icon={<IntegrationLogo service={id === "direct" ? "mcp" : id} />}
                 label={label}
                 selected={choice === id}
+                connected={isConfigured(id)}
                 disabled={busy}
                 onSelect={() => selectChoice(id)}
               />
@@ -257,8 +260,13 @@ export function IntegrationSetup({
                 onClick={() => selectChoice(id)}
                 className={`flex min-h-11 w-full items-center justify-between border-b border-border px-3.5 py-2.5 text-left last:border-0 ${choice === id ? "bg-muted" : "hover:bg-accent"}`}
               >
-                <span>{label}</span>
-                {choice === id ? <Check className="size-4" aria-hidden /> : null}
+                <span className="flex-1">{label}</span>
+                {isConfigured(id) ? (
+                  <span className="text-[12px] text-success">
+                    <Trans>Connected</Trans>
+                  </span>
+                ) : null}
+                {choice === id ? <Check className="ml-3 size-4" aria-hidden /> : null}
               </button>
             ))}
           </fieldset>
@@ -266,11 +274,6 @@ export function IntegrationSetup({
       ) : null}
       {choice === "composio" || choice === "pipedream" ? (
         <>
-          {configured ? (
-            <p className="text-sm text-success">
-              <Trans>Connected</Trans>
-            </p>
-          ) : null}
           {state?.canConfigure ? (
             <>
               {choice === "pipedream" ? (
@@ -310,9 +313,11 @@ export function IntegrationSetup({
                   <Input
                     id={`${fieldId}-key`}
                     placeholder={
-                      choice === "composio"
-                        ? t`Paste your Composio project API key (ak_…)`
-                        : t`Paste your Pipedream client secret`
+                      configured
+                        ? t`Saved. Paste a new one to replace it.`
+                        : choice === "composio"
+                          ? t`Paste your Composio project API key (ak_…)`
+                          : t`Paste your Pipedream client secret`
                     }
                     type="password"
                     value={apiKey}
@@ -512,8 +517,18 @@ export function IntegrationSetup({
             disabled={busy || !credentialsReady}
             onClick={() => void saveProvider()}
           >
-            <Plug />
-            {busy ? t`Connecting…` : t`Connect`}
+            {configured ? (
+              busy ? (
+                t`Saving…`
+              ) : (
+                t`Replace credentials`
+              )
+            ) : (
+              <>
+                <Plug />
+                {busy ? t`Connecting…` : t`Connect`}
+              </>
+            )}
           </Button>
         </div>
       ) : null}

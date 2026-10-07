@@ -98,8 +98,16 @@ msgid "Paste your Pipedream project ID"
 msgstr "Cole o ID do projeto do Pipedream"
 
 #: src/components/integrations/IntegrationSetup.tsx
+msgid "Replace credentials"
+msgstr "Substituir credenciais"
+
+#: src/components/integrations/IntegrationSetup.tsx
 msgid "Results from integrations.sh"
 msgstr "Resultados do integrations.sh"
+
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Saved. Paste a new one to replace it."
+msgstr "Salvo. Cole um novo para substituí-lo."
 
 #: src/components/integrations/IntegrationSetup.tsx
 msgid "Search for an app, e.g. GitHub or Linear"
@@ -4044,34 +4052,6 @@ msgstr "O seu nome"
 msgid "Resize panel"
 msgstr "Redimensionar painel"
 
-#: src/pages/SettingsOverlay.tsx
-msgid "Your account and password, how Rakazo looks, and the language it speaks."
-msgstr "Sua conta e senha, a aparência do Rakazo e o idioma que ele fala."
-
-#: src/pages/SettingsOverlay.tsx
-msgid "Choose the model your bots think with, and connect the providers that run it."
-msgstr "Escolha o modelo com que seus bots pensam e conecte os provedores que o executam."
-
-#: src/pages/SettingsOverlay.tsx
-msgid "Your bots keep shared notes in MEMORY.md. Add a provider so they can also recall past conversations."
-msgstr "Seus bots mantêm notas compartilhadas em MEMORY.md. Adicione um provedor para que também se lembrem de conversas anteriores."
-
-#: src/pages/SettingsOverlay.tsx
-msgid "Connect a voice provider so your bots can read replies aloud and understand what you say."
-msgstr "Conecte um provedor de voz para que seus bots leiam as respostas em voz alta e entendam o que você diz."
-
-#: src/pages/SettingsOverlay.tsx
-msgid "How much your bots have run, and how many tokens they have used."
-msgstr "Quanto seus bots foram executados e quantos tokens usaram."
-
-#: src/pages/SettingsOverlay.tsx
-msgid "Give your bots a computer to run code and work with files."
-msgstr "Dê aos seus bots um computador para executar código e trabalhar com arquivos."
-
-#: src/pages/SettingsOverlay.tsx
-msgid "See which version you are running, and install new releases when they are out."
-msgstr "Veja qual versão você está usando e instale as novas quando forem lançadas."
-
 #: src/pages/PluginsOverlay.tsx
 msgid "Could not remove the server"
 msgstr "Não foi possível remover o servidor"
@@ -4197,32 +4177,16 @@ msgid "Remove app"
 msgstr "Remover app"
 
 #: src/pages/PluginsOverlay.tsx
-msgid "App catalog"
-msgstr "Catálogo de apps"
-
-#: src/pages/PluginsOverlay.tsx
-msgid "Choose the service that provides the catalog and signs people in to its apps."
-msgstr "Escolha o serviço que oferece o catálogo e faz o login nos apps dele."
+msgid "Catalog settings"
+msgstr "Configurações do catálogo"
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Add a server"
 msgstr "Adicionar um servidor"
 
 #: src/pages/PluginsOverlay.tsx
-msgid "Connect an MCP server, or an OpenAPI or GraphQL endpoint, of your own."
-msgstr "Conecte seu próprio servidor MCP, ou seu próprio endpoint OpenAPI ou GraphQL."
-
-#: src/pages/PluginsOverlay.tsx
-msgid "An app from the catalog."
-msgstr "Um app do catálogo."
-
-#: src/pages/PluginsOverlay.tsx
 msgid "Apps"
 msgstr "Apps"
-
-#: src/pages/PluginsOverlay.tsx
-msgid "The apps and servers your bots can use."
-msgstr "Os apps e servidores que seus bots podem usar."
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Close apps"

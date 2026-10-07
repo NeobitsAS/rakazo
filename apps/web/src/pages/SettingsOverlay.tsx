@@ -27,8 +27,6 @@ export type SettingsSection =
 type NavItem = {
   id: SettingsSection;
   label: string;
-  /** Shown under the page title: what the page is for. */
-  description: string;
   icon: ComponentType<{ className?: string; strokeWidth?: number }>;
 };
 
@@ -86,31 +84,26 @@ export function SettingsOverlay({
     {
       id: "general",
       label: t`General`,
-      description: t`Your account and password, how Rakazo looks, and the language it speaks.`,
       icon: Settings,
     },
     {
       id: "models",
       label: t`Models`,
-      description: t`Choose the model your bots think with, and connect the providers that run it.`,
       icon: Cpu,
     },
     {
       id: "memory",
       label: t`Memory`,
-      description: t`Your bots keep shared notes in MEMORY.md. Add a provider so they can also recall past conversations.`,
       icon: Brain,
     },
     {
       id: "voice",
       label: t`Voice`,
-      description: t`Connect a voice provider so your bots can read replies aloud and understand what you say.`,
       icon: Volume2,
     },
     {
       id: "usage",
       label: t`Usage`,
-      description: t`How much your bots have run, and how many tokens they have used.`,
       icon: Gauge,
     },
     ...(showComputer
@@ -118,7 +111,6 @@ export function SettingsOverlay({
           {
             id: "computer" as const,
             label: t`Computer`,
-            description: t`Give your bots a computer to run code and work with files.`,
             icon: Monitor,
           },
         ]
@@ -126,7 +118,6 @@ export function SettingsOverlay({
     {
       id: "updates",
       label: t`Updates`,
-      description: t`See which version you are running, and install new releases when they are out.`,
       icon: CloudDownload,
     },
   ];
@@ -211,7 +202,6 @@ export function SettingsOverlay({
           <div className="flex min-h-0 min-w-0 flex-1 flex-col">
             <DialogPageHeader
               title={sectionTitle}
-              description={sectionItem?.description}
               closeLabel={closeLabel}
               closeDisabled={panelBusy}
             />

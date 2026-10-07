@@ -98,8 +98,16 @@ msgid "Paste your Pipedream project ID"
 msgstr "Pipedream 프로젝트 ID를 붙여넣으세요"
 
 #: src/components/integrations/IntegrationSetup.tsx
+msgid "Replace credentials"
+msgstr "자격 증명 교체"
+
+#: src/components/integrations/IntegrationSetup.tsx
 msgid "Results from integrations.sh"
 msgstr "integrations.sh 검색 결과"
+
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Saved. Paste a new one to replace it."
+msgstr "저장됨. 바꾸려면 새 값을 붙여넣으세요."
 
 #: src/components/integrations/IntegrationSetup.tsx
 msgid "Search for an app, e.g. GitHub or Linear"
@@ -4044,34 +4052,6 @@ msgstr "이름"
 msgid "Resize panel"
 msgstr "패널 크기 조절"
 
-#: src/pages/SettingsOverlay.tsx
-msgid "Your account and password, how Rakazo looks, and the language it speaks."
-msgstr "계정과 비밀번호, Rakazo의 모양, 그리고 사용하는 언어."
-
-#: src/pages/SettingsOverlay.tsx
-msgid "Choose the model your bots think with, and connect the providers that run it."
-msgstr "봇이 생각할 때 사용할 모델을 고르고, 그 모델을 실행하는 제공업체를 연결하세요."
-
-#: src/pages/SettingsOverlay.tsx
-msgid "Your bots keep shared notes in MEMORY.md. Add a provider so they can also recall past conversations."
-msgstr "봇은 MEMORY.md에 공유 메모를 남깁니다. 제공업체를 추가하면 지난 대화도 기억할 수 있습니다."
-
-#: src/pages/SettingsOverlay.tsx
-msgid "Connect a voice provider so your bots can read replies aloud and understand what you say."
-msgstr "음성 제공업체를 연결하면 봇이 답변을 소리 내어 읽고 사용자의 말을 알아들을 수 있습니다."
-
-#: src/pages/SettingsOverlay.tsx
-msgid "How much your bots have run, and how many tokens they have used."
-msgstr "봇이 얼마나 실행되었고 토큰을 얼마나 사용했는지 보여 줍니다."
-
-#: src/pages/SettingsOverlay.tsx
-msgid "Give your bots a computer to run code and work with files."
-msgstr "봇에게 코드를 실행하고 파일을 다룰 컴퓨터를 제공하세요."
-
-#: src/pages/SettingsOverlay.tsx
-msgid "See which version you are running, and install new releases when they are out."
-msgstr "사용 중인 버전을 확인하고, 새 버전이 나오면 설치하세요."
-
 #: src/pages/PluginsOverlay.tsx
 msgid "Could not remove the server"
 msgstr "서버를 삭제할 수 없습니다"
@@ -4197,32 +4177,16 @@ msgid "Remove app"
 msgstr "앱 삭제"
 
 #: src/pages/PluginsOverlay.tsx
-msgid "App catalog"
-msgstr "앱 카탈로그"
-
-#: src/pages/PluginsOverlay.tsx
-msgid "Choose the service that provides the catalog and signs people in to its apps."
-msgstr "카탈로그를 제공하고 앱 로그인을 처리하는 서비스를 선택하세요."
+msgid "Catalog settings"
+msgstr "카탈로그 설정"
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Add a server"
 msgstr "서버 추가"
 
 #: src/pages/PluginsOverlay.tsx
-msgid "Connect an MCP server, or an OpenAPI or GraphQL endpoint, of your own."
-msgstr "직접 운영하는 MCP 서버나 OpenAPI 또는 GraphQL 엔드포인트를 연결하세요."
-
-#: src/pages/PluginsOverlay.tsx
-msgid "An app from the catalog."
-msgstr "카탈로그의 앱입니다."
-
-#: src/pages/PluginsOverlay.tsx
 msgid "Apps"
 msgstr "앱"
-
-#: src/pages/PluginsOverlay.tsx
-msgid "The apps and servers your bots can use."
-msgstr "봇이 사용할 수 있는 앱과 서버입니다."
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Close apps"
