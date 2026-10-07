@@ -1,12 +1,24 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import type { IntegrationCatalogResult, IntegrationSetupState } from "@rakazo/contracts";
-import { Button, Input } from "@rakazo/ui-web";
-import { Check } from "lucide-react";
+import {
+  Button,
+  ButtonGroup,
+  Disclosure,
+  Field,
+  FieldLabel,
+  Input,
+  Label,
+  Switch,
+} from "@rakazo/ui-web";
+import { ArrowLeft, Check, Plug, Search } from "lucide-react";
 import { useEffect, useId, useState } from "react";
 import { newClientId } from "../../lib/client-id";
 import { connectMcpOauth } from "../../lib/mcp-connect";
 import { rpc } from "../../lib/rpc";
 import { errorText } from "../../lib/user-error";
+import { ChoiceCard, ChoiceCards } from "./ChoiceCard";
+import { ConnectedStatus } from "./ConnectedStatus";
+import { IntegrationLogo } from "./IntegrationLogo";
 
 type Choice = "direct" | "composio" | "pipedream" | "executor";
 
@@ -17,6 +29,13 @@ export function IntegrationSetup({
   initialState,
   botId,
   onServerConnected,
+  onServerDisconnected,
+  onSaved,
+  onBack,
+  finishingLabel = null,
+  finishError = null,
+  onBusyChange,
+  layout = "panel",
 }: {
   onDone?: () => void;
   serverSetup?: boolean;
@@ -25,9 +44,24 @@ export function IntegrationSetup({
   initialState?: IntegrationSetupState | null;
   botId?: string;
   onServerConnected?: (id: string) => void;
+  onServerDisconnected?: (id: string) => void;
+  /** A provider's credentials were saved (its apps can be listed now). */
+  onSaved?: () => void;
+  /** Shown as a Back button in the page layout. */
+  onBack?: () => void;
+  /** Shown on Continue while the page acts on it (opening the chat, say); the footer waits. */
+  finishingLabel?: string | null;
+  /** Why that last action failed; Continue tries it again. */
+  finishError?: string | null;
+  /** Saving or connecting is under way; the page around it should not move on until it ends. */
+  onBusyChange?: (busy: boolean) => void;
+  /** "page" sits in the entry frame, which shows the title, and uses the entry pages' sizes. */
+  layout?: "panel" | "page";
 }) {
   const { t } = useLingui();
   const fieldId = useId();
+  const page = layout === "page";
+  const size = page ? "lg" : "default";
   const [state, setState] = useState<IntegrationSetupState | null>(initialState ?? null);
   const [selectedChoice, setChoice] = useState<Choice>(managedOnly ? "composio" : "direct");
   const choice = serverSetup ? selectedChoice : "direct";
@@ -38,9 +72,17 @@ export function IntegrationSetup({
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<IntegrationCatalogResult[]>([]);
   const [searched, setSearched] = useState(false);
+  const [addingUrl, setAddingUrl] = useState(false);
+  /** Saving a provider's credentials; the whole panel waits for it. */
   const [busy, setBusy] = useState(false);
+  const [searching, setSearching] = useState(false);
+  /** The server address being connected or disconnected; only its own row waits. */
+  const [pendingUrl, setPendingUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [connected, setConnected] = useState<string[]>([]);
+  /** Servers connected here, by address; `created` when this panel added the server. */
+  const [connected, setConnected] = useState<
+    ReadonlyMap<string, { serverId: string; created: boolean }>
+  >(new Map());
   const choices: { id: Choice; label: string }[] = [
     { id: "direct", label: t`Direct MCP` },
     { id: "composio", label: "Composio" },
@@ -63,7 +105,9 @@ export function IntegrationSetup({
       ),
     ).values(),
   ];
-  const configured = state?.providers.find((provider) => provider.id === choice)?.configured;
+  const isConfigured = (id: Choice) =>
+    state?.providers.find((provider) => provider.id === id)?.configured === true;
+  const configured = isConfigured(choice);
   useEffect(() => {
     if (!serverSetup || initialState) return;
     void rpc.integrationSetup
@@ -72,17 +116,22 @@ export function IntegrationSetup({
       .catch(() => setError(t`Could not load integrations`));
   }, [serverSetup, initialState]);
 
-  async function run(action: () => Promise<void>) {
-    setBusy(true);
+  async function run(
+    action: () => Promise<void>,
+    setPending: (pending: boolean) => void = setBusy,
+  ) {
+    setPending(true);
     setError(null);
     try {
       await action();
     } catch (err) {
       setError(errorText(err, t`Could not connect`));
     } finally {
-      setBusy(false);
+      setPending(false);
     }
   }
+
+  const pendingFor = (url: string) => (pending: boolean) => setPendingUrl(pending ? url : null);
 
   async function saveProvider() {
     await run(async () => {
@@ -99,11 +148,13 @@ export function IntegrationSetup({
       );
       setApiKey("");
       setState(await rpc.integrationSetup.get());
+      onSaved?.();
       onDone?.();
     });
   }
 
   async function connect(name: string, url: string) {
+    if (pendingUrl !== null) return;
     await run(async () => {
       const existing = (await rpc.mcp.servers.list()).find((server) => server.endpoint === url);
       const server =
@@ -118,93 +169,174 @@ export function IntegrationSetup({
       if (existing && apiKey.trim()) {
         await rpc.mcp.servers.update({ id: existing.id, secret: apiKey.trim() });
       }
-      const result = await connectMcpOauth(server.id);
-      if (result === "cancelled") return;
+      // A server added only for this sign-in goes again when the sign-in does not finish.
+      const forgetIfNew = async () => {
+        if (!existing) await rpc.mcp.servers.remove({ id: server.id });
+      };
+      const result = await connectMcpOauth(server.id).catch(async (err: unknown) => {
+        await forgetIfNew();
+        throw err;
+      });
+      if (result === "cancelled") {
+        await forgetIfNew();
+        return;
+      }
+      // This tab is on its way to the provider; the sign-in is still under way.
+      if (result === "redirected") return;
       if (botId) await rpc.mcp.assignments.approve({ botId, serverId: server.id });
-      setConnected((current) => [...current, url]);
+      setConnected((current) =>
+        new Map(current).set(url, { serverId: server.id, created: !existing }),
+      );
       onServerConnected?.(server.id);
-    });
+    }, pendingFor(url));
   }
+
+  /** Undoes a connection: a server added here is deleted, one that existed is only let go. */
+  async function disconnect(url: string) {
+    const connection = connected.get(url);
+    if (!connection || pendingUrl !== null) return;
+    await run(async () => {
+      if (connection.created) await rpc.mcp.servers.remove({ id: connection.serverId });
+      setConnected((current) => {
+        const next = new Map(current);
+        next.delete(url);
+        return next;
+      });
+      onServerDisconnected?.(connection.serverId);
+    }, pendingFor(url));
+  }
+
+  const visibleChoices = choices.filter(
+    ({ id }) => !managedOnly || id === "composio" || id === "pipedream",
+  );
+  function selectChoice(id: Choice) {
+    setChoice(id);
+    setApiKey("");
+    setError(null);
+  }
+
+  // A server mid-connection counts too: finishing now would open the bot without it.
+  const working = busy || pendingUrl !== null;
+  useEffect(() => {
+    onBusyChange?.(working);
+  }, [working, onBusyChange]);
+  const footerLocked = working || finishingLabel !== null;
+  const skipButton = (
+    <Button
+      variant="ghost"
+      size={size}
+      className={page ? "ml-auto" : undefined}
+      disabled={footerLocked}
+      onClick={onDone}
+    >
+      <Trans>Skip</Trans>
+    </Button>
+  );
 
   if (serverSetup && !state?.canConfigure) return error ? <p role="alert">{error}</p> : null;
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-[32px] font-medium text-foreground">
-        {serverSetup ? t`Server integrations` : t`Add MCP server`}
-      </h1>
+    <div className="@container w-full space-y-6">
+      {page ? null : (
+        <h1 className="text-[32px] font-medium text-foreground">
+          {serverSetup ? t`Server integrations` : t`Add MCP server`}
+        </h1>
+      )}
       {serverSetup ? (
-        <fieldset
-          aria-label={t`Integration options`}
-          className="overflow-hidden rounded-xl border border-border"
-        >
-          {choices
-            .filter(({ id }) => !managedOnly || id === "composio" || id === "pipedream")
-            .map(({ id, label }) => (
+        page ? (
+          <ChoiceCards label={t`Integration options`}>
+            {visibleChoices.map(({ id, label }) => (
+              <ChoiceCard
+                key={id}
+                icon={<IntegrationLogo service={id === "direct" ? "mcp" : id} />}
+                label={label}
+                selected={choice === id}
+                connected={isConfigured(id)}
+                disabled={busy}
+                onSelect={() => selectChoice(id)}
+              />
+            ))}
+          </ChoiceCards>
+        ) : (
+          <fieldset
+            aria-label={t`Integration options`}
+            className="overflow-hidden rounded-xl border border-border"
+          >
+            {visibleChoices.map(({ id, label }) => (
               <button
                 key={id}
                 type="button"
                 aria-pressed={choice === id}
                 disabled={busy}
-                onClick={() => {
-                  setChoice(id);
-                  setApiKey("");
-                  setError(null);
-                }}
+                onClick={() => selectChoice(id)}
                 className={`flex min-h-11 w-full items-center justify-between border-b border-border px-3.5 py-2.5 text-left last:border-0 ${choice === id ? "bg-muted" : "hover:bg-accent"}`}
               >
-                <span>{label}</span>
-                {choice === id ? <Check className="size-4" aria-hidden /> : null}
+                <span className="flex-1">{label}</span>
+                {isConfigured(id) ? (
+                  <span className="text-[12px] text-success">
+                    <Trans>Connected</Trans>
+                  </span>
+                ) : null}
+                {choice === id ? <Check className="ml-3 size-4" aria-hidden /> : null}
               </button>
             ))}
-        </fieldset>
+          </fieldset>
+        )
       ) : null}
       {choice === "composio" || choice === "pipedream" ? (
-        <>
-          {configured ? (
-            <p className="text-sm text-success">
-              <Trans>Connected</Trans>
-            </p>
-          ) : null}
-          {state?.canConfigure ? (
-            <>
-              {choice === "pipedream" ? (
-                <>
-                  <label htmlFor={`${fieldId}-client-id`} className="block text-sm">
+        state?.canConfigure ? (
+          <>
+            {choice === "pipedream" ? (
+              <>
+                <Field>
+                  <FieldLabel htmlFor={`${fieldId}-client-id`}>
                     <Trans>Client ID</Trans>
-                    <Input
-                      id={`${fieldId}-client-id`}
-                      className="mt-2"
-                      value={clientId}
-                      onChange={(event) => setClientId(event.target.value)}
-                      autoComplete="off"
-                    />
-                  </label>
-                  <label htmlFor={`${fieldId}-project-id`} className="block text-sm">
+                  </FieldLabel>
+                  <Input
+                    id={`${fieldId}-client-id`}
+                    placeholder={t`Paste your Pipedream client ID`}
+                    value={clientId}
+                    onChange={(event) => setClientId(event.target.value)}
+                    autoComplete="off"
+                  />
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor={`${fieldId}-project-id`}>
                     <Trans>Project ID</Trans>
-                    <Input
-                      id={`${fieldId}-project-id`}
-                      className="mt-2"
-                      value={projectId}
-                      onChange={(event) => setProjectId(event.target.value)}
-                      autoComplete="off"
-                    />
-                  </label>
-                </>
-              ) : null}
-              <label htmlFor={`${fieldId}-key`} className="block text-sm">
-                {choice === "composio" ? t`API key` : t`Client secret`}
+                  </FieldLabel>
+                  <Input
+                    id={`${fieldId}-project-id`}
+                    placeholder={t`Paste your Pipedream project ID`}
+                    value={projectId}
+                    onChange={(event) => setProjectId(event.target.value)}
+                    autoComplete="off"
+                  />
+                </Field>
+              </>
+            ) : null}
+            {/* The link belongs to the field above it, so it sits close. */}
+            <div className="space-y-2">
+              <Field>
+                <FieldLabel htmlFor={`${fieldId}-key`}>
+                  {choice === "composio" ? t`API key` : t`Client secret`}
+                </FieldLabel>
                 <Input
                   id={`${fieldId}-key`}
-                  className="mt-2"
+                  placeholder={
+                    configured
+                      ? t`Saved. Paste a new one to replace it.`
+                      : choice === "composio"
+                        ? t`Paste your Composio project API key (ak_…)`
+                        : t`Paste your Pipedream client secret`
+                  }
                   type="password"
                   value={apiKey}
                   onChange={(event) => setApiKey(event.target.value)}
                   autoComplete="new-password"
                 />
-              </label>
+              </Field>
               <a
-                className="text-sm text-muted-foreground underline"
+                className="inline-block text-sm text-muted-foreground underline"
                 href={
                   choice === "composio"
                     ? "https://dashboard.composio.dev"
@@ -215,27 +347,18 @@ export function IntegrationSetup({
               >
                 <Trans>Get credentials</Trans>
               </a>
-              {!onDone ? (
-                <Button
-                  className="ml-3"
-                  disabled={busy || !credentialsReady}
-                  onClick={() => void saveProvider()}
-                >
-                  {busy ? t`Connecting…` : t`Connect`}
-                </Button>
-              ) : null}
-            </>
-          ) : state && !configured ? (
-            <p className="text-sm text-muted-foreground">
-              <Trans>Ask the server owner to configure this provider.</Trans>
-            </p>
-          ) : null}
-        </>
+            </div>
+          </>
+        ) : state && !configured ? (
+          <p className="text-sm text-muted-foreground">
+            <Trans>Ask the server owner to configure this provider.</Trans>
+          </p>
+        ) : null
       ) : null}
       {choice === "direct" ? (
         <>
           <form
-            className="flex gap-2"
+            className="space-y-2"
             onSubmit={(event) => {
               event.preventDefault();
               void run(async () => {
@@ -245,41 +368,80 @@ export function IntegrationSetup({
                 });
                 setResults(response.results);
                 setSearched(true);
-              });
+              }, setSearching);
             }}
           >
-            <Input
-              aria-label={t`Search apps`}
-              placeholder={t`Search apps`}
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-            />
-            <Button type="submit" disabled={busy || !query.trim()}>
-              <Trans>Search integrations.sh</Trans>
-            </Button>
-          </form>
-          {remoteResults.map((result) => (
-            <div key={result.endpoint} className="flex items-center justify-between gap-3">
-              <span className="min-w-0 truncate">{result.name}</span>
+            <ButtonGroup className="w-full">
+              <Input
+                aria-label={t`Search apps`}
+                placeholder={t`Search for an app, e.g. GitHub or Linear`}
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+              />
               <Button
-                variant="outline"
-                disabled={busy || connected.includes(result.endpoint)}
-                onClick={() => void connect(result.name, result.endpoint)}
+                type="submit"
+                size="icon-lg"
+                aria-label={t`Search`}
+                disabled={searching || !query.trim()}
               >
-                {connected.includes(result.endpoint) ? t`Connected` : t`Connect`}
+                <Search />
               </Button>
-            </div>
-          ))}
+            </ButtonGroup>
+            <p className="text-xs text-muted-foreground">
+              <Trans>Results from integrations.sh</Trans>
+            </p>
+          </form>
+          {remoteResults.length ? (
+            <ul>
+              {remoteResults.map((result) => (
+                <li key={result.endpoint} className="flex items-center justify-between gap-3">
+                  <span className="min-w-0 truncate text-sm">{result.name}</span>
+                  {connected.has(result.endpoint) ? (
+                    <ConnectedStatus
+                      // A bot keeps a server that existed before; there is nothing here to undo.
+                      onDisconnect={
+                        connected.get(result.endpoint)?.created || !botId
+                          ? () => void disconnect(result.endpoint)
+                          : null
+                      }
+                      pending={pendingUrl === result.endpoint}
+                    />
+                  ) : (
+                    <Button
+                      size={size}
+                      variant="text"
+                      disabled={pendingUrl === result.endpoint}
+                      onClick={() => void connect(result.name, result.endpoint)}
+                    >
+                      <Plug />
+                      {pendingUrl === result.endpoint ? t`Connecting…` : t`Connect`}
+                    </Button>
+                  )}
+                </li>
+              ))}
+            </ul>
+          ) : null}
           {searched && !remoteResults.length ? (
             <p className="text-sm text-muted-foreground">
               <Trans>No remote MCP servers found</Trans>
             </p>
           ) : null}
-          <details className="text-sm text-muted-foreground">
-            <summary className="cursor-pointer">
+          <div className="flex items-start gap-3">
+            <Switch
+              id={`${fieldId}-add-url`}
+              className="mt-0.5"
+              checked={addingUrl}
+              onCheckedChange={setAddingUrl}
+            />
+            <Label
+              htmlFor={`${fieldId}-add-url`}
+              className="text-[14px] font-normal text-foreground/75"
+            >
               <Trans>Add server URL</Trans>
-            </summary>
-            <div className="mt-3 space-y-3">
+            </Label>
+          </div>
+          {addingUrl ? (
+            <div className="space-y-3">
               <Input
                 aria-label={t`Server URL`}
                 value={endpoint}
@@ -287,48 +449,54 @@ export function IntegrationSetup({
                 placeholder="https://example.com/mcp"
               />
               <Button
-                disabled={busy || !endpoint.trim()}
+                variant="text"
+                size={size}
+                disabled={!endpoint.trim() || pendingUrl === endpoint.trim()}
                 onClick={() => void connect("MCP server", endpoint.trim())}
               >
-                <Trans>Connect</Trans>
+                <Plug />
+                {pendingUrl === endpoint.trim() ? t`Connecting…` : t`Connect`}
               </Button>
             </div>
-          </details>
+          ) : null}
         </>
       ) : null}
       {choice === "executor" ? (
         <div className="space-y-3">
-          <label htmlFor={`${fieldId}-endpoint`} className="block text-sm">
-            <Trans>Server URL</Trans>
+          <Field>
+            <FieldLabel htmlFor={`${fieldId}-endpoint`}>
+              <Trans>Server URL</Trans>
+            </FieldLabel>
             <Input
               id={`${fieldId}-endpoint`}
-              className="mt-2"
               value={endpoint}
               onChange={(event) => setEndpoint(event.target.value)}
               placeholder="http://localhost:8000/mcp"
             />
-          </label>
-          <label htmlFor={`${fieldId}-token`} className="block text-sm">
-            <Trans>Access token</Trans>
+          </Field>
+          <Field>
+            <FieldLabel htmlFor={`${fieldId}-token`}>
+              <Trans>Access token</Trans>
+            </FieldLabel>
             <Input
               id={`${fieldId}-token`}
-              className="mt-2"
+              placeholder={t`Paste your Executor access token`}
               value={apiKey}
               onChange={(event) => setApiKey(event.target.value)}
               type="password"
               autoComplete="new-password"
             />
-          </label>
+          </Field>
           <Button
-            disabled={busy || !endpoint.trim()}
+            variant="text"
+            size={size}
+            disabled={!endpoint.trim() || pendingUrl === endpoint.trim()}
             onClick={() => void connect("Executor", endpoint.trim())}
           >
-            <Trans>Connect</Trans>
+            <Plug />
+            {pendingUrl === endpoint.trim() ? t`Connecting…` : t`Connect`}
           </Button>
-          <details className="text-sm text-muted-foreground">
-            <summary className="cursor-pointer">
-              <Trans>Setup help</Trans>
-            </summary>
+          <Disclosure className="text-sm text-muted-foreground" summary={<Trans>Setup help</Trans>}>
             <a
               href="https://executor.sh/#get-started"
               target="_blank"
@@ -337,7 +505,7 @@ export function IntegrationSetup({
             >
               <Trans>Download Executor</Trans>
             </a>
-          </details>
+          </Disclosure>
         </div>
       ) : null}
       {error ? (
@@ -345,11 +513,47 @@ export function IntegrationSetup({
           {error}
         </p>
       ) : null}
-      {onDone ? (
-        <div className="flex gap-3">
+      {finishError ? (
+        <p role="alert" className="text-sm text-destructive">
+          {finishError}
+        </p>
+      ) : null}
+      {!onDone && managed && state?.canConfigure ? (
+        <div>
           <Button
+            variant="secondary"
+            size={size}
+            disabled={busy || !credentialsReady}
+            onClick={() => void saveProvider()}
+          >
+            {configured ? (
+              busy ? (
+                t`Saving…`
+              ) : (
+                t`Replace credentials`
+              )
+            ) : (
+              <>
+                <Plug />
+                {busy ? t`Connecting…` : t`Connect`}
+              </>
+            )}
+          </Button>
+        </div>
+      ) : null}
+      {onDone ? (
+        <div className={page ? "flex items-center gap-3 pt-2" : "flex gap-3"}>
+          {page && onBack ? (
+            <Button variant="outline" size={size} disabled={footerLocked} onClick={onBack}>
+              <ArrowLeft />
+              <Trans>Back</Trans>
+            </Button>
+          ) : null}
+          {page ? skipButton : null}
+          <Button
+            size={size}
             disabled={
-              busy ||
+              footerLocked ||
               (managed &&
                 state?.canConfigure &&
                 !credentialsReady &&
@@ -360,11 +564,9 @@ export function IntegrationSetup({
               else onDone();
             }}
           >
-            {busy ? t`Connecting…` : t`Continue`}
+            {finishingLabel ?? (busy ? t`Connecting…` : t`Continue`)}
           </Button>
-          <Button variant="ghost" disabled={busy} onClick={onDone}>
-            <Trans>Skip</Trans>
-          </Button>
+          {page ? null : skipButton}
         </div>
       ) : null}
     </div>

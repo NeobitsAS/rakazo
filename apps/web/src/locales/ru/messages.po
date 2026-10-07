@@ -817,6 +817,7 @@ msgid "Avatars"
 msgstr "Аватары"
 
 #: src/components/computer/FilesApp.tsx
+#: src/components/integrations/IntegrationSetup.tsx
 #: src/pages/Board.tsx
 #: src/pages/PluginsOverlay.tsx
 #: src/pages/RoutineEditor.tsx
@@ -1105,6 +1106,14 @@ msgstr "Выберите новый пароль"
 msgid "Choose file"
 msgstr "Выбрать файл"
 
+#: src/pages/ModelSettingsOverlay.tsx
+msgid "Choose which connected model Rakazo uses."
+msgstr "Выберите, какую подключенную модель использует Rakazo."
+
+#: src/pages/Onboarding.tsx
+msgid "Choose your default model"
+msgstr "Выберите модель по умолчанию"
+
 #: src/pages/shell/dialogs.tsx
 msgid "Clear"
 msgstr "Очистить"
@@ -1337,6 +1346,10 @@ msgstr "Подключить"
 msgid "Connect a model"
 msgstr "Подключить модель"
 
+#: src/pages/ModelBackupsSettings.tsx
+msgid "Connect a provider to add backups."
+msgstr "Подключите провайдера, чтобы добавить резервные модели."
+
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "Connect API key"
 msgstr "Подключить API-ключ"
@@ -1357,6 +1370,8 @@ msgstr "Подключить OAuth"
 msgid "Connect Treg"
 msgstr "Подключить Treg"
 
+#: src/components/integrations/ChoiceCard.tsx
+#: src/components/integrations/ConnectedStatus.tsx
 #: src/components/integrations/IntegrationSetup.tsx
 #: src/pages/McpOAuthCallback.tsx
 #: src/pages/MemorySettingsOverlay.tsx
@@ -2153,6 +2168,7 @@ msgstr ""
 msgid "Discard recording"
 msgstr "Удалить запись"
 
+#: src/components/integrations/ConnectedStatus.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/MemorySettingsOverlay.tsx
 #: src/pages/ModelSettingsOverlay.tsx
@@ -2169,6 +2185,7 @@ msgstr ""
 msgid "Disconnected {0}."
 msgstr ""
 
+#: src/components/integrations/ConnectedStatus.tsx
 #: src/pages/MemorySettingsOverlay.tsx
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/VoiceSettingsOverlay.tsx
@@ -2216,6 +2233,7 @@ msgstr "У вас нет учетной записи?"
 
 #: src/lib/ticket-status.ts
 #: src/pages/ActivityList.tsx
+#: src/pages/Onboarding.tsx
 #: src/pages/shell/avatar-studio-popover.tsx
 msgid "Done"
 msgstr "Готово"
@@ -2914,7 +2932,6 @@ msgstr "Загрузка поставщиков голосовой связи…
 #: src/pages/Auth.tsx
 #: src/pages/IntegrationSetup.tsx
 #: src/pages/ModelBackupsSettings.tsx
-#: src/pages/Onboarding.tsx
 #: src/pages/Shell.tsx
 msgid "Loading…"
 msgstr "Загрузка…"
@@ -3493,6 +3510,10 @@ msgstr "По расписанию"
 msgid "on the 1st at {0}"
 msgstr "1-го числа в {0}"
 
+#: src/pages/Onboarding.tsx
+msgid "Onboarding steps"
+msgstr "Шаги начальной настройки"
+
 #: src/pages/Shell.tsx
 msgid "Only empty spaces can be deleted. Delete its bots and groups first."
 msgstr "Удалить можно только пустые пространства. Сначала удалите их ботов и группы."
@@ -3569,6 +3590,10 @@ msgstr "Диалог открыт."
 #: src/pages/Onboarding.tsx
 msgid "Opening chat…"
 msgstr ""
+
+#: src/pages/Onboarding.tsx
+msgid "Opening your first agent…"
+msgstr "Открываем вашего первого агента…"
 
 #: src/App.tsx
 msgid "Opening your Space…"
@@ -3662,6 +3687,26 @@ msgstr "Вставьте свой ключ API"
 #: src/lib/model-connection-preflight.ts
 msgid "Paste your API key, then test again."
 msgstr "Вставьте API-ключ и повторите тест."
+
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Paste your Composio project API key (ak_…)"
+msgstr "Вставьте API-ключ проекта Composio (ak_…)"
+
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Paste your Executor access token"
+msgstr "Вставьте токен доступа Executor"
+
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Paste your Pipedream client ID"
+msgstr "Вставьте ID клиента Pipedream"
+
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Paste your Pipedream client secret"
+msgstr "Вставьте секрет клиента Pipedream"
+
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Paste your Pipedream project ID"
+msgstr "Вставьте ID проекта Pipedream"
 
 #: src/pages/RoutineEditor.tsx
 msgid "Paused"
@@ -3990,6 +4035,10 @@ msgstr "Открыть заново"
 msgid "Replace API key"
 msgstr "Заменить ключ API"
 
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Replace credentials"
+msgstr "Заменить учётные данные"
+
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "Replace key"
 msgstr "Заменить ключ"
@@ -4072,6 +4121,10 @@ msgstr "Восстановлено"
 #: src/components/ComputerUpdateProgress.tsx
 msgid "Restoring your workspace"
 msgstr "Восстановление вашего рабочего пространства"
+
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Results from integrations.sh"
+msgstr "Результаты из integrations.sh"
 
 #: src/components/AccountAccess.tsx
 #: src/pages/Auth.tsx
@@ -4211,6 +4264,10 @@ msgstr "Сохранено, но обновить список не удалос
 msgid "Saved."
 msgstr "Сохранено."
 
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Saved. Paste a new one to replace it."
+msgstr "Сохранено. Вставьте новый, чтобы заменить его."
+
 #: src/pages/RoutineEditor.tsx
 msgid "Saved. Rotate to reveal."
 msgstr "Сохранено. Поверните, чтобы раскрыть."
@@ -4224,6 +4281,7 @@ msgid "Saving..."
 msgstr "Сохранение..."
 
 #: src/components/AskCard.tsx
+#: src/components/integrations/IntegrationSetup.tsx
 #: src/components/teach/SkillDraftCard.tsx
 #: src/pages/GroupPanel.tsx
 #: src/pages/ModelBackupsSettings.tsx
@@ -4238,6 +4296,7 @@ msgstr "Сохранение…"
 msgid "Say yes or no, or answer in a sentence."
 msgstr "Скажите «да» или «нет» или ответьте предложением."
 
+#: src/components/integrations/IntegrationSetup.tsx
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/PluginsOverlay.tsx
 #: src/pages/Shell.tsx
@@ -4264,8 +4323,8 @@ msgid "Search by domain"
 msgstr "Поиск по домену"
 
 #: src/components/integrations/IntegrationSetup.tsx
-msgid "Search integrations.sh"
-msgstr "Поиск integrations.sh"
+msgid "Search for an app, e.g. GitHub or Linear"
+msgstr "Найдите приложение, например GitHub или Linear"
 
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "Search models"
@@ -4344,6 +4403,7 @@ msgstr ""
 #: src/components/integrations/IntegrationSetup.tsx
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/LocalSettings.tsx
+#: src/pages/Onboarding.tsx
 msgid "Server integrations"
 msgstr "Интеграции сервера"
 
@@ -4934,6 +4994,10 @@ msgstr ""
 #: src/lib/model-connection-preflight.ts
 msgid "Try the test again."
 msgstr "Повторите тест."
+
+#: src/pages/Onboarding.tsx
+msgid "Try your agent"
+msgstr "Попробуйте своего агента"
 
 #: src/pages/shell/bot-credentials.tsx
 msgid "Type"

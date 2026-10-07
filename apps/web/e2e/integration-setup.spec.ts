@@ -96,7 +96,7 @@ test("direct MCP connects a catalog result without asking for a URL and assigns 
   });
   await signup(page, `direct-mcp-setup-${Date.now()}@rakazo.test`, "password12", "Direct MCP");
   await page.getByRole("textbox", { name: "Search apps", exact: true }).fill("Notion");
-  await page.getByRole("button", { name: "Search integrations.sh", exact: true }).click();
+  await page.getByRole("button", { name: "Search", exact: true }).click();
   await expect(page.getByText("Notion", { exact: true })).toBeVisible();
   await expect(page.getByRole("textbox", { name: "Server URL" })).toBeHidden();
   await page.getByRole("button", { name: "Connect", exact: true }).click();
@@ -254,7 +254,8 @@ test("configured server owners manage providers from settings", async ({ page },
   await captureScreenshot(page, testInfo, "server-integrations-settings");
   await link.click();
   await expect(page.getByRole("heading", { name: "Server integrations" })).toBeVisible();
-  await page.getByRole("button", { name: "Composio", exact: true }).click();
+  // The row is named "Composio Connected" once the provider is set up.
+  await page.getByRole("button", { name: /^Composio/ }).click();
   await expect(page.getByText("Connected", { exact: true })).toBeVisible();
   await captureScreenshot(page, testInfo, "server-integrations-configured");
 });
