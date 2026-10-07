@@ -317,11 +317,11 @@ test("connects, lists, and uses an OpenAI-compatible endpoint", async ({ page },
     await expect(page.getByLabel("Model id")).toHaveValue("manual-model-not-listed");
     await page.getByRole("button", { name: "Use a found model" }).click();
     const discoveredModels = page.getByRole("combobox", { name: "Models from server" });
-    await expect(discoveredModels).toHaveValue(LOCAL_MODEL_ID);
-    await discoveredModels.selectOption("");
+    await expect(discoveredModels).toHaveText(LOCAL_MODEL_ID);
+    await chooseOption(discoveredModels, "Other model…");
     await expect(page.getByLabel("Model id")).toBeVisible();
     await page.getByRole("button", { name: "Find models" }).click();
-    await expect(discoveredModels).toHaveValue(LOCAL_MODEL_ID);
+    await expect(discoveredModels).toHaveText(LOCAL_MODEL_ID);
     await expect(page.getByText("Found 2 models.")).toBeVisible();
     await expect(page.getByRole("button", { name: "Save", exact: true })).toBeEnabled();
     await captureScreenshot(page, testInfo, "openai-compatible-model-discovery");
@@ -363,26 +363,12 @@ test("connects, lists, and uses an OpenAI-compatible endpoint", async ({ page },
     await settings.getByTestId("bot-settings-advanced").evaluate((element) => {
       (element as HTMLDetailsElement).open = true;
     });
-    // The Model select sits inside its wrapping <label>, so the label text includes
-    // option copy and getByLabel(..., { exact: true }) misses it. Use the role name.
     const botModel = settings.getByRole("combobox", { name: "Model", exact: true });
-    await expect(botModel.locator("option")).toContainText([LOCAL_MODEL_ID, SECOND_MODEL_ID]);
-    await botModel.selectOption(`openai-compatible::${SECOND_MODEL_ID}`);
-    // Native select popups are outside Playwright's screenshots. Render the
-    // same options as an expanded native list for the CI screenshot, then restore.
-    // An expanded select is a listbox, so keep a role-independent handle.
-    const botModelSelect = settings.locator(`[id="${await botModel.getAttribute("id")}"]`);
-    await botModelSelect.evaluate((select: HTMLSelectElement) => {
-      select.size = select.options.length;
-      select.style.height = "auto";
-    });
-    await botModelSelect.scrollIntoViewIfNeeded();
+    await botModel.click();
+    await expect(page.getByRole("option")).toContainText([LOCAL_MODEL_ID, SECOND_MODEL_ID]);
     await captureScreenshot(page, testInfo, "openai-compatible-model-picker");
-    await botModelSelect.evaluate((select: HTMLSelectElement) => {
-      select.size = 0;
-      select.style.removeProperty("height");
-    });
-    await settings.getByRole("combobox", { name: "Thinking", exact: true }).selectOption("high");
+    await page.getByRole("option", { name: new RegExp(`${SECOND_MODEL_ID}$`) }).click();
+    await chooseOption(settings.getByRole("combobox", { name: "Thinking", exact: true }), "High");
     const botSaved = page.waitForResponse(
       (response) => response.url().includes("/rpc/bots/update") && response.ok(),
     );
@@ -728,13 +714,15 @@ test("catalog models keep a space default thinking level per saved model", async
 
   const thinking = page.getByRole("combobox", { name: "Thinking", exact: true });
   await expect(thinking).toBeVisible();
-  await expect(thinking).toHaveValue("");
-  await thinking.selectOption("high");
+  // The menu shows "Default (…)" until a level is chosen.
+  await expect(thinking).toHaveText(/^Default/);
+  await chooseOption(thinking, "High");
   await captureScreenshot(page, testInfo, "catalog-model-thinking");
   await page.getByRole("button", { name: "Save", exact: true }).click();
   await expect(page.getByText(/Now using/)).toBeVisible();
   // The Active model banner surfaces the effective effort while the model can think.
-  await expect(page.getByText("Thinking: High", { exact: true })).toBeVisible();
+  // It shares a line with the provider: "Anthropic · Thinking: High".
+  await expect(page.getByText(/· Thinking: High$/)).toBeVisible();
 
   const credentials = await rpc<Array<{ provider: string; thinkingLevel?: string | null }>>(
     page,
@@ -748,13 +736,15 @@ test("catalog models keep a space default thinking level per saved model", async
   await openUserSettings(page, "models");
   await providerSearch.fill("anthropic");
   await page.getByRole("button", { name: /^Anthropic( |$)/ }).click();
-  await expect(page.getByRole("combobox", { name: "Thinking", exact: true })).toHaveValue("high");
+  await expect(page.getByRole("combobox", { name: "Thinking", exact: true })).toHaveText("High");
 
   // The stored level is bound to the saved model: staging another model resets the
   // staged level, and saving the new model clears the old level instead of leaking it.
   await page.getByRole("combobox", { name: "Model", exact: true }).click();
   await page.getByRole("option", { name: "Claude Opus 4.8", exact: true }).click();
-  await expect(page.getByRole("combobox", { name: "Thinking", exact: true })).toHaveValue("");
+  await expect(page.getByRole("combobox", { name: "Thinking", exact: true })).toHaveText(
+    /^Default/,
+  );
   await page.getByRole("button", { name: "Use this model", exact: true }).click();
   await expect(page.getByText(/Now using/)).toBeVisible();
   const updated = await rpc<Array<{ provider: string; thinkingLevel?: string | null }>>(
@@ -801,15 +791,12 @@ test("saves and reloads an ordered backup model list for connected models", asyn
   await expect(panel).toBeVisible();
   await expect(panel.getByText("Add connected models to use them as backups.")).toBeVisible();
   const picker = panel.getByRole("combobox", { name: "Add connected model" });
-  const firstValue = JSON.stringify([targets[0]!.provider, targets[0]!.id]);
-  const secondValue = JSON.stringify([targets[1]!.provider, targets[1]!.id]);
-  await picker.selectOption(firstValue);
-  await panel.getByRole("button", { name: "Add", exact: true }).click();
-  await picker.selectOption(secondValue);
-  await panel.getByRole("button", { name: "Add", exact: true }).click();
-
   const firstLabel = `${targets[0]!.providerName ?? targets[0]!.provider} · ${targets[0]!.label}`;
   const secondLabel = `${targets[1]!.providerName ?? targets[1]!.provider} · ${targets[1]!.label}`;
+  await chooseOption(picker, firstLabel);
+  await panel.getByRole("button", { name: "Add", exact: true }).click();
+  await chooseOption(picker, secondLabel);
+  await panel.getByRole("button", { name: "Add", exact: true }).click();
   await panel.getByRole("button", { name: `Move ${secondLabel} up` }).click();
   const rows = panel.locator('[data-testid^="model-backup-"]');
   await expect(rows.nth(0)).toContainText(secondLabel);

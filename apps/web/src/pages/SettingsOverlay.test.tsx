@@ -26,6 +26,8 @@ vi.mock("@rakazo/ui-web", () => ({
     React.ComponentProps<"div">,
     "children"
   >) => <div {...props}>{children}</div>,
+  DialogDescription: ({ children }: { children?: ReactNode }) => <p>{children}</p>,
+  DialogHeader: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
   DialogTitle: ({ children }: { children?: ReactNode }) => <h2>{children}</h2>,
 }));
 

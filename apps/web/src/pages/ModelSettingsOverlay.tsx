@@ -44,11 +44,13 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  Disclosure,
+  Field,
+  FieldLabel,
   Input,
   Label,
   ModelThinkingOptions,
-  NativeSelect,
-  NativeSelectOption,
+  OptionSelect,
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -60,6 +62,7 @@ import {
   ModelPreflightFeedback,
   modelPreflightTestingLabel,
 } from "../components/ModelConnectionPreflightNotice";
+import { Loader } from "../components/PageLoader";
 import {
   ServerCredentialsUnavailable,
   serverCredentialsBlocker,
@@ -224,12 +227,14 @@ export function ModelSettingsOverlay({
       setAccountId(nextCredential?.accountId ?? "");
       setGatewayId(nextCredential?.gatewayId ?? "");
     }
+    setLoading(false);
   }
 
   useEffect(() => {
-    void refresh()
-      .catch((err: unknown) => setError(errorText(err, t`Could not load model settings`)))
-      .finally(() => setLoading(false));
+    void refresh().catch((err: unknown) => {
+      setError(errorText(err, t`Could not load model settings`));
+      setLoading(false);
+    });
     return () => {
       refreshRevisionRef.current += 1;
       modelProbe.invalidate();
@@ -744,7 +749,7 @@ export function ModelSettingsOverlay({
         aria-current={group.id === provider ? "true" : undefined}
         onClick={() => chooseProvider(group.id)}
         className={`flex w-full items-center gap-3 border-b border-border px-3.5 py-3 text-start last:border-0 ${
-          group.id === provider ? "bg-accent text-accent-foreground" : "hover:bg-accent/50"
+          group.id === provider ? "bg-muted" : "hover:bg-accent/50"
         }`}
       >
         <span className="min-w-0 flex-1">
@@ -760,6 +765,9 @@ export function ModelSettingsOverlay({
             <Trans>Connected</Trans>
           </span>
         ) : null}
+        {group.id === provider ? (
+          <Check aria-hidden="true" className="size-4 shrink-0 text-foreground" />
+        ) : null}
       </button>
     );
   }
@@ -768,11 +776,12 @@ export function ModelSettingsOverlay({
   const catalogModelConfig =
     !isOpenAiCompatible && selected ? (
       <>
-        <div className="block text-[13.5px] text-muted-foreground">
-          <span>
+        <Field>
+          <FieldLabel htmlFor="model-picker">
             <Trans>Model</Trans>
-          </span>
+          </FieldLabel>
           <ModelPicker
+            id="model-picker"
             options={modelsForProvider}
             value={selected.id}
             onChange={(nextModelId) => {
@@ -791,55 +800,59 @@ export function ModelSettingsOverlay({
               setNotice(null);
             }}
           />
-          <ModelThinkingOptions
-            showThinking={false}
-            disabled={busy}
-            advancedLabel={t`Advanced`}
-            maxTokens={maxTokens}
-            onMaxTokensChange={(value) => {
-              selectionRevisionRef.current += 1;
-              setMaxTokens(value);
-              setNotice(null);
-            }}
-            maxTokensLabel={t`Maximum output tokens`}
-          />
-        </div>
+        </Field>
         {catalogThinkingLevels.length ? (
-          <label
-            className="mt-4 block text-[13.5px] text-muted-foreground"
-            htmlFor="model-thinking-level"
-          >
-            <Trans>Thinking</Trans>
-            <NativeSelect
+          <Field className="mt-4">
+            <FieldLabel htmlFor="model-thinking-level">
+              <Trans>Thinking</Trans>
+            </FieldLabel>
+            <OptionSelect<ThinkingLevel | "">
               id="model-thinking-level"
-              className="mt-2 w-full text-foreground"
               value={thinkingLevel ?? ""}
               disabled={busy}
-              onChange={(event) => {
+              onValueChange={(next) => {
                 selectionRevisionRef.current += 1;
-                setThinkingLevel((event.target.value || null) as ThinkingLevel | null);
+                setThinkingLevel(next || null);
                 setNotice(null);
               }}
-            >
-              <NativeSelectOption value="">
-                {i18n._({
-                  id: "Default ({0})",
-                  message: "Default ({0})",
-                  values: { "0": thinkingLevelLabel("medium") },
-                })}
-              </NativeSelectOption>
-              {catalogThinkingLevels.map((level) => (
-                <NativeSelectOption key={level} value={level}>
-                  {thinkingLevelLabel(level)}
-                </NativeSelectOption>
-              ))}
-            </NativeSelect>
-          </label>
+              options={[
+                {
+                  value: "",
+                  label: i18n._({
+                    id: "Default ({0})",
+                    message: "Default ({0})",
+                    values: { "0": thinkingLevelLabel("medium") },
+                  }),
+                },
+                ...catalogThinkingLevels.map((level) => ({
+                  value: level,
+                  label: thinkingLevelLabel(level),
+                })),
+              ]}
+            />
+          </Field>
         ) : null}
         {selected.billing && !usingServerCredentials ? (
           <p className="mt-2 text-[13px] leading-[1.5] text-muted-foreground">{selected.billing}</p>
         ) : null}
       </>
+    ) : null;
+
+  // Settings few people need, so they come last on the page.
+  const catalogAdvancedOptions =
+    !isOpenAiCompatible && selected ? (
+      <ModelThinkingOptions
+        showThinking={false}
+        disabled={busy}
+        advancedLabel={t`Advanced`}
+        maxTokens={maxTokens}
+        onMaxTokensChange={(value) => {
+          selectionRevisionRef.current += 1;
+          setMaxTokens(value);
+          setNotice(null);
+        }}
+        maxTokensLabel={t`Maximum output tokens`}
+      />
     ) : null;
 
   // Sign-in/key controls shared between the unconnected connect flow and the
@@ -1017,48 +1030,43 @@ export function ModelSettingsOverlay({
         <div className="mt-5 first:mt-0">
           {isCloudflareGateway ? (
             <>
-              <label
-                className="block text-[13.5px] text-muted-foreground"
-                htmlFor="cloudflare-account-id"
-              >
-                <Trans>Account ID</Trans>
+              <Field>
+                <FieldLabel htmlFor="cloudflare-account-id">
+                  <Trans>Account ID</Trans>
+                </FieldLabel>
                 <Input
                   id="cloudflare-account-id"
                   value={accountId}
                   onChange={(event) => setAccountId(event.target.value)}
                   autoComplete="off"
                   spellCheck={false}
-                  className="mt-2 h-10 text-foreground"
                 />
-              </label>
-              <label
-                className="mt-4 block text-[13.5px] text-muted-foreground"
-                htmlFor="cloudflare-gateway-id"
-              >
-                <Trans>Gateway ID</Trans>
+              </Field>
+              <Field className="mt-4">
+                <FieldLabel htmlFor="cloudflare-gateway-id">
+                  <Trans>Gateway ID</Trans>
+                </FieldLabel>
                 <Input
                   id="cloudflare-gateway-id"
                   value={gatewayId}
                   onChange={(event) => setGatewayId(event.target.value)}
                   autoComplete="off"
                   spellCheck={false}
-                  className="mt-2 h-10 text-foreground"
                 />
-              </label>
+              </Field>
             </>
           ) : null}
           {acceptsKey ? (
-            <label
-              className={`block text-[13.5px] text-muted-foreground ${isCloudflareGateway ? "mt-4" : ""}`}
-              htmlFor="model-api-key"
-            >
-              {credential ? (
-                <Trans>Replace API key</Trans>
-              ) : subscriptionSignIn ? (
-                <Trans>Or connect an API key</Trans>
-              ) : (
-                <Trans>API key</Trans>
-              )}
+            <Field className={isCloudflareGateway ? "mt-4" : undefined}>
+              <FieldLabel htmlFor="model-api-key">
+                {credential ? (
+                  <Trans>Replace API key</Trans>
+                ) : subscriptionSignIn ? (
+                  <Trans>Or connect an API key</Trans>
+                ) : (
+                  <Trans>API key</Trans>
+                )}
+              </FieldLabel>
               <Input
                 id="model-api-key"
                 value={apiKey}
@@ -1066,9 +1074,8 @@ export function ModelSettingsOverlay({
                 placeholder={credential?.hasKey ? t`Paste a replacement key` : "sk-…"}
                 type="password"
                 autoComplete="new-password"
-                className="mt-2 h-10 text-foreground"
               />
-            </label>
+            </Field>
           ) : null}
           {acceptsKey && selected?.catalogProbe ? (
             <>
@@ -1076,7 +1083,7 @@ export function ModelSettingsOverlay({
                 type="button"
                 variant="outline"
                 size="sm"
-                className="mt-3 rounded-full"
+                className="mt-3"
                 disabled={busy || preflightTesting || apiKey.trim().length < 8}
                 onClick={() => void testApiKeyConnection()}
               >
@@ -1093,7 +1100,7 @@ export function ModelSettingsOverlay({
           <Button
             type="button"
             variant="secondary"
-            className="mt-3 rounded-full"
+            className="mt-3"
             size="sm"
             disabled={busy || !cloudflareRoutingReady || apiKey.trim().length < 8}
             onClick={() => void connectKey()}
@@ -1123,10 +1130,7 @@ export function ModelSettingsOverlay({
   // OpenAI-compatible connections keep an optional key behind a disclosure.
   const compatKeyBlock = isOpenAiCompatible ? (
     <div className="mt-5">
-      <details className="text-[13.5px] text-muted-foreground">
-        <summary className="w-fit cursor-pointer select-none">
-          <Trans>API key</Trans>
-        </summary>
+      <Disclosure className="text-[13.5px] text-muted-foreground" summary={<Trans>API key</Trans>}>
         <Input
           aria-label={t`API key`}
           value={apiKey}
@@ -1134,13 +1138,13 @@ export function ModelSettingsOverlay({
           placeholder={credential?.hasKey ? t`Paste a replacement key` : t`Optional`}
           type="password"
           autoComplete="new-password"
-          className="mt-2 h-10 text-foreground"
+          className="mt-2 text-foreground"
         />
-      </details>
+      </Disclosure>
       <Button
         type="button"
         variant="secondary"
-        className="mt-3 rounded-full"
+        className="mt-3"
         size="sm"
         disabled={busy || !openAiCompatibleReady}
         onClick={() => void connectKey()}
@@ -1156,7 +1160,6 @@ export function ModelSettingsOverlay({
         <Button
           type="button"
           variant="secondary"
-          className="rounded-full"
           size="sm"
           disabled={
             busy ||
@@ -1212,347 +1215,348 @@ export function ModelSettingsOverlay({
         </p>
       ) : null}
 
-      {me?.needsModel ? null : (
-        <div className={`mx-6 sm:mx-8 ${embedded ? "mt-4" : "mt-5"}`}>
-          <div className="flex flex-col gap-1 md:flex-row md:items-baseline md:gap-6">
-            <span className="shrink-0 text-[13.5px] text-muted-foreground md:w-[310px]">
-              <Trans>Active model</Trans>
-            </span>
-            <div className="flex min-w-0 items-baseline gap-3">
-              <span className="truncate text-[15px] text-foreground">
-                {currentEntry?.label ?? me?.defaultModel ?? t`Deployment default`}
-              </span>
-              <span className="truncate text-[13px] leading-[1.5] text-muted-foreground">
-                {currentEntry?.providerName ?? me?.defaultProvider ?? (
-                  <Trans>Configured by deployment</Trans>
-                )}
-                {activeThinkingLabel ? (
-                  <>
-                    {" · "}
-                    <span>
-                      <Trans>Thinking: {activeThinkingLabel}</Trans>
-                    </span>
-                  </>
-                ) : null}
-              </span>
-            </div>
-          </div>
+      {loading ? (
+        <div role="status" className="grid flex-1 place-items-center">
+          <Loader />
         </div>
-      )}
-
-      <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-hidden px-6 py-6 sm:px-8 md:flex-row">
-        <div className="flex min-h-0 shrink-0 flex-col md:w-[310px]">
-          <div className="mb-3 text-[13.5px] text-muted-foreground">
-            <Trans>Providers</Trans>
-          </div>
-          <label className="sr-only" htmlFor="model-provider-search">
-            <Trans>Search providers</Trans>
-          </label>
-          <Input
-            id="model-provider-search"
-            value={providerQuery}
-            onChange={(event) => setProviderQuery(event.target.value)}
-            placeholder={t`Search providers`}
-            className="h-10 rounded-xl px-3.5"
-          />
-          <div className="rk-scroll mt-3 max-h-[240px] overflow-y-auto rounded-xl border border-border md:min-h-0 md:max-h-none md:flex-1">
-            {filteredGroups.length ? (
-              <>
-                {connectedGroups.length ? (
-                  <>
-                    <p className="border-b border-border px-3.5 pb-1.5 pt-3 text-[12px] text-muted-foreground">
-                      <Trans>Connected</Trans>
-                    </p>
-                    {connectedGroups.map((group) => renderProviderRow(group, true))}
-                    {otherGroups.length ? (
-                      <p className="border-b border-border px-3.5 pb-1.5 pt-3 text-[12px] text-muted-foreground">
-                        <Trans>All providers</Trans>
-                      </p>
-                    ) : null}
-                  </>
-                ) : null}
-                {otherGroups.map((group) => renderProviderRow(group, false))}
-              </>
-            ) : (
-              <p className="px-3.5 py-4 text-[13px] leading-[1.5] text-muted-foreground">
-                <Trans>No providers found.</Trans>
-              </p>
-            )}
-          </div>
-        </div>
-
-        <div ref={detailScrollRef} className="rk-scroll min-h-0 min-w-0 flex-1 overflow-y-auto">
-          {error ? (
-            <p className="mb-4 text-sm text-destructive" role="alert">
-              {error}
-            </p>
-          ) : null}
-          {notice ? (
-            <p className="mb-4 text-sm text-success" role="status">
-              {notice}
-            </p>
-          ) : null}
-          {selected ? (
-            <>
-              {isOpenAiCompatible ? (
-                <div className="block text-[13.5px] text-muted-foreground">
-                  <label className="block" htmlFor="model-base-url">
-                    <Trans>Server URL</Trans>
-                    <Input
-                      id="model-base-url"
-                      value={baseUrl}
-                      onChange={(event) => updateBaseUrl(event.target.value)}
-                      aria-label={t`OpenAI-compatible server URL`}
-                      placeholder="http://127.0.0.1:8000/v1"
-                      autoComplete="off"
-                      className="mt-2 h-10 text-foreground"
-                    />
-                  </label>
-                  <details className="mt-2 text-[13px] leading-[1.5] text-muted-foreground">
-                    <summary className="w-fit cursor-pointer select-none">
-                      <Trans>Setup help</Trans>
-                    </summary>
-                    <p className="mt-1">
-                      {t`Paste the OpenAI-compatible address from your server. Rakazo adds /v1 if needed.`}
-                    </p>
-                  </details>
-                  <div className="mt-3 flex items-center gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      disabled={busy || probing || !effectiveBaseUrl}
-                      onClick={() => void probeServerModels()}
-                    >
-                      {probing ? <Trans>Finding…</Trans> : <Trans>Find models</Trans>}
-                    </Button>
+      ) : (
+        <>
+          {me?.needsModel ? null : (
+            <section className={`mx-6 sm:mx-8 ${embedded ? (description ? "mt-4" : "") : "mt-6"}`}>
+              <h3 className="mb-3 text-[13.5px] text-muted-foreground">
+                <Trans>Active model</Trans>
+              </h3>
+              <div className="flex items-center gap-3 rounded-xl border border-border px-4 py-3">
+                <div className="min-w-0">
+                  <div className="truncate text-[15px] text-foreground">
+                    {currentEntry?.label ?? me?.defaultModel ?? t`Deployment default`}
                   </div>
-                  {preflightTarget === "compatible" ? (
-                    <ModelPreflightFeedback success={null} failure={preflightFailure} />
-                  ) : null}
-                  <div className="mt-4 block">
-                    <span>
-                      <Trans>Model</Trans>
-                    </span>
-                    {compatibleRows.includes(modelId) ? (
-                      <NativeSelect
-                        className="mt-2 w-full text-foreground"
-                        value={modelId}
-                        onChange={(event) => {
-                          cancelOAuthAttempt();
-                          selectionRevisionRef.current += 1;
-                          invalidatePreflight();
-                          stageCompatibleModelId(event.target.value);
-                          setError(null);
-                          setNotice(null);
-                        }}
-                        aria-label={t`Models from server`}
-                      >
-                        {defaultModelOptions.map((id) => (
-                          <NativeSelectOption key={id} value={id}>
-                            {id}
-                          </NativeSelectOption>
-                        ))}
-                        <NativeSelectOption value="">
-                          <Trans>Other model…</Trans>
-                        </NativeSelectOption>
-                      </NativeSelect>
-                    ) : (
-                      <Input
-                        value={modelId}
-                        onChange={(event) => {
-                          cancelOAuthAttempt();
-                          selectionRevisionRef.current += 1;
-                          invalidatePreflight();
-                          stageCompatibleModelId(event.target.value);
-                          setError(null);
-                          setNotice(null);
-                        }}
-                        aria-label={t`Model id`}
-                        placeholder="exact-model-id"
-                        className="mt-2 h-10 text-foreground"
-                      />
+                  <div className="mt-0.5 truncate text-[12.5px] text-muted-foreground">
+                    {currentEntry?.providerName ?? me?.defaultProvider ?? (
+                      <Trans>Configured by deployment</Trans>
                     )}
-                    {compatibleRows.length ? (
-                      <div className="mt-3 grid gap-2">
-                        {compatibleRows.map((id) => (
-                          <Label key={id} className="font-normal text-foreground">
-                            <Checkbox
-                              checked={id === modelId || enabledModelIds.includes(id)}
-                              disabled={busy || id === modelId}
-                              onCheckedChange={(checked) => {
-                                selectionRevisionRef.current += 1;
-                                setEnabledModelIds((current) =>
-                                  toggleEnabledModelId(current, id, checked),
-                                );
-                                setNotice(null);
-                              }}
-                            />
-                            <span className="min-w-0 break-all">{id}</span>
-                          </Label>
-                        ))}
-                      </div>
-                    ) : null}
-                    {probeModels.length && !compatibleRows.includes(modelId) ? (
-                      <Button
-                        type="button"
-                        variant="link"
-                        className="mt-2 h-auto px-0 text-[13px] leading-[1.5] text-muted-foreground underline"
-                        onClick={() => {
-                          invalidatePreflight();
-                          stageCompatibleModelId(probeModels[0] ?? "");
-                        }}
-                      >
-                        <Trans>Use a found model</Trans>
-                      </Button>
+                    {activeThinkingLabel ? (
+                      <>
+                        {" · "}
+                        <Trans>Thinking: {activeThinkingLabel}</Trans>
+                      </>
                     ) : null}
                   </div>
-                  <ModelThinkingOptions
-                    reasoning={reasoning}
-                    onReasoningChange={(value) => {
-                      selectionRevisionRef.current += 1;
-                      setReasoning(value);
-                      if (!value) setThinkingLevel(null);
-                      setNotice(null);
-                    }}
-                    disabled={busy}
-                    advancedLabel={t`Advanced`}
-                    thinkingLabel={t`Supports thinking`}
-                    thinkingLevel={thinkingLevel}
-                    onThinkingLevelChange={(value) => {
-                      selectionRevisionRef.current += 1;
-                      setThinkingLevel(value as ThinkingLevel | null);
-                      setNotice(null);
-                    }}
-                    thinkingLevelOptions={[
-                      { value: "minimal", label: t`Minimal` },
-                      { value: "low", label: t`Low` },
-                      { value: "medium", label: t`Medium` },
-                      { value: "high", label: t`High` },
-                      { value: "xhigh", label: t`Extra high` },
-                      { value: "max", label: t`Max` },
-                    ]}
-                    thinkingLevelLabel={t`Reasoning effort`}
-                    thinkingLevelDefaultLabel={t`Default`}
-                    maxTokens={maxTokens}
-                    onMaxTokensChange={(value) => {
-                      selectionRevisionRef.current += 1;
-                      setMaxTokens(value);
-                      setNotice(null);
-                    }}
-                    maxTokensLabel={t`Maximum output tokens`}
-                    contextWindow={contextWindow}
-                    onContextWindowChange={(value) => {
-                      selectionRevisionRef.current += 1;
-                      setContextWindow(value);
-                      setNotice(null);
-                    }}
-                    contextWindowLabel={t`Context limit`}
-                    supportsImages={supportsImages}
-                    onSupportsImagesChange={(value) => {
-                      selectionRevisionRef.current += 1;
-                      setSupportsImages(value);
-                      setNotice(null);
-                    }}
-                    imagesLabel={t`Supports images`}
-                    maxImagesPerPrompt={maxImagesPerPrompt}
-                    onMaxImagesPerPromptChange={(value) => {
-                      selectionRevisionRef.current += 1;
-                      setMaxImagesPerPrompt(value);
-                      setNotice(null);
-                    }}
-                    maxImagesLabel={t`Maximum images per request`}
-                  />
                 </div>
+              </div>
+            </section>
+          )}
+
+          <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-hidden px-6 py-6 sm:px-8 md:flex-row">
+            <div className="flex min-h-0 shrink-0 flex-col md:w-[310px]">
+              <div className="mb-3 text-[13.5px] text-muted-foreground">
+                <Trans>Providers</Trans>
+              </div>
+              <label className="sr-only" htmlFor="model-provider-search">
+                <Trans>Search providers</Trans>
+              </label>
+              <Input
+                id="model-provider-search"
+                value={providerQuery}
+                onChange={(event) => setProviderQuery(event.target.value)}
+                placeholder={t`Search providers`}
+              />
+              <div className="rk-scroll mt-3 max-h-[240px] overflow-y-auto rounded-xl border border-border md:min-h-0 md:max-h-none md:flex-1">
+                {filteredGroups.length ? (
+                  <>
+                    {connectedGroups.length ? (
+                      <>
+                        <p className="border-b border-border px-3.5 pb-1.5 pt-3 text-[12px] text-muted-foreground">
+                          <Trans>Connected</Trans>
+                        </p>
+                        {connectedGroups.map((group) => renderProviderRow(group, true))}
+                        {otherGroups.length ? (
+                          <p className="border-b border-border px-3.5 pb-1.5 pt-3 text-[12px] text-muted-foreground">
+                            <Trans>All providers</Trans>
+                          </p>
+                        ) : null}
+                      </>
+                    ) : null}
+                    {otherGroups.map((group) => renderProviderRow(group, false))}
+                  </>
+                ) : (
+                  <p className="px-3.5 py-4 text-[13px] leading-[1.5] text-muted-foreground">
+                    <Trans>No providers found.</Trans>
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div
+              ref={detailScrollRef}
+              className="rk-scroll -m-1 min-h-0 min-w-0 flex-1 overflow-y-auto p-1"
+            >
+              {error ? (
+                <p className="mb-4 text-sm text-destructive" role="alert">
+                  {error}
+                </p>
               ) : null}
-              {isOpenAiCompatible ? (
+              {notice ? (
+                <p className="mb-4 text-sm text-success" role="status">
+                  {notice}
+                </p>
+              ) : null}
+              {selected ? (
                 <>
-                  {compatKeyBlock}
-                  {saveButton}
-                </>
-              ) : credential ? (
-                <>
-                  {/* The key may be the default in another space while this one runs on server
-                      credentials; saving here switches this space to the key. */}
-                  {provider === me?.hostCredentialProvider ? (
-                    <div className="mb-5">{serverCredentialsNote}</div>
-                  ) : null}
-                  {catalogModelConfig}
-                  {saveButton}
-                  <div className="mt-6 border-t border-border pt-5">
-                    {connectionControls}
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="mt-3 -ml-2.5 text-muted-foreground"
-                      disabled={busy}
-                      onClick={() => setConfirmDisconnect(true)}
-                    >
-                      {pending === "disconnect" ? (
-                        <Trans>Disconnecting…</Trans>
-                      ) : (
-                        <Trans>Disconnect</Trans>
-                      )}
-                    </Button>
-                  </div>
-                </>
-              ) : provider === me?.hostCredentialProvider ? (
-                <>
-                  {serverCredentialsNote}
-                  <details
-                    className="mt-5 text-[13px] leading-[1.5] text-muted-foreground"
-                    open={ownKeyProvider === provider}
-                    onToggle={(event) =>
-                      setOwnKeyProvider(event.currentTarget.open ? provider : null)
-                    }
-                  >
-                    <summary className="w-fit cursor-pointer select-none">
-                      <Trans>Use your own key</Trans>
-                    </summary>
-                    <div className="mt-5">{connectionControls}</div>
-                    <div className="mt-6">{catalogModelConfig}</div>
-                  </details>
-                </>
-              ) : (
-                <>
-                  {serverCredentialsSource && serverCredentialsBlocked ? (
-                    <div className="mb-5">
-                      <ServerCredentialsUnavailable
-                        blocker={serverCredentialsBlocked}
-                        source={serverCredentialsSource}
-                        modelLabel={serverModelLabel}
-                        onCheck={async () => {
-                          await rpc.models.checkServerCredentials();
-                          await refresh();
+                  {isOpenAiCompatible ? (
+                    <div>
+                      <Field>
+                        <FieldLabel htmlFor="model-base-url">
+                          <Trans>Server URL</Trans>
+                        </FieldLabel>
+                        <Input
+                          id="model-base-url"
+                          value={baseUrl}
+                          onChange={(event) => updateBaseUrl(event.target.value)}
+                          aria-label={t`OpenAI-compatible server URL`}
+                          placeholder="http://127.0.0.1:8000/v1"
+                          autoComplete="off"
+                        />
+                      </Field>
+                      <Disclosure
+                        className="mt-2 text-[13px] leading-[1.5] text-muted-foreground"
+                        summary={<Trans>Setup help</Trans>}
+                      >
+                        <p className="mt-1">
+                          {t`Paste the OpenAI-compatible address from your server. Rakazo adds /v1 if needed.`}
+                        </p>
+                      </Disclosure>
+                      <div className="mt-3 flex items-center gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          disabled={busy || probing || !effectiveBaseUrl}
+                          onClick={() => void probeServerModels()}
+                        >
+                          {probing ? <Trans>Finding…</Trans> : <Trans>Find models</Trans>}
+                        </Button>
+                      </div>
+                      {preflightTarget === "compatible" ? (
+                        <ModelPreflightFeedback success={null} failure={preflightFailure} />
+                      ) : null}
+                      <Field className="mt-4">
+                        <FieldLabel htmlFor="model-compatible-id">
+                          <Trans>Model</Trans>
+                        </FieldLabel>
+                        {compatibleRows.includes(modelId) ? (
+                          <OptionSelect
+                            id="model-compatible-id"
+                            value={modelId}
+                            onValueChange={(next) => {
+                              cancelOAuthAttempt();
+                              selectionRevisionRef.current += 1;
+                              invalidatePreflight();
+                              stageCompatibleModelId(next);
+                              setError(null);
+                              setNotice(null);
+                            }}
+                            aria-label={t`Models from server`}
+                            options={[
+                              ...defaultModelOptions.map((id) => ({ value: id, label: id })),
+                              { value: "", label: t`Other model…` },
+                            ]}
+                          />
+                        ) : (
+                          <Input
+                            id="model-compatible-id"
+                            value={modelId}
+                            onChange={(event) => {
+                              cancelOAuthAttempt();
+                              selectionRevisionRef.current += 1;
+                              invalidatePreflight();
+                              stageCompatibleModelId(event.target.value);
+                              setError(null);
+                              setNotice(null);
+                            }}
+                            aria-label={t`Model id`}
+                            placeholder="exact-model-id"
+                          />
+                        )}
+                        {compatibleRows.length ? (
+                          <div className="mt-3 grid gap-2">
+                            {compatibleRows.map((id) => (
+                              <Label key={id} className="font-normal text-foreground">
+                                <Checkbox
+                                  checked={id === modelId || enabledModelIds.includes(id)}
+                                  disabled={busy || id === modelId}
+                                  onCheckedChange={(checked) => {
+                                    selectionRevisionRef.current += 1;
+                                    setEnabledModelIds((current) =>
+                                      toggleEnabledModelId(current, id, checked),
+                                    );
+                                    setNotice(null);
+                                  }}
+                                />
+                                <span className="min-w-0 break-all">{id}</span>
+                              </Label>
+                            ))}
+                          </div>
+                        ) : null}
+                        {probeModels.length && !compatibleRows.includes(modelId) ? (
+                          <Button
+                            type="button"
+                            variant="link"
+                            className="mt-2 h-auto px-0 text-[13px] leading-[1.5] text-muted-foreground underline"
+                            onClick={() => {
+                              invalidatePreflight();
+                              stageCompatibleModelId(probeModels[0] ?? "");
+                            }}
+                          >
+                            <Trans>Use a found model</Trans>
+                          </Button>
+                        ) : null}
+                      </Field>
+                      <ModelThinkingOptions
+                        reasoning={reasoning}
+                        onReasoningChange={(value) => {
+                          selectionRevisionRef.current += 1;
+                          setReasoning(value);
+                          if (!value) setThinkingLevel(null);
+                          setNotice(null);
                         }}
+                        disabled={busy}
+                        advancedLabel={t`Advanced`}
+                        thinkingLabel={t`Supports thinking`}
+                        thinkingLevel={thinkingLevel}
+                        onThinkingLevelChange={(value) => {
+                          selectionRevisionRef.current += 1;
+                          setThinkingLevel(value as ThinkingLevel | null);
+                          setNotice(null);
+                        }}
+                        thinkingLevelOptions={[
+                          { value: "minimal", label: t`Minimal` },
+                          { value: "low", label: t`Low` },
+                          { value: "medium", label: t`Medium` },
+                          { value: "high", label: t`High` },
+                          { value: "xhigh", label: t`Extra high` },
+                          { value: "max", label: t`Max` },
+                        ]}
+                        thinkingLevelLabel={t`Reasoning effort`}
+                        thinkingLevelDefaultLabel={t`Default`}
+                        maxTokens={maxTokens}
+                        onMaxTokensChange={(value) => {
+                          selectionRevisionRef.current += 1;
+                          setMaxTokens(value);
+                          setNotice(null);
+                        }}
+                        maxTokensLabel={t`Maximum output tokens`}
+                        contextWindow={contextWindow}
+                        onContextWindowChange={(value) => {
+                          selectionRevisionRef.current += 1;
+                          setContextWindow(value);
+                          setNotice(null);
+                        }}
+                        contextWindowLabel={t`Context limit`}
+                        supportsImages={supportsImages}
+                        onSupportsImagesChange={(value) => {
+                          selectionRevisionRef.current += 1;
+                          setSupportsImages(value);
+                          setNotice(null);
+                        }}
+                        imagesLabel={t`Supports images`}
+                        maxImagesPerPrompt={maxImagesPerPrompt}
+                        onMaxImagesPerPromptChange={(value) => {
+                          selectionRevisionRef.current += 1;
+                          setMaxImagesPerPrompt(value);
+                          setNotice(null);
+                        }}
+                        maxImagesLabel={t`Maximum images per request`}
                       />
                     </div>
                   ) : null}
-                  {connectionControls}
-                  <div className="mt-6">{catalogModelConfig}</div>
+                  {isOpenAiCompatible ? (
+                    <>
+                      {compatKeyBlock}
+                      {saveButton}
+                    </>
+                  ) : credential ? (
+                    <>
+                      {/* The key may be the default in another space while this one runs on server
+                      credentials; saving here switches this space to the key. */}
+                      {provider === me?.hostCredentialProvider ? (
+                        <div className="mb-5">{serverCredentialsNote}</div>
+                      ) : null}
+                      {catalogModelConfig}
+                      {saveButton}
+                      <div className="mt-6 border-t border-border pt-5">
+                        {connectionControls}
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="mt-3 -ml-2.5 text-muted-foreground"
+                          disabled={busy}
+                          onClick={() => setConfirmDisconnect(true)}
+                        >
+                          {pending === "disconnect" ? (
+                            <Trans>Disconnecting…</Trans>
+                          ) : (
+                            <Trans>Disconnect</Trans>
+                          )}
+                        </Button>
+                      </div>
+                      {catalogAdvancedOptions}
+                    </>
+                  ) : provider === me?.hostCredentialProvider ? (
+                    <>
+                      {serverCredentialsNote}
+                      <Disclosure
+                        className="mt-5 text-[13px] leading-[1.5] text-muted-foreground"
+                        summary={<Trans>Use your own key</Trans>}
+                        open={ownKeyProvider === provider}
+                        onToggle={(event) =>
+                          setOwnKeyProvider(event.currentTarget.open ? provider : null)
+                        }
+                      >
+                        <div className="mt-5">{connectionControls}</div>
+                        <div className="mt-6">{catalogModelConfig}</div>
+                        {catalogAdvancedOptions}
+                      </Disclosure>
+                    </>
+                  ) : (
+                    <>
+                      {serverCredentialsSource && serverCredentialsBlocked ? (
+                        <div className="mb-5">
+                          <ServerCredentialsUnavailable
+                            blocker={serverCredentialsBlocked}
+                            source={serverCredentialsSource}
+                            modelLabel={serverModelLabel}
+                            onCheck={async () => {
+                              await rpc.models.checkServerCredentials();
+                              await refresh();
+                            }}
+                          />
+                        </div>
+                      ) : null}
+                      {connectionControls}
+                      <div className="mt-6">{catalogModelConfig}</div>
+                      {catalogAdvancedOptions}
+                    </>
+                  )}
                 </>
+              ) : (
+                <p className="text-[13px] leading-[1.5] text-muted-foreground">
+                  <Trans>No model catalog is available.</Trans>
+                </p>
               )}
-            </>
-          ) : loading ? (
-            <p className="text-[13px] leading-[1.5] text-muted-foreground">
-              <Trans>Loading model catalog…</Trans>
-            </p>
-          ) : (
-            <p className="text-[13px] leading-[1.5] text-muted-foreground">
-              <Trans>No model catalog is available.</Trans>
-            </p>
-          )}
-          {me ? (
-            <ModelBackupsSettings
-              userId={me.userId}
-              spaceId={me.spaceId}
-              catalog={catalog}
-              credentials={credentials}
-            />
-          ) : null}
-        </div>
-      </div>
+              {me ? (
+                <ModelBackupsSettings
+                  userId={me.userId}
+                  spaceId={me.spaceId}
+                  catalog={catalog}
+                  credentials={credentials}
+                />
+              ) : null}
+            </div>
+          </div>
+        </>
+      )}
       <AlertDialog open={confirmDisconnect} onOpenChange={setConfirmDisconnect}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -1600,7 +1604,7 @@ export function ModelSettingsOverlay({
     >
       <DialogContent
         showCloseButton={false}
-        className="flex h-[760px] max-h-[calc(100%-2rem)] w-[1080px] max-w-[calc(100%-2rem)] flex-col gap-0 overflow-hidden rounded-2xl bg-card p-0 sm:max-w-[1080px]"
+        className="flex h-[760px] max-h-[calc(100%-2rem)] w-[1080px] max-w-[calc(100%-2rem)] flex-col gap-0 overflow-hidden rounded-2xl p-0 sm:max-w-[1080px]"
       >
         {body}
       </DialogContent>
@@ -1609,10 +1613,12 @@ export function ModelSettingsOverlay({
 }
 
 function ModelPicker({
+  id,
   options,
   value,
   onChange,
 }: {
+  id: string;
   options: ModelCatalogEntry[];
   value: string;
   onChange: (value: string) => void;
@@ -1768,7 +1774,7 @@ function ModelPicker({
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <div className="mt-2">
+      <div>
         <span id={imagesHintId} hidden>
           {t`Can't read images`}
         </span>
@@ -1776,6 +1782,7 @@ function ModelPicker({
           render={
             <button
               ref={triggerRef}
+              id={id}
               type="button"
               role="combobox"
               aria-label={t`Model`}
@@ -1783,7 +1790,7 @@ function ModelPicker({
               aria-expanded={open}
               aria-haspopup="listbox"
               aria-describedby={options[selectedIndex]?.images === false ? imagesHintId : undefined}
-              className="flex h-10 w-full items-center justify-between rounded-lg border border-input bg-transparent px-3 text-start text-[15px] text-foreground outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
+              className="flex h-9 w-full items-center justify-between rounded-lg border border-input bg-transparent px-3 text-start text-[15px] text-foreground outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
               onKeyDown={onTriggerKeyDown}
             />
           }

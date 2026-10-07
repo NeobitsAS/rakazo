@@ -18,29 +18,49 @@ vi.mock("@rakazo/ui-web", () => ({
       {children}
     </button>
   ),
+  Disclosure: ({
+    summary,
+    children,
+    ...props
+  }: Omit<React.ComponentProps<"details">, "children"> & {
+    summary: ReactNode;
+    children?: ReactNode;
+  }) => (
+    <details {...props}>
+      <summary>{summary}</summary>
+      {children}
+    </details>
+  ),
   Field: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
+  FieldGroup: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
   FieldLabel: ({ children, htmlFor }: { children?: ReactNode; htmlFor?: string }) => (
     <label htmlFor={htmlFor}>{children}</label>
   ),
   Input: (props: React.ComponentProps<"input">) => <input {...props} />,
+  OptionSelect: () => null,
   Label: ({ children, htmlFor }: { children?: ReactNode; htmlFor?: string }) => (
     <label htmlFor={htmlFor}>{children}</label>
   ),
-  Switch: ({
+  SwitchField: ({
+    label,
     checked,
     onCheckedChange,
-    ...props
+    "data-testid": testId,
   }: {
+    label: ReactNode;
     checked: boolean;
-    onCheckedChange?: (checked: boolean) => void;
-  } & React.ComponentProps<"button">) => (
+    onCheckedChange: (checked: boolean) => void;
+    "data-testid"?: string;
+  }) => (
     <button
       type="button"
       role="switch"
       aria-checked={checked}
-      onClick={() => onCheckedChange?.(!checked)}
-      {...props}
-    />
+      data-testid={testId}
+      onClick={() => onCheckedChange(!checked)}
+    >
+      {label}
+    </button>
   ),
   Toggle: ({
     children,
@@ -238,9 +258,7 @@ it("updates the Enter preference from Settings and reflects external changes", a
       '[data-testid="composer-enter-to-send-toggle"]',
     );
     if (!toggle) throw new Error("Missing Enter preference");
-    expect(container.querySelector(`label[for="${toggle.id}"]`)?.textContent).toBe(
-      "Send with Enter",
-    );
+    expect(toggle.textContent).toBe("Send with Enter");
     expect(toggle.getAttribute("aria-checked")).toBe("true");
     await act(async () => toggle.click());
     expect(getComposerEnterToSend()).toBe(false);

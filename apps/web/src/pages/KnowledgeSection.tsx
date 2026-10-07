@@ -66,9 +66,9 @@ export function SpaceMemorySection() {
   const rpc = useSpaceRpc();
   return (
     <div className="mt-6" data-testid="space-memory-documents">
-      <div className="mb-2 text-[12.5px] uppercase tracking-[0.08em] text-muted-foreground">
+      <h3 className="mb-3 text-[13.5px] text-muted-foreground">
         <Trans>Shared documents</Trans>
-      </div>
+      </h3>
       <MemoryDocumentList
         load={() => rpc.memory.list({ scope: "user" })}
         exportFilename="space-memory.md"

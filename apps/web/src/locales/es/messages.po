@@ -758,6 +758,10 @@ msgstr "a las {0}"
 msgid "at {timeSelect}"
 msgstr "a las {timeSelect}"
 
+#: src/pages/AccountSettingsOverlay.tsx
+msgid "At least 8 characters"
+msgstr "Al menos 8 caracteres"
+
 #: src/pages/Shell.tsx
 msgid "Attach file"
 msgstr "Adjuntar archivo"
@@ -817,6 +821,7 @@ msgid "Avatars"
 msgstr "Avatares"
 
 #: src/components/computer/FilesApp.tsx
+#: src/components/DialogPageHeader.tsx
 #: src/components/integrations/IntegrationSetup.tsx
 #: src/pages/Board.tsx
 #: src/pages/PluginsOverlay.tsx
@@ -2916,10 +2921,6 @@ msgstr "Cargando catálogo de modelos…"
 msgid "Loading preview…"
 msgstr "Cargando vista previa…"
 
-#: src/components/ApprovalRulesSettings.tsx
-msgid "Loading rules…"
-msgstr "Cargando reglas…"
-
 #: src/pages/PluginsOverlay.tsx
 msgid "Loading tools…"
 msgstr ""
@@ -5003,6 +5004,10 @@ msgstr "Prueba tu agente"
 msgid "Type"
 msgstr ""
 
+#: src/pages/AccountSettingsOverlay.tsx
+msgid "Type the new password again"
+msgstr "Escribe de nuevo la nueva contraseña"
+
 #: src/components/teach/TeachRecordingChrome.tsx
 msgid "Type without recording"
 msgstr ""
@@ -5344,6 +5349,10 @@ msgstr "Tienes el control"
 #: src/lib/run-error.ts
 msgid "Your Anthropic"
 msgstr "Tu Anthropic"
+
+#: src/pages/AccountSettingsOverlay.tsx
+msgid "Your current password"
+msgstr "Tu contraseña actual"
 
 #: src/pages/Auth.tsx
 msgid "Your email address"
