@@ -475,24 +475,11 @@ export function OnboardingPage() {
     else setStep(next);
   }
 
-  const stepDetails: Record<OnboardingStep, { title: string; description: string; body: string }> =
-    {
-      model: {
-        title: t`Choose your default model`,
-        description: t`Pick the AI model your bots think and reply with. Sign in with a subscription or paste an API key, and change it any time.`,
-        body: t`Your bots use this model to think and reply. Choose a provider and a model, then sign in with your subscription or paste an API key. It is saved for you in this space, and you can connect more models later in Settings → Models.`,
-      },
-      integrations: {
-        title: t`Server integrations`,
-        description: t`Give your bots tools for real work, such as email, calendars and issue trackers. It's optional, and you can add more later from Integrations in the sidebar.`,
-        body: t`Integrations give your bots tools beyond chat, such as reading email or opening issues. Connect a single tool server (MCP) directly, or set up Composio or Pipedream once to give everyone on this server access to hundreds of apps. You can skip this and add integrations later from Integrations in the sidebar.`,
-      },
-      bot: {
-        title: t`Try your agent`,
-        description: t`Rakazo sets up your first agent and opens a chat with it, so you can give it something to do right away.`,
-        body: t`Rakazo creates your first bot and opens a chat with it. You can add more bots at any time.`,
-      },
-    };
+  const stepTitles: Record<OnboardingStep, string> = {
+    model: t`Choose your default model`,
+    integrations: t`Server integrations`,
+    bot: t`Try your agent`,
+  };
 
   useEffect(() => {
     if (step !== "bot") return;
@@ -508,7 +495,7 @@ export function OnboardingPage() {
       data-rakazo-surface="onboarding"
       className="flex min-h-full flex-col bg-background text-foreground [--link:var(--brand-accent)] [--ring:var(--brand-accent)] md:flex-row"
     >
-      <aside className="shrink-0 border-b border-sidebar-border bg-sidebar text-sidebar-foreground md:w-1/3 md:border-r md:border-b-0">
+      <aside className="shrink-0 border-b border-sidebar-border bg-sidebar text-sidebar-foreground md:w-[28%] md:border-r md:border-b-0">
         <WindowStrip />
         <div className="flex items-center gap-3 px-10 pt-4">
           <LivelyLogo className="size-8" />
@@ -519,7 +506,7 @@ export function OnboardingPage() {
           className="px-10 pt-10 pb-6"
           steps={[...steps, "bot" as const].map((id, index) => ({
             id,
-            ...stepDetails[id],
+            title: stepTitles[id],
             ...(id === "bot" && openingFirstAgent
               ? { description: t`Opening your first agent…`, busy: true }
               : {}),
@@ -539,8 +526,7 @@ export function OnboardingPage() {
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="app-drag h-12 shrink-0" />
         <main className="mx-auto w-full max-w-[640px] px-6 pt-10 pb-16">
-          <h1 className="text-3xl font-medium tracking-tight">{stepDetails[step].title}</h1>
-          <p className="mt-3 mb-8 text-sm text-muted-foreground">{stepDetails[step].body}</p>
+          <h1 className="mb-8 text-3xl font-medium tracking-tight">{stepTitles[step]}</h1>
           {step === "model" ? (
             <div>
               <div className="block text-sm font-medium text-foreground">
