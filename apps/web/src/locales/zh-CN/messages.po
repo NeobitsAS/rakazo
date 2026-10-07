@@ -4016,34 +4016,6 @@ msgstr "你的名字"
 msgid "Resize panel"
 msgstr "调整面板大小"
 
-#: src/pages/SettingsOverlay.tsx
-msgid "Your account and password, how Rakazo looks, and the language it speaks."
-msgstr "你的账户和密码、Rakazo 的外观以及它使用的语言。"
-
-#: src/pages/SettingsOverlay.tsx
-msgid "Choose the model your bots think with, and connect the providers that run it."
-msgstr "选择你的机器人用来思考的模型，并连接运行它的提供商。"
-
-#: src/pages/SettingsOverlay.tsx
-msgid "Your bots keep shared notes in MEMORY.md. Add a provider so they can also recall past conversations."
-msgstr "你的机器人会在 MEMORY.md 中记录共享笔记。添加一个提供商，让它们也能回忆过去的对话。"
-
-#: src/pages/SettingsOverlay.tsx
-msgid "Connect a voice provider so your bots can read replies aloud and understand what you say."
-msgstr "连接一个语音提供商，让你的机器人能朗读回复并听懂你说的话。"
-
-#: src/pages/SettingsOverlay.tsx
-msgid "How much your bots have run, and how many tokens they have used."
-msgstr "你的机器人运行了多少次，以及用了多少 token。"
-
-#: src/pages/SettingsOverlay.tsx
-msgid "Give your bots a computer to run code and work with files."
-msgstr "给你的机器人一台计算机，用来运行代码和处理文件。"
-
-#: src/pages/SettingsOverlay.tsx
-msgid "See which version you are running, and install new releases when they are out."
-msgstr "查看你正在使用的版本，并在新版本发布时安装。"
-
 #: src/pages/PluginsOverlay.tsx
 msgid "Could not remove the server"
 msgstr "无法移除服务器"
@@ -4169,32 +4141,16 @@ msgid "Remove app"
 msgstr "移除应用"
 
 #: src/pages/PluginsOverlay.tsx
-msgid "App catalog"
-msgstr "应用目录"
-
-#: src/pages/PluginsOverlay.tsx
-msgid "Choose the service that provides the catalog and signs people in to its apps."
-msgstr "选择提供目录并负责登录其应用的服务。"
+msgid "Catalog settings"
+msgstr "目录设置"
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Add a server"
 msgstr "添加服务器"
 
 #: src/pages/PluginsOverlay.tsx
-msgid "Connect an MCP server, or an OpenAPI or GraphQL endpoint, of your own."
-msgstr "连接你自己的 MCP 服务器，或你自己的 OpenAPI 或 GraphQL 端点。"
-
-#: src/pages/PluginsOverlay.tsx
-msgid "An app from the catalog."
-msgstr "来自目录的应用。"
-
-#: src/pages/PluginsOverlay.tsx
 msgid "Apps"
 msgstr "应用"
-
-#: src/pages/PluginsOverlay.tsx
-msgid "The apps and servers your bots can use."
-msgstr "你的机器人可以使用的应用和服务器。"
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Close apps"

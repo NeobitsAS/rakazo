@@ -4016,34 +4016,6 @@ msgstr "आपका नाम"
 msgid "Resize panel"
 msgstr "पैनल का आकार बदलें"
 
-#: src/pages/SettingsOverlay.tsx
-msgid "Your account and password, how Rakazo looks, and the language it speaks."
-msgstr "आपका खाता और पासवर्ड, Rakazo कैसा दिखता है, और वह कौन सी भाषा बोलता है।"
-
-#: src/pages/SettingsOverlay.tsx
-msgid "Choose the model your bots think with, and connect the providers that run it."
-msgstr "वह मॉडल चुनें जिससे आपके बॉट सोचते हैं, और उसे चलाने वाले प्रदाताओं को जोड़ें।"
-
-#: src/pages/SettingsOverlay.tsx
-msgid "Your bots keep shared notes in MEMORY.md. Add a provider so they can also recall past conversations."
-msgstr "आपके बॉट MEMORY.md में साझा नोट्स रखते हैं। एक प्रदाता जोड़ें ताकि वे पिछली बातचीत भी याद रख सकें।"
-
-#: src/pages/SettingsOverlay.tsx
-msgid "Connect a voice provider so your bots can read replies aloud and understand what you say."
-msgstr "एक वॉइस प्रदाता जोड़ें ताकि आपके बॉट जवाब पढ़कर सुना सकें और आपकी बात समझ सकें।"
-
-#: src/pages/SettingsOverlay.tsx
-msgid "How much your bots have run, and how many tokens they have used."
-msgstr "आपके बॉट कितनी बार चले हैं और उन्होंने कितने टोकन इस्तेमाल किए हैं।"
-
-#: src/pages/SettingsOverlay.tsx
-msgid "Give your bots a computer to run code and work with files."
-msgstr "अपने बॉट को कोड चलाने और फ़ाइलों पर काम करने के लिए एक कंप्यूटर दें।"
-
-#: src/pages/SettingsOverlay.tsx
-msgid "See which version you are running, and install new releases when they are out."
-msgstr "देखें कि आप कौन सा संस्करण चला रहे हैं, और नए रिलीज़ आने पर उन्हें इंस्टॉल करें।"
-
 #: src/pages/PluginsOverlay.tsx
 msgid "Could not remove the server"
 msgstr "सर्वर हटाया नहीं जा सका"
@@ -4169,32 +4141,16 @@ msgid "Remove app"
 msgstr "ऐप हटाएं"
 
 #: src/pages/PluginsOverlay.tsx
-msgid "App catalog"
-msgstr "ऐप कैटलॉग"
-
-#: src/pages/PluginsOverlay.tsx
-msgid "Choose the service that provides the catalog and signs people in to its apps."
-msgstr "वह सेवा चुनें जो कैटलॉग देती है और उसके ऐप में साइन इन कराती है।"
+msgid "Catalog settings"
+msgstr "कैटलॉग सेटिंग्स"
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Add a server"
 msgstr "सर्वर जोड़ें"
 
 #: src/pages/PluginsOverlay.tsx
-msgid "Connect an MCP server, or an OpenAPI or GraphQL endpoint, of your own."
-msgstr "अपना MCP सर्वर, या अपना OpenAPI या GraphQL एंडपॉइंट कनेक्ट करें।"
-
-#: src/pages/PluginsOverlay.tsx
-msgid "An app from the catalog."
-msgstr "कैटलॉग का एक ऐप।"
-
-#: src/pages/PluginsOverlay.tsx
 msgid "Apps"
 msgstr "ऐप"
-
-#: src/pages/PluginsOverlay.tsx
-msgid "The apps and servers your bots can use."
-msgstr "वे ऐप और सर्वर जिनका उपयोग आपके बॉट कर सकते हैं।"
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Close apps"

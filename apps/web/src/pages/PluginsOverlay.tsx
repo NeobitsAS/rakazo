@@ -862,17 +862,15 @@ export function PluginsOverlay({
     );
   }
 
-  const heading: { title: string; description: string; icon?: ReactNode; onBack?: () => void } =
+  const heading: { title: string; description?: string; icon?: ReactNode; onBack?: () => void } =
     view === "server"
       ? {
-          title: t`App catalog`,
-          description: t`Choose the service that provides the catalog and signs people in to its apps.`,
+          title: t`Catalog settings`,
           onBack: () => setView("list"),
         }
       : view === "add"
         ? {
             title: t`Add a server`,
-            description: t`Connect an MCP server, or an OpenAPI or GraphQL endpoint, of your own.`,
             onBack: () => setView("list"),
           }
         : serverDetail
@@ -885,11 +883,10 @@ export function PluginsOverlay({
           : detailItem
             ? {
                 title: detailItem.name,
-                description: t`An app from the catalog.`,
                 icon: <AppIcon name={detailItem.name} logo={detailItem.logo} />,
                 onBack: closeDetail,
               }
-            : { title: t`Apps`, description: t`The apps and servers your bots can use.` };
+            : { title: t`Apps` };
 
   return (
     <Dialog
