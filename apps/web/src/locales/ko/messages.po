@@ -62,8 +62,16 @@ msgid "Paste your Pipedream project ID"
 msgstr "Pipedream 프로젝트 ID를 붙여넣으세요"
 
 #: src/components/integrations/IntegrationSetup.tsx
+msgid "Replace credentials"
+msgstr "자격 증명 교체"
+
+#: src/components/integrations/IntegrationSetup.tsx
 msgid "Results from integrations.sh"
 msgstr "integrations.sh 검색 결과"
+
+#: src/components/integrations/IntegrationSetup.tsx
+msgid "Saved. Paste a new one to replace it."
+msgstr "저장됨. 바꾸려면 새 값을 붙여넣으세요."
 
 #: src/components/integrations/IntegrationSetup.tsx
 msgid "Search for an app, e.g. GitHub or Linear"
