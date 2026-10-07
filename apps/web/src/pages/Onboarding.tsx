@@ -124,8 +124,9 @@ export function OnboardingPage() {
   const navigate = useNavigate();
   const fieldId = useId();
   const [step, setStep] = useState<OnboardingStep | "loading">("loading");
-  const accentRef = useRef<HTMLDivElement>(null);
-  useBrandAccentCycle(accentRef);
+  // State, not a ref: the page first renders a loader, and the cycle starts once this mounts.
+  const [accentElement, setAccentElement] = useState<HTMLDivElement | null>(null);
+  useBrandAccentCycle(accentElement);
   /**
    * The steps this user goes through, decided once the server says what is missing. Finishing
    * the last one creates the first bot and opens its chat; with no steps, that happens at once.
@@ -521,7 +522,7 @@ export function OnboardingPage() {
 
   return (
     <div
-      ref={accentRef}
+      ref={setAccentElement}
       data-rakazo-surface="onboarding"
       className="flex min-h-full flex-col bg-background text-foreground [--link:var(--brand-accent)] [--ring:var(--brand-accent)] md:flex-row"
     >
@@ -911,7 +912,8 @@ export function OnboardingPage() {
               <div className="mt-8 flex justify-end">
                 <Button
                   size="lg"
-                  disabled={!canSaveModel || openingChat}
+                  // After a failed bot the model is saved, so only the retry has to wait.
+                  disabled={openingChat || (!botError && !canSaveModel)}
                   // The model is saved; after a failed bot, Continue only retries the bot.
                   onClick={() => void (botError ? createFirstBot() : saveModel())}
                 >

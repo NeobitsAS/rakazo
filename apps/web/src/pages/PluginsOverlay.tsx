@@ -11,10 +11,20 @@ import {
   abortableDelay,
   buildFeaturedConnectorTiles,
   CONNECTION_CATALOG_PAGE_SIZE,
+  type FeaturedConnectorTile,
   filterConnectionCatalogItems,
   humanizeToolName,
 } from "@rakazo/core";
-import { Button, Dialog, DialogContent, Input, Switch } from "@rakazo/ui-web";
+import {
+  Button,
+  ButtonGroup,
+  Dialog,
+  DialogContent,
+  Field,
+  FieldLabel,
+  Input,
+  Switch,
+} from "@rakazo/ui-web";
 import { Pencil, Plug, Plus, RotateCw, Settings, Trash } from "lucide-react";
 import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { DialogPageHeader } from "../components/DialogPageHeader";
@@ -94,6 +104,8 @@ export function PluginsOverlay({
   const [mcpServers, setMcpServers] = useState<McpServer[]>([]);
   const [assignments, setAssignments] = useState<BotMcpServer[]>([]);
   const [pending, setPending] = useState<string | null>(null);
+  /** An access token typed on a server's page, for services that do not sign in. */
+  const [serverToken, setServerToken] = useState("");
   const [catalogError, setCatalogError] = useState<string | null>(null);
   const [sourceError, setSourceError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -361,6 +373,8 @@ export function PluginsOverlay({
     try {
       await rpc.mcp.servers.remove({ id: server.id });
       setMcpServers((current) => current.filter((entry) => entry.id !== server.id));
+      // Its assignments go with it; replace() would otherwise send its id back.
+      setAssignments((current) => current.filter((entry) => entry.serverId !== server.id));
       setServerDetailId(null);
     } catch (err) {
       setSourceError(err instanceof Error ? err.message : t`Could not remove the server`);
@@ -485,8 +499,29 @@ export function PluginsOverlay({
     }
   }
 
+  /** Opens a server's page, or goes back from it; a token typed on another page is dropped. */
+  function openServer(id: string | null) {
+    setServerToken("");
+    setServerDetailId(id);
+  }
+
+  async function saveServerToken(server: McpServer) {
+    setPending(`token:${server.id}`);
+    setSourceError(null);
+    try {
+      await rpc.mcp.servers.update({ id: server.id, secret: serverToken.trim() });
+      setServerToken("");
+      setMcpServers(await rpc.mcp.servers.list());
+    } catch (err) {
+      setSourceError(err instanceof Error ? err.message : t`Could not save the access token`);
+    } finally {
+      setPending(null);
+    }
+  }
+
   function renderServerDetail(server: McpServer) {
     const signInPending = pending === `signin:${server.id}`;
+    const tokenPending = pending === `token:${server.id}`;
     return (
       <div data-testid="mcp-server-detail" className="space-y-8">
         <ul className="divide-y divide-border">
@@ -562,6 +597,35 @@ export function PluginsOverlay({
           })}
         </ul>
 
+        {server.oauthStatus === "connected" ? null : (
+          <Field>
+            <FieldLabel htmlFor={`server-token-${server.id}`}>
+              <Trans>Access token</Trans>
+            </FieldLabel>
+            <ButtonGroup className="w-full">
+              <Input
+                id={`server-token-${server.id}`}
+                type="password"
+                autoComplete="new-password"
+                value={serverToken}
+                onChange={(event) => setServerToken(event.target.value)}
+                placeholder={
+                  server.hasSecret
+                    ? t`Saved. Paste a new one to replace it.`
+                    : t`Paste an access token`
+                }
+              />
+              <Button
+                variant="secondary"
+                disabled={tokenPending || !serverToken.trim()}
+                onClick={() => void saveServerToken(server)}
+              >
+                {tokenPending ? <Trans>Saving…</Trans> : <Trans>Save</Trans>}
+              </Button>
+            </ButtonGroup>
+          </Field>
+        )}
+
         <Button
           variant="destructive"
           disabled={pending === server.id}
@@ -611,7 +675,7 @@ export function PluginsOverlay({
                 id: server.id,
                 name: server.name,
                 detail: mcpServerDetail(server),
-                onEdit: () => setServerDetailId(server.id),
+                onEdit: () => openServer(server.id),
                 onRemove: () => void removeMcpServer(server),
               }),
             )}
@@ -662,6 +726,38 @@ export function PluginsOverlay({
       >
         {connecting ? <Trans>Adding…</Trans> : <Trans>Add</Trans>}
       </Button>
+    );
+  }
+
+  function renderFeaturedTile(tile: FeaturedConnectorTile) {
+    const item = tile.item;
+    const key = item ? itemKey(item) : tile.id;
+    const disabled = tile.missing || !item;
+    if (item && !tile.missing) {
+      // Featured is the stable hit target for connection-tile-* in E2E.
+      return renderCatalogTile(item, tile.label, item.logo, {
+        tileTestId: true,
+      });
+    }
+    return (
+      <div
+        key={key}
+        className={`flex min-w-0 items-center gap-3 rounded-xl px-2.5 py-2 ${
+          disabled ? "opacity-70" : ""
+        }`}
+      >
+        <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-accent text-sm font-semibold text-foreground">
+          {tile.label[0]}
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="truncate text-[15px] font-medium text-foreground">{tile.label}</div>
+          {disabled ? (
+            <div className="truncate text-[12.5px] text-muted-foreground">
+              <Trans>Not in the plugin catalog</Trans>
+            </div>
+          ) : null}
+        </div>
+      </div>
     );
   }
 
@@ -878,7 +974,7 @@ export function PluginsOverlay({
               title: serverDetail.name,
               description: serverDetail.endpoint ?? t`MCP server`,
               icon: <AppIcon name={serverDetail.name} />,
-              onBack: () => setServerDetailId(null),
+              onBack: () => openServer(null),
             }
           : detailItem
             ? {
@@ -980,61 +1076,18 @@ export function PluginsOverlay({
                 />
               ) : null}
 
-              {showFeatured ? (
-                <div
-                  className={catalog.length > 0 ? "mb-6" : undefined}
-                  data-testid="featured-connectors"
-                >
-                  {catalog.length === 0 ? (
-                    isDeploymentOwner ? (
-                      <p className="text-[13.5px] leading-6 text-muted-foreground/80">
-                        <Trans>Set up Composio or Pipedream to bring their apps here.</Trans>
-                      </p>
-                    ) : (
-                      <p className="text-[13.5px] leading-6 text-muted-foreground/80">
-                        <Trans>
-                          Ask the server owner to set up Composio or Pipedream to connect apps.
-                        </Trans>
-                      </p>
-                    )
-                  ) : (
-                    <div className="grid grid-cols-2 gap-2">
-                      {featuredTiles.map((tile) => {
-                        const item = tile.item;
-                        const key = item ? itemKey(item) : tile.id;
-                        const disabled = tile.missing || !item;
-                        if (item && !tile.missing) {
-                          // Featured is the stable hit target for connection-tile-* in E2E.
-                          return renderCatalogTile(item, tile.label, item.logo, {
-                            tileTestId: true,
-                          });
-                        }
-                        return (
-                          <div
-                            key={key}
-                            className={`flex min-w-0 items-center gap-3 rounded-xl px-2.5 py-2 ${
-                              disabled ? "opacity-70" : ""
-                            }`}
-                          >
-                            <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-accent text-sm font-semibold text-foreground">
-                              {tile.label[0]}
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <div className="truncate text-[15px] font-medium text-foreground">
-                                {tile.label}
-                              </div>
-                              {disabled ? (
-                                <div className="truncate text-[12.5px] text-muted-foreground">
-                                  <Trans>Not in the plugin catalog</Trans>
-                                </div>
-                              ) : null}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
+              {showFeatured && catalog.length === 0 ? (
+                isDeploymentOwner ? (
+                  <p className="text-[13.5px] leading-6 text-muted-foreground/80">
+                    <Trans>Set up Composio or Pipedream to bring their apps here.</Trans>
+                  </p>
+                ) : (
+                  <p className="text-[13.5px] leading-6 text-muted-foreground/80">
+                    <Trans>
+                      Ask the server owner to set up Composio or Pipedream to connect apps.
+                    </Trans>
+                  </p>
+                )
               ) : null}
 
               {catalog.length === 0 && !showFeatured ? (
@@ -1047,8 +1100,13 @@ export function PluginsOverlay({
                   <Trans>No apps match your search.</Trans>
                 </p>
               ) : null}
-              {visible.length > 0 ? (
-                <div className="grid grid-cols-2 gap-2">
+              {/* One grid: the featured apps lead, the rest of the catalog follows. */}
+              {catalog.length > 0 && (showFeatured || visible.length > 0) ? (
+                <div
+                  className="grid grid-cols-2 gap-2"
+                  data-testid={showFeatured ? "featured-connectors" : undefined}
+                >
+                  {showFeatured ? featuredTiles.map(renderFeaturedTile) : null}
                   {rendered.map((item) =>
                     renderCatalogTile(item, item.name, item.logo, {
                       // Avoid duplicate connection-tile-* ids while featured is also shown.

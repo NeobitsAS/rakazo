@@ -4259,3 +4259,27 @@ msgstr "Kimler kullanabilir"
 #: src/components/integrations/AddIntegration.tsx
 msgid "All your bots in this space can use it."
 msgstr "Bu alandaki tüm botlarınız kullanabilir."
+
+#: src/pages/McpServersOverlay.tsx
+msgid "Command"
+msgstr "Komut"
+
+#: src/pages/McpServersOverlay.tsx
+msgid "Arguments"
+msgstr "Argümanlar"
+
+#: src/components/integrations/AddIntegration.tsx
+msgid "Transport"
+msgstr "Aktarım"
+
+#: src/components/integrations/AddIntegration.tsx
+msgid "Local command"
+msgstr "Yerel komut"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Paste an access token"
+msgstr "Bir erişim belirteci yapıştırın"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Could not save the access token"
+msgstr "Erişim belirteci kaydedilemedi"

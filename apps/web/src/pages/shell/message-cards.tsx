@@ -366,7 +366,7 @@ export function McpApprovalCard({
     try {
       if (needsOAuth) {
         const result = await connectMcpOauth(serverId);
-        if (result === "cancelled") {
+        if (result === "cancelled" || result === "redirected") {
           setLocalStatus("pending");
           return;
         }
