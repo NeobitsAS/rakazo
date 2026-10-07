@@ -65,14 +65,6 @@ msgstr "En az 8 karakter"
 msgid "Choose your default model"
 msgstr "Varsayılan modelini seç"
 
-#: src/pages/Onboarding.tsx
-msgid "Give your bots tools for real work, such as email, calendars and issue trackers. It's optional, and you can add more later from Integrations in the sidebar."
-msgstr "Botlarına e-posta, takvim ve kayıt takip araçları gibi gerçek işler için araçlar ver. İsteğe bağlıdır; daha sonra kenar çubuğundaki Entegrasyonlar bölümünden daha fazlasını ekleyebilirsin."
-
-#: src/pages/Onboarding.tsx
-msgid "Integrations give your bots tools beyond chat, such as reading email or opening issues. Connect a single tool server (MCP) directly, or set up Composio or Pipedream once to give everyone on this server access to hundreds of apps. You can skip this and add integrations later from Integrations in the sidebar."
-msgstr "Entegrasyonlar botlarına sohbetin ötesinde araçlar verir; örneğin e-posta okuma veya kayıt açma. Tek bir araç sunucusunu (MCP) doğrudan bağla ya da Composio veya Pipedream'i bir kez kurarak bu sunucudaki herkese yüzlerce uygulamaya erişim ver. Bu adımı atlayıp entegrasyonları daha sonra kenar çubuğundaki Entegrasyonlar bölümünden ekleyebilirsin."
-
 #: src/components/PageLoader.tsx
 msgid "Loading"
 msgstr "Yükleniyor"
@@ -105,18 +97,6 @@ msgstr "Pipedream istemci gizli anahtarını yapıştır"
 msgid "Paste your Pipedream project ID"
 msgstr "Pipedream proje kimliğini yapıştır"
 
-#: src/pages/Onboarding.tsx
-msgid "Pick the AI model your bots think and reply with. Sign in with a subscription or paste an API key, and change it any time."
-msgstr "Botlarının düşünmek ve yanıt vermek için kullanacağı yapay zeka modelini seç. Bir abonelikle giriş yap ya da API anahtarı yapıştır; istediğin zaman değiştirebilirsin."
-
-#: src/pages/Onboarding.tsx
-msgid "Rakazo creates your first bot and opens a chat with it. You can add more bots at any time."
-msgstr "Rakazo ilk botunu oluşturur ve onunla bir sohbet açar. İstediğin zaman daha fazla bot ekleyebilirsin."
-
-#: src/pages/Onboarding.tsx
-msgid "Rakazo sets up your first agent and opens a chat with it, so you can give it something to do right away."
-msgstr "Rakazo ilk ajanını hazırlar ve onunla bir sohbet açar; böylece ona hemen bir iş verebilirsin."
-
 #: src/components/integrations/IntegrationSetup.tsx
 msgid "Results from integrations.sh"
 msgstr "integrations.sh sonuçları"
@@ -136,10 +116,6 @@ msgstr "Ajanını dene"
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Type the new password again"
 msgstr "Yeni şifreyi tekrar yazın"
-
-#: src/pages/Onboarding.tsx
-msgid "Your bots use this model to think and reply. Choose a provider and a model, then sign in with your subscription or paste an API key. It is saved for you in this space, and you can connect more models later in Settings → Models."
-msgstr "Botların düşünmek ve yanıt vermek için bu modeli kullanır. Bir sağlayıcı ve model seç, ardından aboneliğinle giriş yap ya da bir API anahtarı yapıştır. Model bu alanda senin için kaydedilir; daha fazla modeli sonra Ayarlar → Modeller bölümünden bağlayabilirsin."
 
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Your current password"
