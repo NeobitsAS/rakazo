@@ -11,6 +11,7 @@ import {
   abortableDelay,
   buildFeaturedConnectorTiles,
   CONNECTION_CATALOG_PAGE_SIZE,
+  type FeaturedConnectorTile,
   filterConnectionCatalogItems,
   humanizeToolName,
 } from "@rakazo/core";
@@ -665,6 +666,38 @@ export function PluginsOverlay({
     );
   }
 
+  function renderFeaturedTile(tile: FeaturedConnectorTile) {
+    const item = tile.item;
+    const key = item ? itemKey(item) : tile.id;
+    const disabled = tile.missing || !item;
+    if (item && !tile.missing) {
+      // Featured is the stable hit target for connection-tile-* in E2E.
+      return renderCatalogTile(item, tile.label, item.logo, {
+        tileTestId: true,
+      });
+    }
+    return (
+      <div
+        key={key}
+        className={`flex min-w-0 items-center gap-3 rounded-xl px-2.5 py-2 ${
+          disabled ? "opacity-70" : ""
+        }`}
+      >
+        <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-accent text-sm font-semibold text-foreground">
+          {tile.label[0]}
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="truncate text-[15px] font-medium text-foreground">{tile.label}</div>
+          {disabled ? (
+            <div className="truncate text-[12.5px] text-muted-foreground">
+              <Trans>Not in the plugin catalog</Trans>
+            </div>
+          ) : null}
+        </div>
+      </div>
+    );
+  }
+
   function renderCatalogTile(
     item: ConnectionCatalogItem,
     label: string,
@@ -980,61 +1013,18 @@ export function PluginsOverlay({
                 />
               ) : null}
 
-              {showFeatured ? (
-                <div
-                  className={catalog.length > 0 ? "mb-6" : undefined}
-                  data-testid="featured-connectors"
-                >
-                  {catalog.length === 0 ? (
-                    isDeploymentOwner ? (
-                      <p className="text-[13.5px] leading-6 text-muted-foreground/80">
-                        <Trans>Set up Composio or Pipedream to bring their apps here.</Trans>
-                      </p>
-                    ) : (
-                      <p className="text-[13.5px] leading-6 text-muted-foreground/80">
-                        <Trans>
-                          Ask the server owner to set up Composio or Pipedream to connect apps.
-                        </Trans>
-                      </p>
-                    )
-                  ) : (
-                    <div className="grid grid-cols-2 gap-2">
-                      {featuredTiles.map((tile) => {
-                        const item = tile.item;
-                        const key = item ? itemKey(item) : tile.id;
-                        const disabled = tile.missing || !item;
-                        if (item && !tile.missing) {
-                          // Featured is the stable hit target for connection-tile-* in E2E.
-                          return renderCatalogTile(item, tile.label, item.logo, {
-                            tileTestId: true,
-                          });
-                        }
-                        return (
-                          <div
-                            key={key}
-                            className={`flex min-w-0 items-center gap-3 rounded-xl px-2.5 py-2 ${
-                              disabled ? "opacity-70" : ""
-                            }`}
-                          >
-                            <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-accent text-sm font-semibold text-foreground">
-                              {tile.label[0]}
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <div className="truncate text-[15px] font-medium text-foreground">
-                                {tile.label}
-                              </div>
-                              {disabled ? (
-                                <div className="truncate text-[12.5px] text-muted-foreground">
-                                  <Trans>Not in the plugin catalog</Trans>
-                                </div>
-                              ) : null}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
+              {showFeatured && catalog.length === 0 ? (
+                isDeploymentOwner ? (
+                  <p className="text-[13.5px] leading-6 text-muted-foreground/80">
+                    <Trans>Set up Composio or Pipedream to bring their apps here.</Trans>
+                  </p>
+                ) : (
+                  <p className="text-[13.5px] leading-6 text-muted-foreground/80">
+                    <Trans>
+                      Ask the server owner to set up Composio or Pipedream to connect apps.
+                    </Trans>
+                  </p>
+                )
               ) : null}
 
               {catalog.length === 0 && !showFeatured ? (
@@ -1047,8 +1037,13 @@ export function PluginsOverlay({
                   <Trans>No apps match your search.</Trans>
                 </p>
               ) : null}
-              {visible.length > 0 ? (
-                <div className="grid grid-cols-2 gap-2">
+              {/* One grid: the featured apps lead, the rest of the catalog follows. */}
+              {catalog.length > 0 && (showFeatured || visible.length > 0) ? (
+                <div
+                  className="grid grid-cols-2 gap-2"
+                  data-testid={showFeatured ? "featured-connectors" : undefined}
+                >
+                  {showFeatured ? featuredTiles.map(renderFeaturedTile) : null}
                   {rendered.map((item) =>
                     renderCatalogTile(item, item.name, item.logo, {
                       // Avoid duplicate connection-tile-* ids while featured is also shown.
