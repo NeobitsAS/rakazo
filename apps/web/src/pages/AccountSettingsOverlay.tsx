@@ -8,8 +8,6 @@ import {
   FieldGroup,
   FieldLabel,
   Input,
-  NativeSelect,
-  NativeSelectOption,
   OptionSelect,
   SwitchField,
   Toggle,
@@ -17,7 +15,6 @@ import {
 import { Check } from "lucide-react";
 import type { RefObject } from "react";
 import { useId, useRef, useState, useSyncExternalStore } from "react";
-import { Link } from "react-router-dom";
 import { AccountAccess } from "../components/AccountAccess";
 import { SuccessPop } from "../components/ai/primitives";
 import { ComputersUnavailableHint } from "../components/ComputersUnavailableHint";
@@ -64,7 +61,6 @@ export type SettingsGeneralProps = {
   onTimezoneChange?: (timezone: string) => Promise<void>;
   messagingEnabled?: boolean;
   onOpenMessaging?: () => void;
-  isDeploymentOwner?: boolean;
 };
 
 export function GeneralSettingsPanels({
@@ -76,7 +72,6 @@ export function GeneralSettingsPanels({
   onTimezoneChange,
   messagingEnabled = false,
   onOpenMessaging,
-  isDeploymentOwner = false,
 }: SettingsGeneralProps) {
   const { t } = useLingui();
   const [accountSecurity, setAccountSecurity] = useState<AccountSecurity | null>(null);
@@ -107,7 +102,6 @@ export function GeneralSettingsPanels({
   );
   const [avatarPending, setAvatarPending] = useState(false);
   const [avatarError, setAvatarError] = useState<string | null>(null);
-  const timezoneId = useId();
   const [timezonePending, setTimezonePending] = useState(false);
   const [timezoneError, setTimezoneError] = useState<string | null>(null);
   const deviceTimezone = localTimezone();
@@ -230,23 +224,21 @@ export function GeneralSettingsPanels({
 
       {onTimezoneChange ? (
         <section className="py-4" data-testid="timezone-settings">
-          <h3 id={timezoneId} className="text-[15px] font-medium text-foreground">
+          <h3 className="text-[15px] font-medium text-foreground">
             <Trans>Timezone</Trans>
           </h3>
-          <NativeSelect
-            aria-labelledby={timezoneId}
+          <OptionSelect
+            className="mt-3"
+            aria-label={t`Timezone`}
             data-testid="timezone-select"
             value={timezone ?? deviceTimezone}
             disabled={timezonePending}
-            onChange={(event) => void chooseTimezone(event.target.value)}
-            className="mt-3 w-full"
-          >
-            {timezoneOptions(timezone ?? deviceTimezone).map((zone) => (
-              <NativeSelectOption key={zone} value={zone}>
-                {zone.replaceAll("_", " ")}
-              </NativeSelectOption>
-            ))}
-          </NativeSelect>
+            onValueChange={(next) => void chooseTimezone(next)}
+            options={timezoneOptions(timezone ?? deviceTimezone).map((zone) => ({
+              value: zone,
+              label: zone.replaceAll("_", " "),
+            }))}
+          />
           {!timezone || !sameTimeZone(timezone, deviceTimezone) ? (
             <Button
               variant="outline"
@@ -305,12 +297,6 @@ export function GeneralSettingsPanels({
           </p>
         ) : null}
       </section>
-
-      {isDeploymentOwner ? (
-        <Button variant="outline" render={<Link to="/integrations/setup" />}>
-          <Trans>Server integrations</Trans>
-        </Button>
-      ) : null}
 
       <Disclosure
         data-testid="advanced-settings"

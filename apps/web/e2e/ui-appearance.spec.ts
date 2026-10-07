@@ -99,9 +99,7 @@ test("account settings appearance control switches to light mode", async ({ page
   await captureSidebarSearchSelected(page, testInfo, "sidebar-search-selected-dark");
 });
 
-test("sidebar bot rows hover with the same tone as the integrations row", async ({
-  page,
-}, testInfo) => {
+test("sidebar bot rows hover with the same tone as the Apps row", async ({ page }, testInfo) => {
   const stamp = Date.now();
   await signup(page, `ui-hover-${stamp}@rakazo.test`, "password12", "Hover QA");
   await completeOnboarding(page, testInfo);
@@ -118,9 +116,9 @@ test("sidebar bot rows hover with the same tone as the integrations row", async 
   const chiefBg = await readChiefBg();
   await captureScreenshot(page, testInfo, "sidebar-row-hover");
 
-  const integrations = sidebar.getByRole("button", { name: "Integrations", exact: true });
-  await integrations.hover();
+  const appsRow = sidebar.getByRole("button", { name: "Apps", exact: true });
+  await appsRow.hover();
   await expect
-    .poll(() => integrations.evaluate((el) => getComputedStyle(el).backgroundColor))
+    .poll(() => appsRow.evaluate((el) => getComputedStyle(el).backgroundColor))
     .toBe(chiefBg);
 });
