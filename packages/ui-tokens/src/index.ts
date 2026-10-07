@@ -74,7 +74,7 @@ export const darkTokens = {
   sidebar: "#111215",
   sidebarForeground: "#ECECEE",
   sidebarBorder: "#1C1D22",
-  sidebarAccent: "#1A1B20",
+  sidebarAccent: "#222429",
   sidebarAccentForeground: "#ECECEE",
   link: "#3B82F6",
   success: "#4ECB71",
