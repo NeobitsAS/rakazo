@@ -1,7 +1,7 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import type { Bot, Group } from "@rakazo/contracts";
 import { GROUP_MEMBER_MAX, GROUP_MEMBER_MIN } from "@rakazo/contracts";
-import { BotAvatar, Button, Checkbox, Input } from "@rakazo/ui-web";
+import { BotAvatar, Button, Checkbox, Field, FieldLabel, Input } from "@rakazo/ui-web";
 import { X } from "lucide-react";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { errorText } from "../lib/user-error";
@@ -186,16 +186,17 @@ export function CreateGroupForm({
           {error}
         </p>
       ) : null}
-      <label htmlFor={nameId} className="block text-sm text-muted-foreground">
-        <Trans>Name</Trans>
+      <Field>
+        <FieldLabel htmlFor={nameId}>
+          <Trans>Name</Trans>
+        </FieldLabel>
         <Input
           id={nameId}
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder={t`Name this group`}
-          className="mt-2"
         />
-      </label>
+      </Field>
       <MemberPicker
         bots={bots}
         selected={selected}
@@ -309,15 +310,12 @@ export function GroupSettings({
           {error}
         </p>
       ) : null}
-      <label htmlFor={nameId} className="block text-sm text-muted-foreground">
-        <Trans>Name</Trans>
-        <Input
-          id={nameId}
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          className="mt-2"
-        />
-      </label>
+      <Field>
+        <FieldLabel htmlFor={nameId}>
+          <Trans>Name</Trans>
+        </FieldLabel>
+        <Input id={nameId} value={name} onChange={(e) => setName(e.target.value)} />
+      </Field>
       <MemberPicker bots={bots} selected={selected} onChange={setSelected} onOpenBot={onOpenBot} />
       <Button
         className="mt-5 w-full"

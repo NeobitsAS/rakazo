@@ -24,7 +24,7 @@ test("mention picker completes with Enter and Tab", async ({ page }, testInfo) =
   expect(writerId).toBeTruthy();
 
   await openNewGroup(page);
-  await page.locator("label:has-text('Name') input").fill("Mention keys team");
+  await page.getByLabel("Name", { exact: true }).fill("Mention keys team");
   const panel = page.getByTestId("side-panel");
   await panel.getByRole("checkbox", { name: "Add Researcher to the group" }).click();
   await panel.getByRole("checkbox", { name: "Add Research Writer to the group" }).click();

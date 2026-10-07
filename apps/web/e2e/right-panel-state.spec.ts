@@ -78,7 +78,7 @@ test("reload restores the selected routine and scopes preferences to the chat", 
   });
   await page.getByTitle("Agent computer").click();
   await page.getByRole("button", { name: /Weekly summary/ }).click();
-  const name = page.locator("label:has-text('Name') input");
+  const name = page.getByLabel("Name", { exact: true });
   await expect(name).toHaveValue("Weekly summary");
   await waitForStoredPanel(page, "routine");
   await page.reload();

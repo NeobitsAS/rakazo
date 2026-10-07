@@ -15,8 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
   Input,
-  NativeSelect,
-  NativeSelectOption,
+  OptionSelect,
   Textarea,
 } from "@rakazo/ui-web";
 import { ChevronLeft } from "lucide-react";
@@ -297,55 +296,36 @@ function TicketDialog({
             <span>
               <Trans>Owner</Trans>
             </span>
-            <NativeSelect
-              className="w-full"
+            <OptionSelect
               id={`${formId}-owner`}
               value={owner}
-              onChange={(event) => setOwner(event.target.value)}
-              required
-            >
-              {bots.map((bot) => (
-                <NativeSelectOption key={bot.id} value={bot.id}>
-                  {bot.name}
-                </NativeSelectOption>
-              ))}
-            </NativeSelect>
+              onValueChange={setOwner}
+              options={bots.map((bot) => ({ value: bot.id, label: bot.name }))}
+            />
           </label>
           {ticket ? (
             <label htmlFor={`${formId}-status`} className="block space-y-1 text-sm">
               <span>
                 <Trans>Status</Trans>
               </span>
-              <NativeSelect
-                className="w-full"
+              <OptionSelect<TicketStatus>
                 id={`${formId}-status`}
                 value={status}
-                onChange={(event) => setStatus(event.target.value as TicketStatus)}
-              >
-                {TICKET_STATUSES.map((value) => (
-                  <NativeSelectOption key={value} value={value}>
-                    {statuses[value]}
-                  </NativeSelectOption>
-                ))}
-              </NativeSelect>
+                onValueChange={setStatus}
+                options={TICKET_STATUSES.map((value) => ({ value, label: statuses[value] }))}
+              />
             </label>
           ) : null}
           <label htmlFor={`${formId}-priority`} className="block space-y-1 text-sm">
             <span>
               <Trans>Priority</Trans>
             </span>
-            <NativeSelect
-              className="w-full"
+            <OptionSelect<TicketPriority>
               id={`${formId}-priority`}
               value={priority}
-              onChange={(event) => setPriority(event.target.value as TicketPriority)}
-            >
-              {TICKET_PRIORITIES.map((value) => (
-                <NativeSelectOption key={value} value={value}>
-                  {priorities[value]}
-                </NativeSelectOption>
-              ))}
-            </NativeSelect>
+              onValueChange={setPriority}
+              options={TICKET_PRIORITIES.map((value) => ({ value, label: priorities[value] }))}
+            />
           </label>
           <div className="flex justify-end">
             <Button type="submit" disabled={busy || !title.trim() || !owner}>

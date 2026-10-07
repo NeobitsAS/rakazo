@@ -13,8 +13,7 @@ import {
   AlertDialogTitle,
   BotAvatar,
   Button,
-  NativeSelect,
-  NativeSelectOption,
+  OptionSelect,
   parseBotAvatar,
   resolvePersonaColorDef,
 } from "@rakazo/ui-web";
@@ -32,6 +31,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { Loader } from "../components/PageLoader";
 import { PdfViewer } from "../components/PdfViewer";
 import { SandboxedHtmlViewer } from "../components/SandboxedHtmlViewer";
 import { decodeArtifactBase64, downloadArtifactBytes } from "../lib/artifact-open";
@@ -281,17 +281,18 @@ export function ArtifactsPage() {
                 className="w-full rounded-lg border border-border bg-background py-1.5 ps-8 pe-3 text-[13px] outline-none focus:border-ring"
               />
             </div>
-            <NativeSelect
+            <OptionSelect<DateFilter>
               aria-label={t`Filter by date`}
-              className="w-auto text-[13px]"
+              className="w-auto"
               value={dateFilter}
-              onChange={(event) => setDateFilter(event.target.value as DateFilter)}
-            >
-              <NativeSelectOption value="all">{t`All time`}</NativeSelectOption>
-              <NativeSelectOption value="today">{t`Today`}</NativeSelectOption>
-              <NativeSelectOption value="week">{t`This week`}</NativeSelectOption>
-              <NativeSelectOption value="month">{t`This month`}</NativeSelectOption>
-            </NativeSelect>
+              onValueChange={setDateFilter}
+              options={[
+                { value: "all", label: t`All time` },
+                { value: "today", label: t`Today` },
+                { value: "week", label: t`This week` },
+                { value: "month", label: t`This month` },
+              ]}
+            />
             <FilterChip active={activeBotId === null} onClick={() => setActiveBotId(null)}>
               <Trans>All bots</Trans>
             </FilterChip>
@@ -408,7 +409,7 @@ function BrowsingPane({
   if (items === null) {
     return (
       <div className="grid flex-1 place-items-center text-sm text-muted-foreground/80">
-        {loadError ?? <Trans>Loading…</Trans>}
+        {loadError ?? <Loader />}
       </div>
     );
   }
@@ -483,13 +484,7 @@ function EmptyArtifacts({
   return (
     <div className={className}>
       <div className="flex flex-col items-center gap-3">
-        <span>
-          {loadingMore ? (
-            <Trans>Loading…</Trans>
-          ) : (
-            <Trans>No matching artifacts on this page.</Trans>
-          )}
-        </span>
+        <span>{loadingMore ? <Loader /> : <Trans>No matching artifacts on this page.</Trans>}</span>
         <LoadMoreButton loading={loadingMore} onClick={onLoadMore} />
       </div>
     </div>
@@ -519,7 +514,7 @@ function IndexPane({
     <aside className="flex w-[320px] shrink-0 flex-col overflow-y-auto border-e border-border">
       {items === null ? (
         <div className="grid flex-1 place-items-center p-6 text-center text-sm text-muted-foreground/80">
-          {loadError ?? <Trans>Loading…</Trans>}
+          {loadError ?? <Loader />}
         </div>
       ) : items.length === 0 ? (
         <EmptyArtifacts
@@ -878,18 +873,16 @@ function PreviewPane({
           ) : null}
         </div>
         {versions && versions.length > 1 && selectedVersionId ? (
-          <NativeSelect
+          <OptionSelect
             aria-label={t`Version`}
-            className="w-auto shrink-0 text-[13px]"
+            className="w-auto shrink-0"
             value={selectedVersionId}
-            onChange={(event) => setSelectedVersionId(event.target.value)}
-          >
-            {versions.map((entry) => (
-              <NativeSelectOption key={entry.id} value={entry.id}>
-                {`v${entry.version} · ${formatRelativeTime(entry.createdAt)}`}
-              </NativeSelectOption>
-            ))}
-          </NativeSelect>
+            onValueChange={setSelectedVersionId}
+            options={versions.map((entry) => ({
+              value: entry.id,
+              label: `v${entry.version} · ${formatRelativeTime(entry.createdAt)}`,
+            }))}
+          />
         ) : null}
         {state.status === "ready" ? (
           <>
@@ -923,7 +916,7 @@ function PreviewPane({
       <div className="min-h-0 flex-1 p-5">
         {state.status === "loading" ? (
           <div className="grid h-full place-items-center text-sm text-muted-foreground/80">
-            <Trans>Loading…</Trans>
+            <Loader />
           </div>
         ) : state.status === "error" ? (
           <div className="rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-destructive">

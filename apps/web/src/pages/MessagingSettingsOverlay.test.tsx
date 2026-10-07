@@ -53,8 +53,29 @@ vi.mock("@rakazo/ui-web", () => {
     DialogClose: Pass,
     DialogContent: Pass,
     DialogTitle: Pass,
-    NativeSelect: (props: ComponentProps<"select">) => <select {...props} />,
-    NativeSelectOption: (props: ComponentProps<"option">) => <option {...props} />,
+    OptionSelect: ({
+      options,
+      value,
+      onValueChange,
+      ...props
+    }: {
+      options: readonly { value: string; label: string }[];
+      value: string;
+      onValueChange: (value: string) => void;
+      "aria-label"?: string;
+    }) => (
+      <select
+        aria-label={props["aria-label"]}
+        value={value}
+        onChange={(event) => onValueChange(event.target.value)}
+      >
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    ),
   };
 });
 

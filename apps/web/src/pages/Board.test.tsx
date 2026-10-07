@@ -39,8 +39,35 @@ vi.mock("@rakazo/ui-web", () => {
     DialogHeader: Container,
     DialogTitle: Container,
     Input: (props: ComponentProps<"input">) => <input {...props} />,
-    NativeSelect: (props: ComponentProps<"select">) => <select {...props} />,
-    NativeSelectOption: (props: ComponentProps<"option">) => <option {...props} />,
+    OptionSelect: ({
+      options,
+      value,
+      onValueChange,
+      ...props
+    }: {
+      options: readonly { value: string; label: string }[];
+      value: string;
+      onValueChange: (value: string) => void;
+      id?: string;
+      disabled?: boolean;
+      "aria-label"?: string;
+      "data-testid"?: string;
+    }) => (
+      <select
+        id={props.id}
+        disabled={props.disabled}
+        aria-label={props["aria-label"]}
+        data-testid={props["data-testid"]}
+        value={value}
+        onChange={(event) => onValueChange(event.target.value)}
+      >
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    ),
     Textarea: (props: ComponentProps<"textarea">) => <textarea {...props} />,
   };
 });
@@ -142,11 +169,6 @@ it("renders status columns and opens a ticket with comments", async () => {
       "5m ago",
       "5m ago",
     ]);
-    expect(
-      Array.from(page.container.querySelectorAll("select")).every(
-        (node) => node.className === "w-full",
-      ),
-    ).toBe(true);
     const submitButtons = page.container.querySelectorAll('button[type="submit"]');
     expect(Array.from(submitButtons).map((node) => node.parentElement?.className)).toEqual([
       "flex justify-end",

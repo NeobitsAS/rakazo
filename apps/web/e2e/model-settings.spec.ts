@@ -173,17 +173,18 @@ test("custom connections persist reasoning support and bot thinking", async ({
   await advanced.evaluate((element) => {
     (element as HTMLDetailsElement).open = true;
   });
-  // NativeSelect sits inside a wrapping <label>, so label text includes option
-  // copy and getByLabel(..., { exact: true }) misses the control. Use the
-  // combobox accessible name, matching other model E2E tests.
   const model = settings.getByRole("combobox", { name: "Model", exact: true });
   await expect(model).toBeVisible();
   await expect(model).toContainText("arbitrary-model");
-  // Value key — not a /arbitrary-model/ label match, which also hits "Space default (arbitrary-model)".
-  await model.selectOption("openai-compatible::arbitrary-model");
+  // The connected model itself, not "Space default (arbitrary-model)".
+  await model.click();
+  await page
+    .getByRole("option", { name: /arbitrary-model/ })
+    .filter({ hasNotText: "Space default" })
+    .click();
   const thinking = settings.getByRole("combobox", { name: "Thinking", exact: true });
   await expect(thinking).toBeVisible();
-  await thinking.selectOption("low");
+  await chooseOption(thinking, "Low");
   await thinking.scrollIntoViewIfNeeded();
   await captureScreenshot(page, testInfo, "openai-compatible-thinking");
   const saved = page.waitForResponse(
@@ -197,7 +198,7 @@ test("custom connections persist reasoning support and bot thinking", async ({
   await advanced.evaluate((element) => {
     (element as HTMLDetailsElement).open = true;
   });
-  await expect(thinking).toHaveValue("low");
+  await expect(thinking).toHaveText("Low");
 });
 
 function readJsonBody(request: IncomingMessage): Promise<Record<string, unknown>> {

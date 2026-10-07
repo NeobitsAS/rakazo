@@ -27,9 +27,10 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
+  Field,
+  FieldLabel,
   Input,
-  NativeSelect,
-  NativeSelectOption,
+  OptionSelect,
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -463,28 +464,30 @@ export function RoutineEditor({
         </div>
       </div>
 
-      <label htmlFor={`${fieldId}-name`} className="block text-sm text-muted-foreground">
-        <Trans>Name</Trans>
+      <Field>
+        <FieldLabel htmlFor={`${fieldId}-name`}>
+          <Trans>Name</Trans>
+        </FieldLabel>
         <Input
           id={`${fieldId}-name`}
           value={draft.name}
           placeholder={t`Name this routine`}
           onChange={(e) => onChange({ ...draft, name: e.target.value })}
-          className="mt-2"
         />
-      </label>
+      </Field>
 
-      <label htmlFor={`${fieldId}-prompt`} className="mt-5 block text-sm text-muted-foreground">
-        <Trans>Instruction</Trans>
+      <Field className="mt-5">
+        <FieldLabel htmlFor={`${fieldId}-prompt`}>
+          <Trans>Instruction</Trans>
+        </FieldLabel>
         <Textarea
           id={`${fieldId}-prompt`}
           value={draft.prompt}
           placeholder={t`What should this routine do each time it runs?`}
           onChange={(e) => onChange({ ...draft, prompt: e.target.value })}
           rows={4}
-          className="mt-2"
         />
-      </label>
+      </Field>
 
       <div className="mt-5 text-sm text-muted-foreground">
         <div className="flex items-baseline gap-2">
@@ -511,53 +514,46 @@ export function RoutineEditor({
               ) : null}
             </PopoverTrigger>
             <PopoverContent align="end" className="w-96 max-w-[calc(100vw-2rem)] p-4">
-              <label htmlFor={`${fieldId}-model`} className="block text-sm text-muted-foreground">
-                <Trans>Model</Trans>
-                <NativeSelect
+              <Field>
+                <FieldLabel htmlFor={`${fieldId}-model`}>
+                  <Trans>Model</Trans>
+                </FieldLabel>
+                <OptionSelect
                   id={`${fieldId}-model`}
-                  className="mt-2 w-full"
                   value={draft.modelKey}
-                  onChange={(event) =>
-                    onChange({ ...draft, modelKey: event.target.value, thinkingLevel: "" })
-                  }
-                >
-                  <NativeSelectOption value="">{t`Bot's model`}</NativeSelectOption>
-                  {draft.modelKey &&
-                  !modelOptions.some((option) => option.key === draft.modelKey) ? (
-                    <NativeSelectOption value={draft.modelKey}>
-                      {selectedModel?.modelId ?? draft.modelKey}
-                    </NativeSelectOption>
-                  ) : null}
-                  {modelOptions.map((option) => (
-                    <NativeSelectOption key={option.key} value={option.key}>
-                      {option.label}
-                    </NativeSelectOption>
-                  ))}
-                </NativeSelect>
-              </label>
+                  onValueChange={(modelKey) => onChange({ ...draft, modelKey, thinkingLevel: "" })}
+                  options={[
+                    { value: "", label: t`Bot's model` },
+                    ...(draft.modelKey &&
+                    !modelOptions.some((option) => option.key === draft.modelKey)
+                      ? [{ value: draft.modelKey, label: selectedModel?.modelId ?? draft.modelKey }]
+                      : []),
+                    ...modelOptions.map((option) => ({ value: option.key, label: option.label })),
+                  ]}
+                />
+              </Field>
 
               {thinkingOptions.length ? (
-                <label
-                  htmlFor={`${fieldId}-thinking`}
-                  className="mt-5 block text-sm text-muted-foreground"
-                >
-                  <Trans>Thinking</Trans>
-                  <NativeSelect
+                <Field className="mt-5">
+                  <FieldLabel htmlFor={`${fieldId}-thinking`}>
+                    <Trans>Thinking</Trans>
+                  </FieldLabel>
+                  <OptionSelect
                     id={`${fieldId}-thinking`}
-                    className="mt-2 w-full"
                     value={draft.thinkingLevel}
-                    onChange={(event) => onChange({ ...draft, thinkingLevel: event.target.value })}
-                  >
-                    <NativeSelectOption value="">
-                      {t`Default (${thinkingLevelLabel(defaultThinkingLevel)})`}
-                    </NativeSelectOption>
-                    {thinkingOptions.map((level) => (
-                      <NativeSelectOption key={level} value={level}>
-                        {thinkingLevelLabel(level)}
-                      </NativeSelectOption>
-                    ))}
-                  </NativeSelect>
-                </label>
+                    onValueChange={(thinkingLevel) => onChange({ ...draft, thinkingLevel })}
+                    options={[
+                      {
+                        value: "",
+                        label: t`Default (${thinkingLevelLabel(defaultThinkingLevel)})`,
+                      },
+                      ...thinkingOptions.map((level) => ({
+                        value: level,
+                        label: thinkingLevelLabel(level),
+                      })),
+                    ]}
+                  />
+                </Field>
               ) : null}
             </PopoverContent>
           </Popover>
@@ -633,17 +629,18 @@ export function RoutineEditor({
           ) : null}
 
           {needsOneShotArm ? (
-            <label htmlFor={`${fieldId}-run-at`} className="block text-sm text-muted-foreground">
-              <Trans>Run at</Trans>
+            <Field>
+              <FieldLabel htmlFor={`${fieldId}-run-at`}>
+                <Trans>Run at</Trans>
+              </FieldLabel>
               <Input
                 id={`${fieldId}-run-at`}
                 type="datetime-local"
                 value={draft.runAtLocal}
                 onChange={(e) => onChange({ ...draft, runAtLocal: e.target.value })}
                 aria-label={t`Run at`}
-                className="mt-2"
               />
-            </label>
+            </Field>
           ) : null}
         </div>
 
@@ -783,18 +780,17 @@ function WatchTriggerCard({
         </Button>
       </div>
       <div className="mt-3 space-y-3">
-        <NativeSelect
+        <OptionSelect<RoutineWatchDraft["kind"]>
           size="sm"
           aria-label={t`What to watch`}
           value={watch.kind}
-          onChange={(event) =>
-            onChange({ ...watch, kind: event.target.value as RoutineWatchDraft["kind"] })
-          }
-        >
-          <NativeSelectOption value="files">{t`Files or folders on the computer`}</NativeSelectOption>
-          <NativeSelectOption value="command">{t`A command's output`}</NativeSelectOption>
-          <NativeSelectOption value="tool">{t`An integration tool`}</NativeSelectOption>
-        </NativeSelect>
+          onValueChange={(kind) => onChange({ ...watch, kind })}
+          options={[
+            { value: "files", label: t`Files or folders on the computer` },
+            { value: "command", label: t`A command's output` },
+            { value: "tool", label: t`An integration tool` },
+          ]}
+        />
         {watch.kind === "files" ? (
           <Textarea
             aria-label={t`Files or folders, one per line`}

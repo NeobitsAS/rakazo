@@ -1,5 +1,11 @@
 import { expect, test } from "@playwright/test";
-import { captureScreenshot, completeOnboarding, createNamedBot, signup } from "./helpers";
+import {
+  captureScreenshot,
+  chooseOption,
+  completeOnboarding,
+  createNamedBot,
+  signup,
+} from "./helpers";
 
 test("board creates a ticket and opens it", async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 1440, height: 900 });
@@ -35,8 +41,7 @@ test("board creates a ticket and opens it", async ({ page }, testInfo) => {
   await dialog.getByLabel("Title").fill(title);
   await dialog.getByLabel("Description").fill(description);
   const owner = dialog.getByLabel("Owner");
-  await expect(owner.locator("option", { hasText: "Planner" })).toHaveCount(1);
-  await owner.selectOption({ label: "Planner" });
+  await chooseOption(owner, "Planner");
   await dialog.getByRole("button", { name: "Create", exact: true }).click();
 
   await expect(dialog).toBeHidden();

@@ -21,6 +21,10 @@ vi.mock("@rakazo/ui-web", async (importOriginal) => {
     Checkbox,
     BotAvatar: () => <span />,
     Button: (props: ComponentProps<"button">) => <button {...props} />,
+    Field: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
+    FieldLabel: ({ children, htmlFor }: { children?: ReactNode; htmlFor?: string }) => (
+      <label htmlFor={htmlFor}>{children}</label>
+    ),
     Input: (props: ComponentProps<"input">) => <input {...props} />,
     AlertDialog: ({
       children,

@@ -2915,8 +2915,6 @@ msgstr "음성 서비스를 불러오는 중…"
 #: src/pages/IntegrationSetup.tsx
 #: src/pages/ModelBackupsSettings.tsx
 #: src/pages/Onboarding.tsx
-#: src/pages/PeerMessagesOverlay.tsx
-#: src/pages/RoutineRunHistory.tsx
 #: src/pages/Shell.tsx
 msgid "Loading…"
 msgstr "불러오는 중…"

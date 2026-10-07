@@ -24,9 +24,11 @@ import {
 } from "@rakazo/core";
 import {
   Button,
+  Disclosure,
+  Field,
+  FieldLabel,
   Input,
-  NativeSelect,
-  NativeSelectOption,
+  OptionSelect,
   Switch,
   Textarea,
   Toggle,
@@ -49,8 +51,6 @@ const ScratchpadSection = lazy(() =>
 const KnowledgeSection = lazy(() =>
   import("../KnowledgeSection").then((module) => ({ default: module.KnowledgeSection })),
 );
-
-const fieldLabelClass = "mt-4 block text-[14px] text-muted-foreground";
 
 function ComputerModePicker({
   value,
@@ -146,30 +146,34 @@ export function CreateBotForm({
           {error}
         </p>
       ) : null}
-      <label htmlFor={`${ids}-name`} className="mt-6 block text-[14px] text-muted-foreground">
-        <Trans>Name</Trans>
+      <Field className="mt-6">
+        <FieldLabel htmlFor={`${ids}-name`}>
+          <Trans>Name</Trans>
+        </FieldLabel>
         <Input
           id={`${ids}-name`}
           value={name}
           maxLength={BOT_NAME_MAX_LENGTH}
           onChange={(e) => setName(e.target.value)}
           placeholder={t`Name this bot`}
-          className="mt-2"
         />
-      </label>
-      <label htmlFor={`${ids}-title`} className={fieldLabelClass}>
-        <Trans>Title</Trans>
+      </Field>
+      <Field className="mt-4">
+        <FieldLabel htmlFor={`${ids}-title`}>
+          <Trans>Title</Trans>
+        </FieldLabel>
         <Input
           id={`${ids}-title`}
           value={title}
           maxLength={BOT_TITLE_MAX_LENGTH}
           onChange={(e) => setTitle(e.target.value)}
           placeholder={t`Describe what this bot does`}
-          className="mt-2"
         />
-      </label>
-      <label htmlFor={`${ids}-description`} className={fieldLabelClass}>
-        <Trans>Description</Trans>
+      </Field>
+      <Field className="mt-4">
+        <FieldLabel htmlFor={`${ids}-description`}>
+          <Trans>Description</Trans>
+        </FieldLabel>
         <Textarea
           id={`${ids}-description`}
           value={description}
@@ -177,9 +181,8 @@ export function CreateBotForm({
           onChange={(e) => setDescription(e.target.value)}
           placeholder={t`What this bot is for`}
           rows={4}
-          className="mt-2"
         />
-      </label>
+      </Field>
       <div data-testid="create-bot-computer">
         <ComputerModePicker
           value={computerMode}
@@ -495,8 +498,10 @@ export function BotSettings({
           }}
         />
       </div>
-      <label htmlFor={`${ids}-name`} className="mt-4 block text-[13.5px] text-muted-foreground/80">
-        <Trans>Name</Trans>
+      <Field className="mt-4">
+        <FieldLabel htmlFor={`${ids}-name`}>
+          <Trans>Name</Trans>
+        </FieldLabel>
         <Input
           id={`${ids}-name`}
           value={name}
@@ -505,9 +510,11 @@ export function BotSettings({
           onBlur={() => void enqueueSave()}
           className="mt-1.5"
         />
-      </label>
-      <label htmlFor={`${ids}-title`} className={fieldLabelClass}>
-        <Trans>Title</Trans>
+      </Field>
+      <Field className="mt-4">
+        <FieldLabel htmlFor={`${ids}-title`}>
+          <Trans>Title</Trans>
+        </FieldLabel>
         <Input
           id={`${ids}-title`}
           value={title}
@@ -517,9 +524,11 @@ export function BotSettings({
           placeholder={t`e.g. Hivenet Agent, Presales, Timesheets bot`}
           className="mt-1.5"
         />
-      </label>
-      <label htmlFor={`${ids}-description`} className={fieldLabelClass}>
-        <Trans>Description</Trans>
+      </Field>
+      <Field className="mt-4">
+        <FieldLabel htmlFor={`${ids}-description`}>
+          <Trans>Description</Trans>
+        </FieldLabel>
         <Textarea
           id={`${ids}-description`}
           value={description}
@@ -529,7 +538,7 @@ export function BotSettings({
           rows={3}
           className="mt-1.5"
         />
-      </label>
+      </Field>
       <div className="mt-6 flex items-center justify-between pt-4 border-t border-border/20">
         <div className="space-y-0.5 pe-4">
           <div
@@ -553,21 +562,15 @@ export function BotSettings({
           }}
         />
       </div>
-      <details
+      <Disclosure
         data-testid="bot-settings-advanced"
-        className="group mt-5"
+        className="mt-5"
+        summaryClassName="text-[14px] text-muted-foreground"
+        summary={<Trans>Advanced</Trans>}
         onToggle={(event) => {
           if (event.currentTarget.open) setAdvancedOpened(true);
         }}
       >
-        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-[14px] text-muted-foreground">
-          <span className="text-muted-foreground">
-            <Trans>Advanced</Trans>
-          </span>
-          <span aria-hidden="true" className="transition-transform group-open:rotate-90">
-            ›
-          </span>
-        </summary>
         <InstructionSettings key={bot.id} bot={bot} />
         <ComputerModePicker value={computerMode} onChange={setComputerMode} />
         <ErrorBoundary fallback={<SectionLoadFailed />}>
@@ -582,55 +585,50 @@ export function BotSettings({
             </Suspense>
           </ErrorBoundary>
         ) : null}
-        <label htmlFor={`${ids}-model`} className={fieldLabelClass}>
-          <Trans>Model</Trans>
-          <NativeSelect
+        <Field className="mt-4">
+          <FieldLabel htmlFor={`${ids}-model`}>
+            <Trans>Model</Trans>
+          </FieldLabel>
+          <OptionSelect
             id={`${ids}-model`}
-            className="mt-2 w-full"
             value={selectedModelKey}
-            onChange={(event) => {
-              setModelKey(event.target.value);
+            onValueChange={(next) => {
+              setModelKey(next);
               setThinkingLevel("");
             }}
-          >
-            <NativeSelectOption value="">
-              {t`Space default`}
-              {me?.defaultModel
-                ? ` (${catalogLabel(catalog, me.defaultProvider, me.defaultModel) ?? me.defaultModel})`
-                : ""}
-            </NativeSelectOption>
-            {selectedModelKey &&
-            !connectedOptions.some((option) => option.key === selectedModelKey) ? (
-              <NativeSelectOption value={selectedModelKey}>
-                {selectedModel?.modelId ?? selectedModelKey}
-              </NativeSelectOption>
-            ) : null}
-            {connectedOptions.map((option) => (
-              <NativeSelectOption key={option.key} value={option.key}>
-                {option.label}
-              </NativeSelectOption>
-            ))}
-          </NativeSelect>
-        </label>
+            options={[
+              {
+                value: "",
+                label: me?.defaultModel
+                  ? `${t`Space default`} (${catalogLabel(catalog, me.defaultProvider, me.defaultModel) ?? me.defaultModel})`
+                  : t`Space default`,
+              },
+              ...(selectedModelKey &&
+              !connectedOptions.some((option) => option.key === selectedModelKey)
+                ? [{ value: selectedModelKey, label: selectedModel?.modelId ?? selectedModelKey }]
+                : []),
+              ...connectedOptions.map((option) => ({ value: option.key, label: option.label })),
+            ]}
+          />
+        </Field>
         {thinkingOptions.length ? (
-          <label htmlFor={`${ids}-thinking`} className={fieldLabelClass}>
-            <Trans>Thinking</Trans>
-            <NativeSelect
+          <Field className="mt-4">
+            <FieldLabel htmlFor={`${ids}-thinking`}>
+              <Trans>Thinking</Trans>
+            </FieldLabel>
+            <OptionSelect
               id={`${ids}-thinking`}
-              className="mt-2 w-full"
               value={thinkingLevel}
-              onChange={(event) => setThinkingLevel(event.target.value)}
-            >
-              <NativeSelectOption value="">
-                {t`Default (${thinkingLevelLabel(defaultThinkingLevel)})`}
-              </NativeSelectOption>
-              {thinkingOptions.map((level) => (
-                <NativeSelectOption key={level} value={level}>
-                  {thinkingLevelLabel(level)}
-                </NativeSelectOption>
-              ))}
-            </NativeSelect>
-          </label>
+              onValueChange={setThinkingLevel}
+              options={[
+                { value: "", label: t`Default (${thinkingLevelLabel(defaultThinkingLevel)})` },
+                ...thinkingOptions.map((level) => ({
+                  value: level,
+                  label: thinkingLevelLabel(level),
+                })),
+              ]}
+            />
+          </Field>
         ) : null}
         {memoryProviderConfigured ? (
           <div className="mt-4 text-[14px] text-muted-foreground">
@@ -692,25 +690,25 @@ export function BotSettings({
           </Trans>
         </div>
         {voices.length ? (
-          <label htmlFor={`${ids}-voice`} className={fieldLabelClass}>
-            <Trans>Voice</Trans>
-            <NativeSelect
+          <Field className="mt-4">
+            <FieldLabel htmlFor={`${ids}-voice`}>
+              <Trans>Voice</Trans>
+            </FieldLabel>
+            <OptionSelect
               id={`${ids}-voice`}
-              className="mt-2 w-full"
               value={voiceId}
-              onChange={(event) => setVoiceId(event.target.value)}
-            >
-              <NativeSelectOption value="">{t`Account default`}</NativeSelectOption>
-              {voices.map((voice) => (
-                <NativeSelectOption key={voice.id} value={voice.id}>
-                  {voice.label}
-                </NativeSelectOption>
-              ))}
-            </NativeSelect>
-          </label>
+              onValueChange={setVoiceId}
+              options={[
+                { value: "", label: t`Account default` },
+                ...voices.map((voice) => ({ value: voice.id, label: voice.label })),
+              ]}
+            />
+          </Field>
         ) : null}
-        <label htmlFor={`${ids}-disabled-tools`} className={fieldLabelClass}>
-          <Trans>Disabled tools</Trans>
+        <Field className="mt-4">
+          <FieldLabel htmlFor={`${ids}-disabled-tools`}>
+            <Trans>Disabled tools</Trans>
+          </FieldLabel>
           <Input
             id={`${ids}-disabled-tools`}
             value={toolNameDraft}
@@ -731,9 +729,9 @@ export function BotSettings({
             onBlur={(event) => {
               if (event.currentTarget.value.trim()) disableBuiltinTool(event.currentTarget.value);
             }}
-            className="mt-1.5 font-mono"
+            className="font-mono"
           />
-        </label>
+        </Field>
         {disabledBuiltinTools.map((toolName) => (
           <label
             key={toolName}
@@ -754,7 +752,7 @@ export function BotSettings({
           </label>
         ))}
         {advancedOpened ? <BotCredentialsSection botId={bot.id} /> : null}
-      </details>
+      </Disclosure>
       {error ? <p className="mt-2 text-[13px] text-destructive">{error}</p> : null}
       <div className="mt-5 flex flex-col items-start gap-3">
         <Button

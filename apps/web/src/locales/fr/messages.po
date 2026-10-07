@@ -2915,8 +2915,6 @@ msgstr "Chargement des fournisseurs vocaux…"
 #: src/pages/IntegrationSetup.tsx
 #: src/pages/ModelBackupsSettings.tsx
 #: src/pages/Onboarding.tsx
-#: src/pages/PeerMessagesOverlay.tsx
-#: src/pages/RoutineRunHistory.tsx
 #: src/pages/Shell.tsx
 msgid "Loading…"
 msgstr "Chargement…"
