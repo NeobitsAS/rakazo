@@ -9,10 +9,9 @@ import {
   Field,
   FieldLabel,
   Input,
-  NativeSelect,
-  NativeSelectOption,
+  OptionSelect,
 } from "@rakazo/ui-web";
-import { XIcon } from "lucide-react";
+import { Check, XIcon } from "lucide-react";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { rpc } from "../lib/rpc";
 import { errorText } from "../lib/user-error";
@@ -40,6 +39,8 @@ export function VoiceSettingsOverlay({
   const [voiceId, setVoiceId] = useState("");
   const [speechModel, setSpeechModel] = useState("");
   const speechModelSave = useRef<string | null>(null);
+  /** The provider whose voices were asked for last; an older answer is dropped. */
+  const voicesFor = useRef("");
   const [loading, setLoading] = useState(true);
   const [pending, setPending] = useState<"connect" | "disconnect" | "voice" | "test" | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -67,17 +68,33 @@ export function VoiceSettingsOverlay({
     setCredentials(nextCredentials);
     setStatus(nextStatus);
     setProvider(selected);
-    const cred = nextCredentials.find((entry) => entry.provider === selected);
+    await showProvider(selected, nextCredentials);
+  }
+
+  /** Shows a provider's saved settings, and its voices when it is connected. */
+  async function showProvider(id: string, knownCredentials: VoiceCredential[]) {
+    const cred = knownCredentials.find((entry) => entry.provider === id);
     const activeVoice = cred?.voiceId ?? "";
+    voicesFor.current = id;
     setVoiceId(activeVoice);
     setSpeechModel(cred?.speechModel ?? "");
-    if (cred) {
-      const listed = await rpc.voice.voices({ provider: selected });
-      setVoices(listed);
-      if (!activeVoice && listed[0]) setVoiceId(listed[0].id);
-    } else {
-      setVoices([]);
-    }
+    setVoices([]);
+    if (!cred) return;
+    const listed = await rpc.voice.voices({ provider: id });
+    if (voicesFor.current !== id) return;
+    setVoices(listed);
+    if (!activeVoice && listed[0]) setVoiceId(listed[0].id);
+  }
+
+  /** Switches the detail pane; only a connected provider's voices are fetched. */
+  function selectProvider(id: string) {
+    setProvider(id);
+    setApiKey("");
+    setError(null);
+    setNotice(null);
+    void showProvider(id, credentials).catch((err: unknown) =>
+      setError(errorText(err, t`Could not load voice settings`)),
+    );
   }
 
   useEffect(() => {
@@ -204,7 +221,9 @@ export function VoiceSettingsOverlay({
         </div>
       ) : null}
 
-      <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-hidden px-6 py-6 sm:px-8 md:flex-row">
+      <div
+        className={`flex min-h-0 flex-1 flex-col gap-6 overflow-hidden px-6 pb-6 sm:px-8 md:flex-row ${embedded ? "" : "pt-6"}`}
+      >
         <div className="flex min-h-0 shrink-0 flex-col md:w-[280px]">
           <div className="mb-3 text-[13.5px] text-muted-foreground">
             <Trans>Providers</Trans>
@@ -217,18 +236,7 @@ export function VoiceSettingsOverlay({
                   key={entry.id}
                   type="button"
                   disabled={busy}
-                  onClick={() => {
-                    setProvider(entry.id);
-                    setApiKey("");
-                    setError(null);
-                    setNotice(null);
-                    markPending("voice");
-                    void refresh(entry.id)
-                      .catch((err: unknown) =>
-                        setError(errorText(err, t`Could not load voice settings`)),
-                      )
-                      .finally(() => markPending(null));
-                  }}
+                  onClick={() => selectProvider(entry.id)}
                   className={`flex w-full items-center gap-3 border-b border-border px-3.5 py-3 text-start transition-colors last:border-0 disabled:pointer-events-none disabled:opacity-50 ${
                     entry.id === provider ? "bg-muted" : "hover:bg-accent"
                   }`}
@@ -248,13 +256,16 @@ export function VoiceSettingsOverlay({
                       <Trans>Connected</Trans>
                     </span>
                   ) : null}
+                  {entry.id === provider ? (
+                    <Check aria-hidden="true" className="size-4 shrink-0 text-foreground" />
+                  ) : null}
                 </button>
               );
             })}
           </div>
         </div>
 
-        <div className="rk-scroll min-h-0 min-w-0 flex-1 overflow-y-auto">
+        <div className="rk-scroll -m-1 min-h-0 min-w-0 flex-1 overflow-y-auto p-1">
           {loading ? (
             <p className="text-sm text-muted-foreground">
               <Trans>Loading voice providers…</Trans>
@@ -314,20 +325,18 @@ export function VoiceSettingsOverlay({
                     <FieldLabel htmlFor={voiceSelectId}>
                       <Trans>Voice</Trans>
                     </FieldLabel>
-                    <NativeSelect
+                    <OptionSelect
                       id={voiceSelectId}
-                      className="w-full"
                       value={voiceId}
                       disabled={busy}
-                      onChange={(event) => void chooseVoice(event.target.value)}
-                    >
-                      {voiceOptions.map((voice) => (
-                        <NativeSelectOption key={voice.id} value={voice.id}>
-                          {voice.label}
-                          {voice.description ? ` · ${voice.description}` : ""}
-                        </NativeSelectOption>
-                      ))}
-                    </NativeSelect>
+                      onValueChange={(next) => void chooseVoice(next)}
+                      options={voiceOptions.map((voice) => ({
+                        value: voice.id,
+                        label: voice.description
+                          ? `${voice.label} · ${voice.description}`
+                          : voice.label,
+                      }))}
+                    />
                   </Field>
                   {selected.id === "fish-audio" ? (
                     <Field className="mt-6">
@@ -355,7 +364,7 @@ export function VoiceSettingsOverlay({
                   <Button
                     type="button"
                     variant="secondary"
-                    className="mt-4 rounded-full"
+                    className="mt-4"
                     disabled={busy || !status?.ready}
                     onClick={() => void testVoice()}
                   >

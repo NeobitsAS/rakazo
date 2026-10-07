@@ -14,10 +14,10 @@ test("account settings language picker includes Simplified Chinese and applies i
 
   const picker = settings.getByTestId("ui-locale-select");
   await picker.click();
-  await expect(settings.getByRole("option", { name: "简体中文", exact: true })).toBeVisible();
+  await expect(page.getByRole("option", { name: "简体中文", exact: true })).toBeVisible();
   await captureScreenshot(page, testInfo, "ui-locale-picker-zh-cn");
 
-  await settings.getByRole("option", { name: "简体中文", exact: true }).click();
+  await page.getByRole("option", { name: "简体中文", exact: true }).click();
   await expect(settings.getByRole("heading", { name: "账户", exact: true })).toBeVisible();
   await expect(settings.getByRole("heading", { name: "语言", exact: true })).toBeVisible();
   await expect(picker).toHaveText("简体中文");
@@ -37,10 +37,10 @@ test("account settings language picker includes Korean and applies it", async ({
 
   const picker = settings.getByTestId("ui-locale-select");
   await picker.click();
-  await expect(settings.getByRole("option", { name: "한국어", exact: true })).toBeVisible();
+  await expect(page.getByRole("option", { name: "한국어", exact: true })).toBeVisible();
   await captureScreenshot(page, testInfo, "ui-locale-picker-ko");
 
-  await settings.getByRole("option", { name: "한국어", exact: true }).click();
+  await page.getByRole("option", { name: "한국어", exact: true }).click();
   await expect(settings.getByRole("heading", { name: "계정", exact: true })).toBeVisible();
   await expect(settings.getByRole("heading", { name: "언어", exact: true })).toBeVisible();
   await expect(picker).toHaveText("한국어");
@@ -60,10 +60,10 @@ test("account settings language picker includes Spanish and applies it", async (
 
   const picker = settings.getByTestId("ui-locale-select");
   await picker.click();
-  await expect(settings.getByRole("option", { name: "Español", exact: true })).toBeVisible();
+  await expect(page.getByRole("option", { name: "Español", exact: true })).toBeVisible();
   await captureScreenshot(page, testInfo, "ui-locale-picker-es");
 
-  await settings.getByRole("option", { name: "Español", exact: true }).click();
+  await page.getByRole("option", { name: "Español", exact: true }).click();
   await expect(settings.getByRole("heading", { name: "Cuenta", exact: true })).toBeVisible();
   await expect(settings.getByRole("heading", { name: "Idioma", exact: true })).toBeVisible();
   await expect(picker).toHaveText("Español");
@@ -84,10 +84,10 @@ test("account settings language picker includes Russian and persists it", async 
 
   const picker = settings.getByTestId("ui-locale-select");
   await picker.click();
-  await expect(settings.getByRole("option", { name: "Русский", exact: true })).toBeVisible();
+  await expect(page.getByRole("option", { name: "Русский", exact: true })).toBeVisible();
   await captureScreenshot(page, testInfo, "ui-locale-picker-ru");
 
-  await settings.getByRole("option", { name: "Русский", exact: true }).click();
+  await page.getByRole("option", { name: "Русский", exact: true }).click();
   await expect(settings.getByRole("heading", { name: "Общие", exact: true })).toBeVisible();
   await expect(settings.getByRole("heading", { name: "Язык", exact: true })).toBeVisible();
   await expect(picker).toHaveText("Русский");
@@ -112,10 +112,10 @@ test("account settings language picker includes French and persists it", async (
 
   const picker = settings.getByTestId("ui-locale-select");
   await picker.click();
-  await expect(settings.getByRole("option", { name: "Français", exact: true })).toBeVisible();
+  await expect(page.getByRole("option", { name: "Français", exact: true })).toBeVisible();
   await captureScreenshot(page, testInfo, "ui-locale-picker-fr");
 
-  await settings.getByRole("option", { name: "Français", exact: true }).click();
+  await page.getByRole("option", { name: "Français", exact: true }).click();
   await expect(settings.getByRole("heading", { name: "Général", exact: true })).toBeVisible();
   await expect(settings.getByRole("heading", { name: "Compte", exact: true })).toBeVisible();
   await expect(settings.getByRole("heading", { name: "Langue", exact: true })).toBeVisible();

@@ -88,7 +88,8 @@ test("Korean messaging settings show linked chat apps, channels, and connections
   await page.getByRole("button", { name: "Settings" }).click();
   const settings = page.getByTestId("user-settings");
   await settings.getByTestId("ui-locale-select").click();
-  await settings.getByRole("option", { name: "한국어", exact: true }).click();
+  // The menu opens outside the dialog, so its options are found on the page.
+  await page.getByRole("option", { name: "한국어", exact: true }).click();
   await expect(settings.getByRole("heading", { name: "메시징", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "메시징 설정 관리" }).click();
 

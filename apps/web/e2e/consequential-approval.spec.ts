@@ -31,11 +31,11 @@ test("actions run by default while optional confirmations live in advanced user 
   await expect(settings).toBeFocused();
   await expect(settings.getByText("Advanced", { exact: true })).toBeVisible();
   await expect(settings.getByText("Optional controls most people never need")).toHaveCount(0);
-  await expect(settings.getByRole("heading", { name: "Action confirmations" })).not.toBeVisible();
+  await expect(settings.getByTestId("approval-email-toggle")).not.toBeVisible();
   await captureScreenshot(page, testInfo, "51-user-settings-advanced-collapsed");
 
   await settings.getByText("Advanced", { exact: true }).click();
-  await expect(settings.getByRole("heading", { name: "Action confirmations" })).toBeVisible();
+  await expect(settings.getByTestId("approval-email-toggle")).toBeVisible();
   await expect(
     settings.getByText(
       "Bots act without asking by default. Add an exception only when you want to review a type of action first.",
@@ -45,8 +45,8 @@ test("actions run by default while optional confirmations live in advanced user 
   await expect(settings.getByTestId("auto-review-toggle")).toBeVisible();
   await expect(settings.getByTestId("auto-review-toggle")).not.toBeChecked();
   await expect(settings.getByText("Flag unexpected actions")).toBeVisible();
-  await settings.getByRole("button", { name: "Ask before sending external email" }).click();
-  await expect(settings.getByText("Ask before email actions", { exact: true })).toBeVisible();
+  await settings.getByTestId("approval-email-toggle").click();
+  await expect(settings.getByTestId("approval-email-toggle")).toBeChecked();
   await captureScreenshot(page, testInfo, "52-advanced-action-confirmations");
   await settings.getByRole("button", { name: "Close user settings" }).click();
 
