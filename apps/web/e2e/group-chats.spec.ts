@@ -23,7 +23,7 @@ test("create group from + and see two bots in one transcript", async ({ page }, 
   const writerId = await createBot(page, "Research Writer");
 
   await openNewGroup(page);
-  await page.locator("label:has-text('Name') input").fill("Draft team");
+  await page.getByLabel("Name", { exact: true }).fill("Draft team");
   const panel = page.getByTestId("side-panel");
   await panel.getByRole("button", { name: "Researcher" }).click();
   await panel.getByRole("button", { name: "Research Writer" }).click();
@@ -108,7 +108,7 @@ test("create group from + and see two bots in one transcript", async ({ page }, 
 
   await page.getByTestId("bot-settings-trigger").click();
   const desktopSettings = page.getByTestId("side-panel");
-  const groupName = desktopSettings.locator("label:has-text('Name') input");
+  const groupName = desktopSettings.getByLabel("Name", { exact: true });
   await groupName.fill("Unsaved Draft team name");
   const sidebar = page.locator("aside").first();
   await sidebar.getByRole("button", { name: /^Review team/ }).click();

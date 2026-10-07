@@ -3,7 +3,7 @@ import { t } from "@lingui/core/macro";
 import { Trans, useLingui } from "@lingui/react/macro";
 import type { RunActivityRow, RunStatus } from "@rakazo/contracts";
 import { isAgedStuckWork } from "@rakazo/core";
-import { Button, Input, Label, NativeSelect, NativeSelectOption } from "@rakazo/ui-web";
+import { Button, Input, Label, OptionSelect } from "@rakazo/ui-web";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import type { ActivityListFilters } from "../lib/activity-list-filters";
 import {
@@ -240,25 +240,17 @@ function ActivityFilters({
         <Label htmlFor={statusId} className="text-[12.5px] text-muted-foreground/80">
           <Trans>Status</Trans>
         </Label>
-        <NativeSelect
+        <OptionSelect<ActivityListFilters["status"]>
           id={statusId}
           data-testid="activity-status-filter"
           value={filters.status}
-          onChange={(event) =>
-            onChange({
-              ...filters,
-              status: event.target.value as ActivityListFilters["status"],
-            })
-          }
-          className="mt-1 w-full"
-        >
-          <NativeSelectOption value="all">{t`All statuses`}</NativeSelectOption>
-          {STATUS_FILTERS.map((status) => (
-            <NativeSelectOption key={status} value={status}>
-              {statusLabel(status)}
-            </NativeSelectOption>
-          ))}
-        </NativeSelect>
+          onValueChange={(status) => onChange({ ...filters, status })}
+          options={[
+            { value: "all", label: t`All statuses` },
+            ...STATUS_FILTERS.map((status) => ({ value: status, label: statusLabel(status) })),
+          ]}
+          className="mt-1"
+        />
       </div>
       <div>
         <Label htmlFor={fromId} className="text-[12.5px] text-muted-foreground/80">

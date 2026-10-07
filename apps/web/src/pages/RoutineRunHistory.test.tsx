@@ -12,7 +12,10 @@ vi.mock("@lingui/core/macro", () => ({
   t: (parts: TemplateStringsArray) => parts.join(""),
 }));
 vi.mock("@lingui/react/macro", () => ({
-  useLingui: () => ({ i18n: { locale: "en" } }),
+  useLingui: () => ({
+    i18n: { locale: "en" },
+    t: (parts: TemplateStringsArray) => parts.join(""),
+  }),
   Trans: ({ children }: { children: ReactNode }) => children,
 }));
 vi.mock("@rakazo/ui-web", () => ({

@@ -1,6 +1,6 @@
 import type { Page } from "@playwright/test";
 import { expect, test } from "@playwright/test";
-import { captureScreenshot, completeOnboarding, signup } from "./helpers";
+import { captureScreenshot, chooseOption, completeOnboarding, signup } from "./helpers";
 
 /** Activity rows sit above `[data-sidebar-group]` bots; match their aria-label. */
 function activityRow(page: Page, botName: string) {
@@ -116,7 +116,7 @@ test("sidebar Now and Recent surface active and terminal runs", async ({ page },
   await page.getByTestId("activity-reset-filters").click();
   await expect(activityRow(page, "Chief")).toBeVisible();
 
-  await page.getByTestId("activity-status-filter").selectOption("failed");
+  await chooseOption(page.getByTestId("activity-status-filter"), "Failed");
   await expect(aside.getByText("No runs match these filters.")).toBeVisible();
   await expect(activityRow(page, "Chief")).toHaveCount(0);
   await page.getByTestId("activity-reset-filters").click();

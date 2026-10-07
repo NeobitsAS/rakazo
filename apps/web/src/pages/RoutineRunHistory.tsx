@@ -4,6 +4,7 @@ import { Button } from "@rakazo/ui-web";
 import { ChevronDown } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { Loader } from "../components/PageLoader";
 import { rpc } from "../lib/rpc";
 import { formatToolActivityDuration } from "../lib/tool-activity-view";
 import { statusLabel, statusTone } from "./ActivityList";
@@ -180,9 +181,9 @@ export function RoutineRunHistory({ routineId }: { routineId: string }) {
           <Trans>Could not load run history</Trans>
         </p>
       ) : runs === null ? (
-        <p role="status" className="mt-2 text-[13.5px]">
-          <Trans>Loading…</Trans>
-        </p>
+        <div role="status" className="mt-2">
+          <Loader />
+        </div>
       ) : runs.length === 0 ? (
         <p className="mt-2 text-[13.5px]">
           <Trans>No runs yet</Trans>

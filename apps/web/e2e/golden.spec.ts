@@ -129,9 +129,9 @@ test("takeover, routine, plugins, and export are reachable", async ({ page }, te
   await captureScreenshot(page, testInfo, "09a-computer-takeover-skipped");
 
   await page.getByRole("button", { name: "Create Routine" }).click();
-  await page.locator("label:has-text('Name') input").fill("Monday briefing");
+  await page.getByLabel("Name", { exact: true }).fill("Monday briefing");
   await page
-    .locator("label:has-text('Instruction') textarea")
+    .getByLabel("Instruction", { exact: true })
     .fill("write a file in your home called notes/result.txt that says routine-ok");
   await page.getByRole("button", { name: "Add trigger" }).click();
   await page.getByRole("menuitem", { name: "On a schedule" }).hover();
@@ -478,7 +478,7 @@ test("bot context menu pins, duplicates, edits, and confirms deletion", async ({
 
   await chief.click({ button: "right" });
   await page.getByRole("menuitem", { name: "Edit Profile" }).click();
-  await expect(page.locator("label:has-text('Name') input")).toHaveValue("Chief");
+  await expect(page.getByLabel("Name", { exact: true })).toHaveValue("Chief");
   await captureScreenshot(page, testInfo, "19-edit-profile");
 });
 

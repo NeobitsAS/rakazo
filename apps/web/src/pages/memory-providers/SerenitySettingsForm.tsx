@@ -110,7 +110,7 @@ export function SerenitySettingsForm({ busy, onConnect }: MemoryProviderSettings
       <Button
         type="button"
         variant="secondary"
-        className="mt-5 rounded-full"
+        className="mt-5"
         size="sm"
         disabled={busy || token.trim().length < 8}
         onClick={() => void connect()}

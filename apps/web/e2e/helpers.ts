@@ -108,12 +108,12 @@ export async function createBotFromPicker(
   const name = options.name ?? "New Bot";
   await openNewBot(page);
   const form = page.getByTestId("create-bot-form");
-  await form.locator("label:has-text('Name') input").fill(name);
+  await form.getByLabel("Name", { exact: true }).fill(name);
   if (options.title != null) {
-    await form.locator("label:has-text('Title') input").fill(options.title);
+    await form.getByLabel("Title", { exact: true }).fill(options.title);
   }
   if (options.description != null) {
-    await form.locator("label:has-text('Description') textarea").fill(options.description);
+    await form.getByLabel("Description", { exact: true }).fill(options.description);
   }
   if (options.computerMode === "dedicated") {
     await form.getByTestId("create-bot-private").click();

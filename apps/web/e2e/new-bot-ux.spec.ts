@@ -29,15 +29,15 @@ test("create opens form, then empty chat; picker lists bots; sidebar collapses",
   const form = page.getByTestId("create-bot-form");
   await expect(page.getByTestId("side-panel")).toHaveAttribute("data-panel", "create");
   await expect(form).toBeVisible();
-  await expect(form.locator("label:has-text('Name') input")).toBeVisible();
-  await expect(form.locator("label:has-text('Title') input")).toBeVisible();
-  await expect(form.locator("label:has-text('Description') textarea")).toBeVisible();
+  await expect(form.getByLabel("Name", { exact: true })).toBeVisible();
+  await expect(form.getByLabel("Title", { exact: true })).toBeVisible();
+  await expect(form.getByLabel("Description", { exact: true })).toBeVisible();
   await expect(form.getByTestId("create-bot-computer")).toBeVisible();
   await expect(form.getByTestId("create-bot-team")).toBeVisible();
   await expect(form.getByTestId("create-bot-private")).toBeVisible();
   await captureScreenshot(page, testInfo, "create-bot-form");
 
-  await form.locator("label:has-text('Name') input").fill("New Bot");
+  await form.getByLabel("Name", { exact: true }).fill("New Bot");
   await form.getByRole("button", { name: "Create", exact: true }).click();
   await page.waitForURL(/\/app\/[^/]+$/);
   await expect(page.getByPlaceholder("Message New Bot")).toBeVisible();
@@ -177,9 +177,9 @@ test("second bot from plus opens create form before persist", async ({ page }, t
   await openNewBot(page);
   const form = page.getByTestId("create-bot-form");
   await expect(form).toBeVisible();
-  await form.locator("label:has-text('Name') input").fill("Researcher");
-  await form.locator("label:has-text('Title') input").fill("Finds sources");
-  await form.locator("label:has-text('Description') textarea").fill("Briefs from the web.");
+  await form.getByLabel("Name", { exact: true }).fill("Researcher");
+  await form.getByLabel("Title", { exact: true }).fill("Finds sources");
+  await form.getByLabel("Description", { exact: true }).fill("Briefs from the web.");
   await captureScreenshot(page, testInfo, "second-bot-create-form");
 
   const create = page.waitForResponse(

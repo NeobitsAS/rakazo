@@ -107,7 +107,7 @@ export function ComputerUpdateProgress({ onCompleted }: { onCompleted: () => voi
         {selected ? (
           <DialogContent
             showCloseButton={false}
-            className="gap-0 overflow-hidden rounded-3xl border border-border bg-card p-0 sm:max-w-xl"
+            className="gap-0 overflow-hidden rounded-3xl border border-border p-0 sm:max-w-xl"
             aria-describedby={undefined}
             data-testid="computer-update-dialog"
           >

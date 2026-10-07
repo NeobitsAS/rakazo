@@ -126,14 +126,14 @@ test("routine test-run completes and survives reload", async ({ page }, testInfo
   await page.getByTitle("Agent computer").click();
   await expect(page.getByRole("button", { name: "Test run" })).toHaveCount(0);
   await page.getByRole("button", { name: "Create Routine" }).click();
-  await page.locator("label:has-text('Name') input").fill("Daily verification");
+  await page.getByLabel("Name", { exact: true }).fill("Daily verification");
   await page
-    .locator("label:has-text('Instruction') textarea")
+    .getByLabel("Instruction", { exact: true })
     .fill("write routine-run-now-ok into the durable task result");
   await page.getByRole("button", { name: "Add trigger" }).click();
   await page.getByRole("menuitem", { name: "On a schedule" }).hover();
   await page.getByRole("menuitem", { name: "Weekdays", exact: true }).click();
-  await expect(page.getByLabel("How often")).toHaveValue("Weekdays");
+  await expect(page.getByLabel("How often")).toHaveText("Weekdays");
   await captureScreenshot(page, testInfo, "32-routine-configured");
 
   const saved = page.waitForResponse(
