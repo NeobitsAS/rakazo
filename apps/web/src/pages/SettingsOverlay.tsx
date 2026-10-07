@@ -245,7 +245,6 @@ export function SettingsOverlay({
                   onOpenMessaging={
                     onOpenMessaging ? () => leaveSettings(onOpenMessaging) : undefined
                   }
-                  isDeploymentOwner={isDeploymentOwner}
                 />
               ) : null}
               {section === "usage" ? (

@@ -1,6 +1,5 @@
 import { expect, type Route, test } from "@playwright/test";
 import type { McpServer } from "@rakazo/contracts";
-import { MCP_OAUTH_CHANNEL } from "../src/lib/mcp-connect";
 import { captureScreenshot, completeOnboarding, signup } from "./helpers";
 
 test("connects an MCP server through the OAuth popup callback", async ({ page }, testInfo) => {
@@ -83,41 +82,37 @@ test("connects an MCP server through the OAuth popup callback", async ({ page },
     });
   });
 
-  await page.getByText("Integrations", { exact: true }).click();
-  await page.getByTestId("integrations-advanced").evaluate((element) => {
-    (element as HTMLDetailsElement).open = true;
-  });
-  await page.getByRole("button", { name: "Manage MCP servers", exact: true }).click();
-  await expect(page.getByRole("heading", { name: "MCP servers" })).toBeVisible();
-  await expect(page.getByText("Linear MCP", { exact: true })).toBeVisible();
-  await expect(page.getByLabel("Access token (optional)")).toBeHidden();
+  await page.getByRole("button", { name: "Apps", exact: true }).click();
+  const apps = page.getByRole("dialog");
+  await expect(apps.getByText("Linear MCP", { exact: true })).toBeVisible();
+  await apps.getByRole("button", { name: "Edit Linear MCP", exact: true }).click();
+  await expect(apps.getByRole("heading", { name: "Linear MCP", exact: true })).toBeVisible();
+  await expect(apps.getByText("Not signed in.", { exact: true })).toBeVisible();
+  // Until it signs in, the server also takes an access token.
+  await expect(apps.getByLabel("Access token")).toBeVisible();
   await captureScreenshot(page, testInfo, "mcp-oauth-ready");
 
-  await page.getByText("Advanced", { exact: true }).click();
-  await expect(page.getByLabel("Access token (optional)")).toBeVisible();
-  await page.getByText("Advanced", { exact: true }).click();
-
   const popupPromise = page.waitForEvent("popup");
-  await page.getByRole("button", { name: "Connect OAuth", exact: true }).click();
+  await apps.getByRole("button", { name: "Connect", exact: true }).click();
   const popup = await popupPromise;
   await completionStarted;
   await expect(popup.getByText("Finishing MCP connection…", { exact: true })).toBeVisible();
   await captureScreenshot(popup, testInfo, "mcp-oauth-callback");
 
   releaseCompletion();
-  await expect(page.getByText("OAuth connected", { exact: true })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Reconnect OAuth", exact: true })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Disconnect", exact: true })).toBeVisible();
+  await expect(apps.getByText("Signed in with the service.", { exact: true })).toBeVisible();
+  await expect(apps.getByRole("button", { name: "Signed in", exact: true })).toBeVisible();
+  await expect(apps.getByLabel("Access token")).toBeHidden();
   await expect.poll(() => popup.isClosed()).toBe(true);
   await captureScreenshot(page, testInfo, "mcp-oauth-connected");
 
+  // Apps reads the server again when it opens, and offers to sign in again once it expired.
   oauthStatus = "reconnect";
   hasSecret = true;
-  await page.evaluate((channelName) => {
-    const channel = new BroadcastChannel(channelName);
-    channel.postMessage({ type: "mcp-oauth-complete" });
-    channel.close();
-  }, MCP_OAUTH_CHANNEL);
-  await expect(page.getByText("OAuth expired", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Close apps" }).click();
+  await page.getByRole("button", { name: "Apps", exact: true }).click();
+  await apps.getByRole("button", { name: "Edit Linear MCP", exact: true }).click();
+  await expect(apps.getByText("The sign-in has expired.", { exact: true })).toBeVisible();
+  await expect(apps.getByRole("button", { name: "Sign in again", exact: true })).toBeVisible();
   await captureScreenshot(page, testInfo, "mcp-oauth-expired");
 });

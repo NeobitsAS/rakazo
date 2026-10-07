@@ -15,7 +15,6 @@ import {
 import { Check } from "lucide-react";
 import type { RefObject } from "react";
 import { useId, useRef, useState, useSyncExternalStore } from "react";
-import { Link } from "react-router-dom";
 import { AccountAccess } from "../components/AccountAccess";
 import { ApprovalRulesSettings } from "../components/ApprovalRulesSettings";
 import { SuccessPop } from "../components/ai/primitives";
@@ -54,7 +53,6 @@ export type SettingsGeneralProps = {
   onAvatarStyleChange: (style: AvatarStyle) => Promise<void>;
   messagingEnabled?: boolean;
   onOpenMessaging?: () => void;
-  isDeploymentOwner?: boolean;
 };
 
 export function GeneralSettingsPanels({
@@ -64,7 +62,6 @@ export function GeneralSettingsPanels({
   onAvatarStyleChange,
   messagingEnabled = false,
   onOpenMessaging,
-  isDeploymentOwner = false,
 }: SettingsGeneralProps) {
   const { t } = useLingui();
   const [accountSecurity, setAccountSecurity] = useState<AccountSecurity | null>(null);
@@ -233,12 +230,6 @@ export function GeneralSettingsPanels({
           </p>
         ) : null}
       </section>
-
-      {isDeploymentOwner ? (
-        <Button variant="outline" render={<Link to="/integrations/setup" />}>
-          <Trans>Server integrations</Trans>
-        </Button>
-      ) : null}
 
       <Disclosure
         data-testid="advanced-settings"
