@@ -21,6 +21,9 @@ import type { MessagingPlatform } from "./chat-sdk-surface.js";
 import { LazyLarkAdapter } from "./lark/lazy-adapter.js";
 import { Domain } from "./lark/thread-id.js";
 import { LazyPhotonAdapter } from "./photon/lazy-adapter.js";
+import type { GoogleChatCredentials } from "./gchat-auth.js";
+import { createGoogleChatAuthClient } from "./gchat-auth.js";
+import { GoogleChatPubSubAdapter } from "./gchat-pubsub.js";
 import { isVitestRuntime } from "./test-runtime.js";
 
 /**
@@ -54,6 +57,12 @@ export interface MessagingEnvironmentValues {
   photonWebhookSecret?: string | undefined;
   /** Extra named Photon projects (PHOTON_PROJECT_ID_<NAME>), each with its own number. */
   photonProjects?: PhotonProjectCredentials[] | undefined;
+  googleChatSubscription?: string | undefined;
+  googleChatCredentials?: string | undefined;
+  googleChatWorkloadIdentityProvider?: string | undefined;
+  googleChatServiceAccount?: string | undefined;
+  googleChatBotUserId?: string | undefined;
+  awsRegion?: string | undefined;
 }
 
 export function messagingEnvFromProcess(
@@ -86,6 +95,12 @@ export function messagingEnvFromProcess(
     photonProjectSecret: clean(env.PHOTON_PROJECT_SECRET),
     photonWebhookSecret: clean(env.PHOTON_WEBHOOK_SECRET),
     photonProjects: photonProjectsFromEnv(env),
+    googleChatSubscription: clean(env.GOOGLE_CHAT_PUBSUB_SUBSCRIPTION),
+    googleChatCredentials: clean(env.GOOGLE_CHAT_CREDENTIALS),
+    googleChatWorkloadIdentityProvider: clean(env.GOOGLE_CHAT_WORKLOAD_IDENTITY_PROVIDER),
+    googleChatServiceAccount: clean(env.GOOGLE_CHAT_SERVICE_ACCOUNT),
+    googleChatBotUserId: clean(env.GOOGLE_CHAT_BOT_USER_ID),
+    awsRegion: clean(env.AWS_REGION),
   };
 }
 
@@ -166,6 +181,8 @@ export function photonProjectsFromEnv(
  * including a lazy outbound send, initializes the chat, and a second poller
  * steals Telegram's single getUpdates slot, so both processes lose 409
  * Conflicts and messages stop arriving. Send-only callers leave it false.
+ * Google Chat's Pub/Sub pull follows the same rule: a puller with no sink
+ * acknowledges and loses messages.
  */
 export function messagingPlatformsFromEnv(
   env: MessagingEnvironmentValues,
@@ -381,7 +398,41 @@ export function messagingPlatformsFromEnv(
     });
   }
 
+  const googleChatCredentials = googleChatCredentialsFromEnv(env);
+  if (env.googleChatSubscription && googleChatCredentials) {
+    platforms.push({
+      provider: "gchat",
+      capabilities: { direct: true, groups: false, receipt: null },
+      // Pulls its events from Pub/Sub like Telegram's long-poll: only in the
+      // process with the inbound sink, or the other one takes them and drops them.
+      adapter: new GoogleChatPubSubAdapter({
+        subscription: env.googleChatSubscription,
+        auth: createGoogleChatAuthClient(googleChatCredentials),
+        botUserId: env.googleChatBotUserId,
+        poll: options.pollInboundMessages ?? false,
+      }),
+    });
+  }
+
   return platforms;
+}
+
+/** A service account key, else keyless federation from the deployment's AWS identity. */
+function googleChatCredentialsFromEnv(
+  env: MessagingEnvironmentValues,
+): GoogleChatCredentials | null {
+  if (env.googleChatCredentials) {
+    return { kind: "service-account", keyJson: env.googleChatCredentials };
+  }
+  if (env.googleChatWorkloadIdentityProvider && env.googleChatServiceAccount && env.awsRegion) {
+    return {
+      kind: "aws-workload-identity",
+      provider: env.googleChatWorkloadIdentityProvider,
+      serviceAccount: env.googleChatServiceAccount,
+      awsRegion: env.awsRegion,
+    };
+  }
+  return null;
 }
 
 /** Never live under the test runner; tests build surfaces explicitly. */
