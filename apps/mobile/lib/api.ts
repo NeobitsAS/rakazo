@@ -941,6 +941,7 @@ const MESSAGING_PROVIDER_LABELS: Record<string, string> = {
   whatsapp: "WhatsApp",
   telegram: "Telegram",
   lark: "Feishu",
+  gchat: "Google Chat",
 };
 
 export function messagingProviderLabel(provider: string, transport?: string): string {
