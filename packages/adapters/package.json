@@ -12,6 +12,8 @@
   },
   "dependencies": {
     "@asciidev/box-sdk": "0.0.34",
+    "@aws-sdk/credential-provider-node": "3.972.82",
+    "@chat-adapter/gchat": "4.40.0",
     "@chat-adapter/slack": "4.40.0",
     "@chat-adapter/state-memory": "4.40.0",
     "@chat-adapter/telegram": "4.40.0",
@@ -33,6 +35,7 @@
     "chat-adapter-lark": "0.3.1",
     "chat-adapter-sendblue": "0.2.0",
     "d3-dsv": "3.0.1",
+    "google-auth-library": "10.5.0",
     "graphile-worker": "0.17.3",
     "jsdom": "30.0.1",
     "koffi": "3.2.1",

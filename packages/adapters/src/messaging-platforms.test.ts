@@ -27,7 +27,17 @@ const fullEnv: MessagingEnvironmentValues = {
   larkAppId: "cli-fake",
   larkAppSecret: "lark-secret",
   larkVerificationToken: "lark-verify",
+  googleChatSubscription: "projects/rakazo-test/subscriptions/chat-events",
+  googleChatWorkloadIdentityProvider:
+    "//iam.googleapis.com/projects/123/locations/global/workloadIdentityPools/rakazo/providers/aws",
+  googleChatServiceAccount: "rakazo-chat@rakazo-test.iam.gserviceaccount.com",
+  awsRegion: "eu-west-1",
 };
+
+const googleChatKey = JSON.stringify({
+  client_email: "rakazo-chat@rakazo-test.iam.gserviceaccount.com",
+  private_key: "unused",
+});
 
 function providers(env: MessagingEnvironmentValues): string[] {
   return messagingPlatformsFromEnv(env).map((platform) => platform.provider);
@@ -36,7 +46,14 @@ function providers(env: MessagingEnvironmentValues): string[] {
 describe("messagingPlatformsFromEnv", () => {
   it("mounts nothing without credentials and everything with full credentials", () => {
     expect(providers({})).toEqual([]);
-    expect(providers(fullEnv)).toEqual(["sendblue", "slack", "whatsapp", "telegram", "lark"]);
+    expect(providers(fullEnv)).toEqual([
+      "sendblue",
+      "slack",
+      "whatsapp",
+      "telegram",
+      "lark",
+      "gchat",
+    ]);
   });
 
   it("requires all four sendblue values", () => {
@@ -82,6 +99,56 @@ describe("messagingPlatformsFromEnv", () => {
         larkVerificationToken: "lark-verify",
       }),
     ).toEqual(["lark"]);
+  });
+
+  it("mounts Google Chat with a subscription and either kind of credentials", () => {
+    const keyless = {
+      googleChatSubscription: fullEnv.googleChatSubscription,
+      googleChatWorkloadIdentityProvider: fullEnv.googleChatWorkloadIdentityProvider,
+      googleChatServiceAccount: fullEnv.googleChatServiceAccount,
+      awsRegion: fullEnv.awsRegion,
+    };
+    expect(providers(keyless)).toEqual(["gchat"]);
+    for (const key of Object.keys(keyless)) {
+      expect(providers({ ...keyless, [key]: undefined })).toEqual([]);
+    }
+    expect(
+      providers({
+        googleChatSubscription: fullEnv.googleChatSubscription,
+        googleChatCredentials: googleChatKey,
+      }),
+    ).toEqual(["gchat"]);
+  });
+
+  it("pulls Google Chat events only when asked to poll inbound messages", () => {
+    const poll = (options?: { pollInboundMessages: boolean }) =>
+      (
+        messagingPlatformsFromEnv(fullEnv, options).find(
+          (platform) => platform.provider === "gchat",
+        )!.adapter as unknown as { poll: boolean }
+      ).poll;
+    expect(poll()).toBe(false);
+    expect(poll({ pollInboundMessages: true })).toBe(true);
+  });
+
+  it("maps GOOGLE_CHAT_* process env", () => {
+    expect(
+      messagingEnvFromProcess({
+        GOOGLE_CHAT_PUBSUB_SUBSCRIPTION: " projects/p/subscriptions/s ",
+        GOOGLE_CHAT_CREDENTIALS: " {} ",
+        GOOGLE_CHAT_WORKLOAD_IDENTITY_PROVIDER: " //iam.googleapis.com/provider ",
+        GOOGLE_CHAT_SERVICE_ACCOUNT: " sa@p.iam.gserviceaccount.com ",
+        GOOGLE_CHAT_BOT_USER_ID: " users/1 ",
+        AWS_REGION: " eu-west-1 ",
+      }),
+    ).toMatchObject({
+      googleChatSubscription: "projects/p/subscriptions/s",
+      googleChatCredentials: "{}",
+      googleChatWorkloadIdentityProvider: "//iam.googleapis.com/provider",
+      googleChatServiceAccount: "sa@p.iam.gserviceaccount.com",
+      googleChatBotUserId: "users/1",
+      awsRegion: "eu-west-1",
+    });
   });
 
   it("forces Telegram into webhook mode so worker initialize cannot long-poll", () => {
@@ -166,6 +233,7 @@ describe("messagingPlatformsFromEnv", () => {
     expect(capabilities.whatsapp).toEqual({ direct: true, groups: false, typing: false });
     expect(capabilities.telegram).toEqual({ direct: true, groups: false, typing: false });
     expect(capabilities.lark).toEqual({ direct: true, groups: false, typing: false });
+    expect(capabilities.gchat).toEqual({ direct: true, groups: false, typing: false });
   });
 });
 
