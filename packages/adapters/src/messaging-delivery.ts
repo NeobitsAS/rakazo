@@ -75,11 +75,7 @@ async function mirrorRun(deps: MessagingDeliveryDeps, runId: string): Promise<vo
   if (!run) return;
 
   if (run.trigger === "messaging") {
-    const sourceBlocks = (run.sourceMessage?.blocks ?? []) as MessageBlock[];
-    const channelBlock = sourceBlocks.find(
-      (block): block is Extract<MessageBlock, { kind: "channel_message" }> =>
-        block.kind === "channel_message",
-    );
+    const channelBlock = channelBlockOf(run.sourceMessage?.blocks);
     if (channelBlock) {
       await mirrorChannelRun(deps, run, channelBlock);
       return;
@@ -103,18 +99,59 @@ async function mirrorRun(deps: MessagingDeliveryDeps, runId: string): Promise<vo
     orderBy: { seq: "asc" },
   });
   const rows = messages
-    .map((message) => ({
-      idempotencyKey: `msg:${message.id}`,
-      kind: "dm",
-      identityId: identity.id,
-      body: extractText(message.blocks),
-      sourceMessageId: message.id,
-    }))
+    .map((message) => directOutboxRow(identity.id, message))
     .filter((row) => row.body);
   if (rows.length === 0) return;
   // Atomic dedupe: a concurrent messaging.deliver for the same run loses on
   // the idempotencyKey unique key instead of throwing P2002.
   await deps.prisma.messagingOutbound.createMany({ data: rows, skipDuplicates: true });
+}
+
+/**
+ * Queue one mid-turn progress message (message_user, promoted narration) of
+ * a 1:1 messaging run right away. Chat apps show no typing state, so "I'll
+ * look into that" only helps while the work is still running; the run's own
+ * mirror would send it together with the final reply. The row has the same
+ * idempotency key the run mirror uses, so that mirror skips it later. Group
+ * runs keep mirroring at the end, behind their own ask-answer check.
+ * Returns true when a row was queued and the outbox needs a drain.
+ */
+export async function mirrorMessagingProgress(
+  prisma: PrismaClient,
+  input: { runId: string; messageId: string },
+): Promise<boolean> {
+  const run = await prisma.run.findUnique({
+    where: { id: input.runId },
+    include: { sourceMessage: true },
+  });
+  if (run?.trigger !== "messaging" || channelBlockOf(run.sourceMessage?.blocks)) return false;
+  const identity = await prisma.messagingIdentity.findUnique({ where: { botId: run.botId } });
+  if (!identity) return false;
+  const message = await prisma.message.findUnique({ where: { id: input.messageId } });
+  if (!message) return false;
+  const row = directOutboxRow(identity.id, message);
+  if (!row.body) return false;
+  await prisma.messagingOutbound.createMany({ data: [row], skipDuplicates: true });
+  return true;
+}
+
+function channelBlockOf(
+  blocks: unknown,
+): Extract<MessageBlock, { kind: "channel_message" }> | undefined {
+  return ((blocks ?? []) as MessageBlock[]).find(
+    (block): block is Extract<MessageBlock, { kind: "channel_message" }> =>
+      block.kind === "channel_message",
+  );
+}
+
+function directOutboxRow(identityId: string, message: { id: string; blocks: unknown }) {
+  return {
+    idempotencyKey: `msg:${message.id}`,
+    kind: "dm",
+    identityId,
+    body: extractText(message.blocks),
+    sourceMessageId: message.id,
+  };
 }
 
 /**
