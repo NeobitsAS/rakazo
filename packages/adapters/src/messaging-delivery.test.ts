@@ -7,6 +7,7 @@ import {
   MESSAGING_DM_OUTBOUND_CAP,
   MESSAGING_OUTBOUND_MAX_ATTEMPTS,
   type MessagingDeliveryDeps,
+  mirrorMessagingProgress,
 } from "./messaging-delivery.js";
 
 const context: AdapterContext = {
@@ -74,17 +75,19 @@ function createDeps(overrides: {
   // Stateful identity row so a cached dmThreadId is visible to later reads.
   const identityRow =
     overrides.identity === null ? null : { ...identity, ...(overrides.identity ?? {}) };
+  const messages = overrides.messages ?? [
+    { id: "m-1", blocks: [{ kind: "text", text: "Hello from your bot" }] },
+  ];
   const prisma = {
     run: {
       findUnique: vi.fn(async () => overrides.run ?? messagingRun),
       updateMany: vi.fn(async () => ({ count: 1 })),
     },
     message: {
-      findMany: vi.fn(
-        async () =>
-          overrides.messages ?? [
-            { id: "m-1", blocks: [{ kind: "text", text: "Hello from your bot" }] },
-          ],
+      findMany: vi.fn(async () => messages),
+      findUnique: vi.fn(
+        async ({ where }: { where: { id: string } }) =>
+          messages.find((message) => (message as { id: string }).id === where.id) ?? null,
       ),
     },
     messagingIdentity: {
@@ -536,6 +539,47 @@ describe("deliverMessagingOutbound", () => {
     expect(deps.sendToThread).not.toHaveBeenCalled();
     expect(deps.rows[0]).toEqual(expect.objectContaining({ status: "sent" }));
     expect(deps.jobs.enqueue).not.toHaveBeenCalled();
+  });
+});
+
+describe("mirrorMessagingProgress", () => {
+  it("queues a DM progress message now, and the run's mirror does not send it again", async () => {
+    const deps = createDeps({});
+
+    expect(await mirrorMessagingProgress(deps.prisma, { runId: "run-1", messageId: "m-1" })).toBe(
+      true,
+    );
+    expect(deps.rows).toEqual([
+      expect.objectContaining({ idempotencyKey: "msg:m-1", kind: "dm", status: "pending" }),
+    ]);
+    // Only the run's own mirror marks it mirrored, so recovery still covers the final reply.
+    expect(deps.prisma.run.updateMany).not.toHaveBeenCalled();
+
+    await deliverMessagingOutbound(deps, { runId: "run-1" }, context);
+    expect(deps.rows).toHaveLength(1);
+    expect(deps.sendToThread).toHaveBeenCalledTimes(1);
+    expect(deps.sendToThread).toHaveBeenCalledWith(
+      { threadId: "sendblue:dm-1", body: "Hello from your bot" },
+      context,
+    );
+  });
+
+  it("leaves group, in-app and unlinked runs to the run's own mirror", async () => {
+    const group = createDeps({
+      run: {
+        ...messagingRun,
+        sourceMessage: { blocks: [{ kind: "channel_message", channelId: "ch-1", text: "hi" }] },
+      },
+    });
+    const inApp = createDeps({ run: { ...messagingRun, trigger: "user" } });
+    const unlinked = createDeps({ identity: null });
+
+    for (const deps of [group, inApp, unlinked]) {
+      expect(await mirrorMessagingProgress(deps.prisma, { runId: "run-1", messageId: "m-1" })).toBe(
+        false,
+      );
+      expect(deps.rows).toEqual([]);
+    }
   });
 });
 

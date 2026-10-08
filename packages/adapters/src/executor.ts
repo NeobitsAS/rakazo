@@ -31,6 +31,7 @@ import {
   DEFAULT_CONTEXT_STRATEGY,
   historyCompactJob,
   MEMORY_REVISION_CONFLICT_ERROR,
+  messagingDeliverJob,
   routineJobKey,
   routineWakeupJob,
   runContinueJob,
@@ -262,6 +263,7 @@ import {
 import { loadAgentMemoryContext } from "./memory-context.js";
 import type { MemoryProviderResolver } from "./memory-provider-factory.js";
 import { selectMemoryTools } from "./memory-tools.js";
+import { mirrorMessagingProgress } from "./messaging-delivery.js";
 import {
   isCatalogModelChoice,
   pinnedModelCredentialError,
@@ -3981,6 +3983,19 @@ export function createRunExecutor(deps: ExecutorDeps) {
           pendingProgress = "";
           lastProgressAt = Date.now();
         };
+        const publishUserProgress = async (text: string, markUnread?: boolean) => {
+          const message = await publishMessage(
+            deps,
+            run,
+            "bot",
+            [{ kind: "text", text }],
+            markUnread,
+            userProgressClientNonce(run.id, midTurnProgressCount++),
+          );
+          midTurnUserTexts.push(text);
+          publishedMidTurnUserMessage = true;
+          if (message) await sendProgressToChat(deps, run.id, message.id);
+        };
         const publishMidTurnNarration = async () => {
           const extracted = extractNarrationText(messageSegments, currentTextSegment);
           const narration = clampUserProgressMessage(redactSecrets(extracted.text, runSecrets));
@@ -3994,16 +4009,7 @@ export function createRunExecutor(deps: ExecutorDeps) {
             discardedMidTurnNarration = true;
             return;
           }
-          await publishMessage(
-            deps,
-            run,
-            "bot",
-            [{ kind: "text", text: narration }],
-            undefined,
-            userProgressClientNonce(run.id, midTurnProgressCount++),
-          );
-          midTurnUserTexts.push(narration);
-          publishedMidTurnUserMessage = true;
+          await publishUserProgress(narration);
         };
         const formatObservation = (
           observation: Awaited<ReturnType<SandboxProvider["observe"]>>,
@@ -6147,16 +6153,7 @@ export function createRunExecutor(deps: ExecutorDeps) {
             const truncated = isProgressMessageTruncated(rawMessage);
             await flushProgress();
             await publishMidTurnNarration();
-            await publishMessage(
-              deps,
-              run,
-              "bot",
-              [{ kind: "text", text }],
-              true,
-              userProgressClientNonce(run.id, midTurnProgressCount++),
-            );
-            midTurnUserTexts.push(text);
-            publishedMidTurnUserMessage = true;
+            await publishUserProgress(text, true);
             return finish(
               truncated
                 ? {
@@ -6789,16 +6786,7 @@ export function createRunExecutor(deps: ExecutorDeps) {
               if (assembled.trim()) {
                 const narration = clampUserProgressMessage(redactSecrets(assembled, runSecrets));
                 if (narration && runPromotesMidTurnNarration(run.trigger)) {
-                  await publishMessage(
-                    deps,
-                    run,
-                    "bot",
-                    [{ kind: "text", text: narration }],
-                    undefined,
-                    userProgressClientNonce(run.id, midTurnProgressCount++),
-                  );
-                  midTurnUserTexts.push(narration);
-                  publishedMidTurnUserMessage = true;
+                  await publishUserProgress(narration);
                 } else if (narration) {
                   discardedMidTurnNarration = true;
                 }
@@ -8151,6 +8139,21 @@ function redactBlocks(blocks: MessageBlock[], secrets: string[]): MessageBlock[]
 
 function isUniqueViolation(error: unknown): boolean {
   return Boolean(error && typeof error === "object" && "code" in error && error.code === "P2002");
+}
+
+/** Best effort: a progress message missed here still goes out with the run's final reply. */
+async function sendProgressToChat(
+  deps: ExecutorDeps,
+  runId: string,
+  messageId: string,
+): Promise<void> {
+  try {
+    if (await mirrorMessagingProgress(deps.prisma, { runId, messageId })) {
+      await deps.jobs.enqueue(messagingDeliverJob());
+    }
+  } catch (error) {
+    getLogger().error("messaging progress mirror", error);
+  }
 }
 
 async function publishMessage(
