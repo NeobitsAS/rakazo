@@ -43,19 +43,20 @@ function Input({ className, type, size = "default", ...props }: InputProps) {
 
 /**
  * A field whose value is hidden, with a button that shows it. The caller's classes go on the
- * wrapper, where layout such as margins belongs, so the button stays centred on the field.
+ * input like any other field. The input is a block, so its margins pass through the wrapper and
+ * the button stays centred on the field.
  */
 function HiddenInput({ className, size, disabled, ...props }: Omit<InputProps, "type">) {
   const labels = React.useContext(RevealLabelsContext);
   const [shown, setShown] = React.useState(false);
   return (
-    <div data-slot="input-reveal" className={cn("relative w-full min-w-0", className)}>
+    <div data-slot="input-reveal" className="relative w-full min-w-0">
       <InputPrimitive
         type={shown ? "text" : "password"}
         data-slot="input"
         data-size={size}
         disabled={disabled}
-        className={cn(inputClass, "pr-9 data-[size=xl]:pr-12")}
+        className={cn(inputClass, "block", className, "pr-9 data-[size=xl]:pr-12")}
         {...props}
       />
       <Button
@@ -64,7 +65,8 @@ function HiddenInput({ className, size, disabled, ...props }: Omit<InputProps, "
         size={size === "xl" ? "icon" : "icon-sm"}
         disabled={disabled}
         aria-label={shown ? labels.hide : labels.show}
-        aria-pressed={shown}
+        // A click leaves the caret in the field; the keyboard still reaches the button.
+        onMouseDown={(event) => event.preventDefault()}
         onClick={() => setShown((current) => !current)}
         className={cn(
           "absolute inset-y-0 my-auto text-muted-foreground",

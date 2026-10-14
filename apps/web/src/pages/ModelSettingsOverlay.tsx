@@ -2,6 +2,8 @@ import { i18n } from "@lingui/core";
 import { Plural, Trans, useLingui } from "@lingui/react/macro";
 import type { Me, ThinkingLevel } from "@rakazo/contracts";
 import {
+  CLOUDFLARE_AI_GATEWAY_PROVIDER_ID,
+  cloudflareGatewayRouting,
   DEFAULT_MODEL_CONTEXT_WINDOW,
   DEFAULT_MODEL_MAX_TOKENS,
   MAX_MODEL_CONTEXT_WINDOW,
@@ -43,18 +45,14 @@ import {
   Input,
   ModelThinkingOptions,
   OptionSelect,
-  SwitchField,
 } from "@rakazo/ui-web";
 import { Check, ChevronDown, Copy, X } from "lucide-react";
+import type { KeyboardEvent as ReactKeyboardEvent, RefObject } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import {
-  type KeyboardEvent as ReactKeyboardEvent,
-  type RefObject,
-  useEffect,
-  useId,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+  ModelPreflightFeedback,
+  modelPreflightTestingLabel,
+} from "../components/ModelConnectionPreflightNotice";
 import { Loader } from "../components/PageLoader";
 import { ProviderLogo } from "../components/ProviderLogo";
 import {
@@ -65,8 +63,18 @@ import { useCopyText } from "../lib/copy-text";
 import { localizedProviderHint } from "../lib/localized-provider-hint";
 import type { ModelCatalogEntry, ModelCredential } from "../lib/model-auth";
 import { thinkingLevelLabel } from "../lib/model-catalog";
+import type { ModelPreflightFailure } from "../lib/model-connection-preflight";
+import {
+  classifyModelConnectionFailure,
+  loadStoredModelAuth,
+  modelPreflightSuccessMessage,
+  runModelConnectionPreflight,
+  unavailableSelectedModel,
+} from "../lib/model-connection-preflight";
 import { rpc } from "../lib/rpc";
 import { useModelOAuthSignIn } from "../lib/use-model-oauth-signin";
+import { errorText } from "../lib/user-error";
+import { ModelBackupsSettings } from "./ModelBackupsSettings";
 
 function connectionMaxTokensField(providerId: string, stored: number | undefined): string {
   if (providerId === OPENAI_COMPATIBLE_PROVIDER_ID) {
@@ -90,11 +98,15 @@ export function ModelSettingsOverlay({
   const [credentials, setCredentials] = useState<ModelCredential[]>([]);
   const [me, setMe] = useState<Me | null>(null);
   const [provider, setProvider] = useState("");
-  // The provider whose own-key form is open instead of its server credentials.
+  // The provider whose optional personal-key form is open.
   const [ownKeyProvider, setOwnKeyProvider] = useState<string | null>(null);
   const [providerQuery, setProviderQuery] = useState("");
   const [modelId, setModelId] = useState("");
+  const modelIdRef = useRef(modelId);
+  modelIdRef.current = modelId;
   const [apiKey, setApiKey] = useState("");
+  const [accountId, setAccountId] = useState("");
+  const [gatewayId, setGatewayId] = useState("");
   const [baseUrl, setBaseUrl] = useState("");
   const [reasoning, setReasoning] = useState(false);
   const [thinkingLevel, setThinkingLevel] = useState<ThinkingLevel | null>(null);
@@ -111,6 +123,13 @@ export function ModelSettingsOverlay({
   const [confirmDisconnect, setConfirmDisconnect] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [preflightTesting, setPreflightTesting] = useState(false);
+  const [preflightTarget, setPreflightTarget] = useState<
+    "api-key" | "sign-in" | "compatible" | null
+  >(null);
+  const [preflightSuccess, setPreflightSuccess] = useState<string | null>(null);
+  const [preflightFailure, setPreflightFailure] = useState<ModelPreflightFailure | null>(null);
+  const preflightRevisionRef = useRef(0);
   const detailScrollRef = useRef<HTMLDivElement>(null);
   const refreshRevisionRef = useRef(0);
   const selectionRevisionRef = useRef(0);
@@ -165,6 +184,7 @@ export function ModelSettingsOverlay({
     setCredentials(nextCredentials);
     setMe(nextMe);
     if (selectionRevision === selectionRevisionRef.current) {
+      invalidatePreflight();
       resetOpenAiCompatibleProbe();
       setProvider(nextProvider);
       setModelId(nextModel);
@@ -193,13 +213,15 @@ export function ModelSettingsOverlay({
         );
       }
       setMaxTokens(connectionMaxTokensField(nextProvider, nextCredential?.maxTokens));
+      setAccountId(nextCredential?.accountId ?? "");
+      setGatewayId(nextCredential?.gatewayId ?? "");
     }
     setLoading(false);
   }
 
   useEffect(() => {
     void refresh().catch((err: unknown) => {
-      setError(err instanceof Error ? err.message : t`Could not load model settings`);
+      setError(errorText(err, t`Could not load model settings`));
       setLoading(false);
     });
     return () => {
@@ -296,6 +318,9 @@ export function ModelSettingsOverlay({
     </p>
   );
   const isOpenAiCompatible = provider === OPENAI_COMPATIBLE_PROVIDER_ID;
+  const isCloudflareGateway = provider === CLOUDFLARE_AI_GATEWAY_PROVIDER_ID;
+  const cloudflareRoutingReady =
+    !isCloudflareGateway || cloudflareGatewayRouting({ accountId, gatewayId }) !== undefined;
   const credential = credentials.find((entry) => entry.provider === provider);
   const currentEntry = catalog.find(
     (entry) => entry.provider === me?.defaultProvider && entry.id === me?.defaultModel,
@@ -339,9 +364,22 @@ export function ModelSettingsOverlay({
   });
   const builtinLimitSave = !isOpenAiCompatible && Boolean(credential) && apiKey.trim().length === 0;
 
+  function invalidatePreflight() {
+    preflightRevisionRef.current += 1;
+    setPreflightTesting(false);
+    setPreflightTarget(null);
+    setPreflightSuccess(null);
+    setPreflightFailure(null);
+  }
+
+  function preflightStillCurrent(revision: number): boolean {
+    return revision === preflightRevisionRef.current;
+  }
+
   function updateBaseUrl(nextBaseUrl: string) {
     setBaseUrl(nextBaseUrl);
     resetOpenAiCompatibleProbe();
+    invalidatePreflight();
     setError(null);
     setNotice(null);
   }
@@ -349,6 +387,7 @@ export function ModelSettingsOverlay({
   function updateApiKey(nextApiKey: string) {
     setApiKey(nextApiKey);
     resetOpenAiCompatibleProbe();
+    invalidatePreflight();
   }
 
   function stageCompatibleModelId(nextModelId: string) {
@@ -394,28 +433,103 @@ export function ModelSettingsOverlay({
     );
     detailScrollRef.current?.scrollTo({ top: 0 });
     setApiKey("");
+    setAccountId(nextCredential?.accountId ?? "");
+    setGatewayId(nextCredential?.gatewayId ?? "");
     resetOpenAiCompatibleProbe();
+    invalidatePreflight();
     setError(null);
     setNotice(null);
   }
 
   async function probeServerModels() {
     if (!baseUrl.trim()) return;
+    const revision = preflightRevisionRef.current;
     setError(null);
     setNotice(null);
+    setPreflightSuccess(null);
+    setPreflightFailure(null);
+    setPreflightTarget("compatible");
     await modelProbe.probe({
       baseUrl,
       apiKey,
       request: rpc.models.probeOpenAiCompatible,
       onSuccess: (models) => {
-        const next = modelId.trim() || models[0] || "";
-        if (next !== modelId) stageCompatibleModelId(next);
+        if (!preflightStillCurrent(revision)) return;
+        const current = modelIdRef.current;
+        const next = current.trim() || models[0] || "";
+        if (next !== current) stageCompatibleModelId(next);
         else setModelId(next);
+        const unavailable = unavailableSelectedModel(current, models);
+        if (unavailable) {
+          setPreflightFailure(unavailable);
+          setNotice(null);
+          return;
+        }
+        setPreflightTarget(null);
+        setPreflightFailure(null);
         setNotice(openAiCompatibleProbeSuccessMessage(models.length));
       },
-      onError: (err) =>
-        setError(err instanceof Error ? err.message : t`Could not reach this model server`),
+      onError: (err) => {
+        if (!preflightStillCurrent(revision)) return;
+        setPreflightFailure(classifyModelConnectionFailure(err, { modelId }));
+        setNotice(null);
+      },
     });
+  }
+
+  async function testApiKeyConnection() {
+    if (!selected?.catalogProbe) return;
+    const revision = preflightRevisionRef.current;
+    setPreflightTarget("api-key");
+    setPreflightTesting(true);
+    setPreflightSuccess(null);
+    setPreflightFailure(null);
+    setError(null);
+    setNotice(null);
+    const result = await runModelConnectionPreflight({
+      authKind: "api-key",
+      provider: selected.provider,
+      apiKey,
+      modelId: selected.id,
+      catalogProbe: true,
+      probeCatalog: rpc.models.probeCatalog,
+    });
+    if (!preflightStillCurrent(revision)) return;
+    setPreflightTesting(false);
+    if (result.ok) {
+      setPreflightSuccess(modelPreflightSuccessMessage(result.discoveredModels.length));
+      return;
+    }
+    setPreflightFailure(result.failure);
+  }
+
+  async function testOAuthConnection() {
+    if (!selected) return;
+    const revision = preflightRevisionRef.current;
+    setPreflightTarget("sign-in");
+    setPreflightTesting(true);
+    setPreflightSuccess(null);
+    setPreflightFailure(null);
+    setError(null);
+    setNotice(null);
+    const stored = await loadStoredModelAuth(
+      selected.provider,
+      () => rpc.models.credentials(),
+      selected.id,
+    );
+    if (!preflightStillCurrent(revision)) return;
+    const result = await runModelConnectionPreflight({
+      authKind: "oauth",
+      provider: selected.provider,
+      ...stored,
+    });
+    if (!preflightStillCurrent(revision)) return;
+    setPreflightTesting(false);
+    if (result.ok) {
+      setPreflightSuccess(t`A subscription credential is stored securely.`);
+      return;
+    }
+    setPreflightFailure(result.failure);
   }
 
   async function setModelDefault() {
@@ -443,7 +557,7 @@ export function ModelSettingsOverlay({
       await refresh();
       setNotice(isOpenAiCompatible ? t`Model updated.` : t`Now using ${selected.label}.`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : t`Could not change the default model`);
+      setError(errorText(err, t`Could not change the default model`));
     } finally {
       setPending(null);
     }
@@ -525,6 +639,9 @@ export function ModelSettingsOverlay({
           : {
               provider: selected.provider,
               ...(apiKey.trim() ? { apiKey: apiKey.trim() } : {}),
+              ...(isCloudflareGateway
+                ? { accountId: accountId.trim(), gatewayId: gatewayId.trim() }
+                : {}),
               modelId: selected.id,
               // A limits-only save leaves the stored effort alone while the model
               // stays put. Changing the model sends the clamped level, including
@@ -543,7 +660,7 @@ export function ModelSettingsOverlay({
           : t`Connected and using ${selected.label}.`,
       );
     } catch (err) {
-      setError(err instanceof Error ? err.message : t`Could not connect this provider`);
+      setError(errorText(err, t`Could not connect this provider`));
     } finally {
       setPending(null);
     }
@@ -563,7 +680,7 @@ export function ModelSettingsOverlay({
       detailScrollRef.current?.scrollTo({ top: 0 });
       setNotice(t`Disconnected ${selected.providerName ?? selected.provider}.`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : t`Could not disconnect this provider`);
+      setError(errorText(err, t`Could not disconnect this provider`));
     } finally {
       setPending(null);
     }
@@ -646,6 +763,7 @@ export function ModelSettingsOverlay({
             onChange={(nextModelId) => {
               cancelOAuthAttempt();
               selectionRevisionRef.current += 1;
+              invalidatePreflight();
               setModelId(nextModelId);
               const nextEntry = modelsForProvider.find((entry) => entry.id === nextModelId);
               setThinkingLevel(
@@ -690,7 +808,7 @@ export function ModelSettingsOverlay({
             />
           </Field>
         ) : null}
-        {selected.billing ? (
+        {selected.billing && !usingServerCredentials ? (
           <p className="mt-2 text-[13px] leading-[1.5] text-muted-foreground">{selected.billing}</p>
         ) : null}
       </>
@@ -858,20 +976,64 @@ export function ModelSettingsOverlay({
             >
               {oauthPending ? (
                 <Trans>Starting…</Trans>
-              ) : credential ? (
+              ) : credential?.authKind === "oauth" ? (
                 <Trans>Sign in again</Trans>
               ) : (
                 (selected.oauthLabel ?? t`Sign in`)
               )}
             </Button>
           )}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="mt-3"
+            disabled={busy || preflightTesting}
+            onClick={() => void testOAuthConnection()}
+          >
+            {modelPreflightTestingLabel(
+              preflightTesting && preflightTarget === "sign-in",
+              "sign-in",
+            )}
+          </Button>
+          {preflightTarget === "sign-in" ? (
+            <ModelPreflightFeedback success={preflightSuccess} failure={preflightFailure} />
+          ) : null}
         </div>
       ) : null}
 
       {acceptsKey || builtinLimitSave ? (
         <div className="mt-5 first:mt-0">
+          {isCloudflareGateway ? (
+            <>
+              <Field>
+                <FieldLabel htmlFor="cloudflare-account-id">
+                  <Trans>Account ID</Trans>
+                </FieldLabel>
+                <Input
+                  id="cloudflare-account-id"
+                  value={accountId}
+                  onChange={(event) => setAccountId(event.target.value)}
+                  autoComplete="off"
+                  spellCheck={false}
+                />
+              </Field>
+              <Field className="mt-4">
+                <FieldLabel htmlFor="cloudflare-gateway-id">
+                  <Trans>Gateway ID</Trans>
+                </FieldLabel>
+                <Input
+                  id="cloudflare-gateway-id"
+                  value={gatewayId}
+                  onChange={(event) => setGatewayId(event.target.value)}
+                  autoComplete="off"
+                  spellCheck={false}
+                />
+              </Field>
+            </>
+          ) : null}
           {acceptsKey ? (
-            <Field>
+            <Field className={isCloudflareGateway ? "mt-4" : undefined}>
               <FieldLabel htmlFor="model-api-key">
                 {credential ? (
                   <Trans>Replace API key</Trans>
@@ -891,12 +1053,34 @@ export function ModelSettingsOverlay({
               />
             </Field>
           ) : null}
+          {acceptsKey && selected?.catalogProbe ? (
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="mt-3"
+                disabled={busy || preflightTesting || apiKey.trim().length < 8}
+                onClick={() => void testApiKeyConnection()}
+              >
+                {modelPreflightTestingLabel(
+                  preflightTesting && preflightTarget === "api-key",
+                  "api-key",
+                )}
+              </Button>
+              {preflightTarget === "api-key" ? (
+                <ModelPreflightFeedback success={preflightSuccess} failure={preflightFailure} />
+              ) : null}
+            </>
+          ) : null}
           <Button
             type="button"
             variant="secondary"
             className="mt-3"
             size="sm"
-            disabled={busy || (!builtinLimitSave && apiKey.trim().length < 8)}
+            disabled={
+              busy || !cloudflareRoutingReady || (!builtinLimitSave && apiKey.trim().length < 8)
+            }
             onClick={() => void connectKey()}
           >
             {pending === "connect" ? (
@@ -1122,6 +1306,9 @@ export function ModelSettingsOverlay({
                           {probing ? <Trans>Finding…</Trans> : <Trans>Find models</Trans>}
                         </Button>
                       </div>
+                      {preflightTarget === "compatible" ? (
+                        <ModelPreflightFeedback success={null} failure={preflightFailure} />
+                      ) : null}
                       <Field className="mt-4">
                         <FieldLabel htmlFor="model-compatible-id">
                           <Trans>Model</Trans>
@@ -1133,6 +1320,7 @@ export function ModelSettingsOverlay({
                             onValueChange={(next) => {
                               cancelOAuthAttempt();
                               selectionRevisionRef.current += 1;
+                              invalidatePreflight();
                               stageCompatibleModelId(next);
                               setError(null);
                               setNotice(null);
@@ -1149,6 +1337,7 @@ export function ModelSettingsOverlay({
                             onChange={(event) => {
                               cancelOAuthAttempt();
                               selectionRevisionRef.current += 1;
+                              invalidatePreflight();
                               stageCompatibleModelId(event.target.value);
                               setError(null);
                               setNotice(null);
@@ -1163,7 +1352,10 @@ export function ModelSettingsOverlay({
                             type="button"
                             variant="link"
                             className="mt-2 h-auto px-0 text-[13px] text-muted-foreground underline"
-                            onClick={() => stageCompatibleModelId(probeModels[0] ?? "")}
+                            onClick={() => {
+                              invalidatePreflight();
+                              stageCompatibleModelId(probeModels[0] ?? "");
+                            }}
                           >
                             <Trans>Use a found model</Trans>
                           </Button>
@@ -1270,23 +1462,19 @@ export function ModelSettingsOverlay({
                     </>
                   ) : provider === me?.hostCredentialProvider ? (
                     <>
-                      <SwitchField
-                        label={<Trans>Use server credentials</Trans>}
-                        checked={ownKeyProvider !== provider}
-                        onCheckedChange={(checked) => setOwnKeyProvider(checked ? null : provider)}
-                      />
-                      {ownKeyProvider === provider ? (
-                        <>
-                          <p className="mt-5 text-sm leading-[1.5] text-muted-foreground">
-                            <Trans>Server credentials stay in use until you connect a key.</Trans>
-                          </p>
-                          <div className="mt-5">{connectionControls}</div>
-                          <div className="mt-6">{catalogModelConfig}</div>
-                          {catalogAdvancedOptions}
-                        </>
-                      ) : (
-                        <div className="mt-5">{serverCredentialsNote}</div>
-                      )}
+                      {serverCredentialsNote}
+                      <Disclosure
+                        className="mt-5 text-sm text-muted-foreground"
+                        summary={<Trans>Use your own key</Trans>}
+                        open={ownKeyProvider === provider}
+                        onToggle={(event) =>
+                          setOwnKeyProvider(event.currentTarget.open ? provider : null)
+                        }
+                      >
+                        <div className="mt-5">{connectionControls}</div>
+                        <div className="mt-6">{catalogModelConfig}</div>
+                        {catalogAdvancedOptions}
+                      </Disclosure>
                     </>
                   ) : (
                     <>
@@ -1317,6 +1505,14 @@ export function ModelSettingsOverlay({
                   <Trans>No model catalog is available.</Trans>
                 </p>
               )}
+              {me ? (
+                <ModelBackupsSettings
+                  userId={me.userId}
+                  spaceId={me.spaceId}
+                  catalog={catalog}
+                  credentials={credentials}
+                />
+              ) : null}
             </div>
           </div>
         </>

@@ -24,11 +24,14 @@ type StepperStep = {
 function Stepper({
   steps,
   onSelect,
+  completeLabel,
   className,
   ...props
 }: Omit<React.ComponentProps<"ol">, "onSelect"> & {
   steps: readonly StepperStep[];
   onSelect?: (id: string) => void;
+  /** Read out after a completed step's title, in the app's language; the kit is not translated. */
+  completeLabel: string;
 }) {
   const baseId = React.useId();
   return (
@@ -36,7 +39,9 @@ function Stepper({
       {steps.map((step, index) => {
         const selectable = step.selectable === true && step.status !== "current" && onSelect;
         const complete = step.status === "complete";
-        const titleId = `${baseId}-${step.id}`;
+        // From the list's own id and the position: a step id may hold characters an id cannot.
+        const titleId = `${baseId}-title-${index}`;
+        const statusId = `${baseId}-status-${index}`;
         return (
           <li
             key={step.id}
@@ -52,7 +57,7 @@ function Stepper({
               >
                 <span
                   className={cn(
-                    "absolute inset-0 origin-top bg-link transition-transform duration-300 ease-out motion-reduce:transition-none",
+                    "absolute inset-0 origin-top bg-primary transition-transform duration-300 ease-out motion-reduce:transition-none",
                     complete ? "scale-y-100 delay-300" : "scale-y-0",
                   )}
                 />
@@ -60,18 +65,20 @@ function Stepper({
             ) : null}
             {/* The content stays one element whatever the status, so a change animates. */}
             <div className="flex gap-4">
+              {/* The number and check are drawn for the eye; the status is read from text. */}
               <span
+                aria-hidden="true"
                 className={cn(
                   "relative grid size-8 shrink-0 place-items-center overflow-hidden rounded-full text-sm font-medium",
                   step.status === "upcoming"
                     ? "border border-border text-muted-foreground"
-                    : "border-2 border-link text-link",
+                    : "border-2 border-primary text-foreground",
                 )}
               >
                 <span
                   aria-hidden="true"
                   className={cn(
-                    "absolute inset-0 bg-link transition-[clip-path] duration-300 ease-in-out motion-reduce:transition-none",
+                    "absolute inset-0 bg-primary transition-[clip-path] duration-300 ease-in-out motion-reduce:transition-none",
                     complete ? "[clip-path:inset(0)]" : "[clip-path:inset(0_0_100%_0)] delay-300",
                   )}
                 />
@@ -85,7 +92,7 @@ function Stepper({
                 </span>
                 <CheckIcon
                   className={cn(
-                    "absolute size-4 text-white transition-opacity duration-200 motion-reduce:transition-none",
+                    "absolute size-4 text-primary-foreground transition-opacity duration-200 motion-reduce:transition-none",
                     complete ? "opacity-100 delay-200" : "opacity-0 delay-200",
                   )}
                 />
@@ -101,6 +108,11 @@ function Stepper({
                 >
                   {step.title}
                 </span>
+                {complete ? (
+                  <span id={statusId} className="sr-only">
+                    {completeLabel}
+                  </span>
+                ) : null}
                 {step.description ? (
                   <span
                     className={cn("text-sm text-muted-foreground", step.busy && "text-shimmer")}
@@ -113,7 +125,7 @@ function Stepper({
             {selectable ? (
               <button
                 type="button"
-                aria-labelledby={titleId}
+                aria-labelledby={complete ? `${titleId} ${statusId}` : titleId}
                 onClick={() => onSelect(step.id)}
                 className="absolute inset-0 rounded-lg outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
               />

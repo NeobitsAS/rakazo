@@ -15,6 +15,7 @@ import {
 import { XIcon } from "lucide-react";
 import { useEffect, useId, useState } from "react";
 import { rpc } from "../lib/rpc";
+import { errorText } from "../lib/user-error";
 import { SpaceMemorySection } from "./KnowledgeSection";
 import {
   defaultMemoryProviderSettings,
@@ -115,7 +116,7 @@ export function MemorySettingsOverlay({
       onConfigChange(next);
       return true;
     } catch (err) {
-      setError(err instanceof Error ? err.message : t`Could not connect ${registration.name}`);
+      setError(errorText(err, t`Could not connect ${registration.name}`));
       return false;
     } finally {
       markPending(null);
@@ -129,7 +130,7 @@ export function MemorySettingsOverlay({
       await rpc.memory.disconnectProvider();
       onConfigChange(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : t`Could not disconnect memory provider`);
+      setError(errorText(err, t`Could not disconnect memory provider`));
     } finally {
       markPending(null);
     }
@@ -143,7 +144,7 @@ export function MemorySettingsOverlay({
       const next = await rpc.memory.setDefaultScope({ defaultMemoryScope: scope });
       onConfigChange(next);
     } catch (err) {
-      setError(err instanceof Error ? err.message : t`Could not update the default memory scope`);
+      setError(errorText(err, t`Could not update the default memory scope`));
     } finally {
       markPending(null);
     }

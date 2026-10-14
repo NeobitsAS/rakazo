@@ -15,6 +15,7 @@ import { FileJson, Network, Plus, Search, Server } from "lucide-react";
 import { useEffect, useId, useMemo, useState } from "react";
 import { newClientId } from "../../lib/client-id";
 import { rpc } from "../../lib/rpc";
+import { errorText } from "../../lib/user-error";
 import { SettingRow } from "../SettingRow";
 import { ChoiceCard, ChoiceCards } from "./ChoiceCard";
 import { ConnectedStatus } from "./ConnectedStatus";
@@ -130,7 +131,7 @@ export function AddIntegration({
       setResults(response.results);
       setSearched(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : t`Could not search catalog`);
+      setError(errorText(err, t`Could not search catalog`));
     } finally {
       setSearching(false);
     }
@@ -156,7 +157,7 @@ export function AddIntegration({
       await giveToBots(server.id);
       onAdded();
     } catch (err) {
-      setError(err instanceof Error ? err.message : t`Could not add the integration`);
+      setError(errorText(err, t`Could not add the integration`));
     } finally {
       setAddingUrl(null);
     }
@@ -185,7 +186,7 @@ export function AddIntegration({
       else await addToolSource();
       onAdded();
     } catch (err) {
-      setError(err instanceof Error ? err.message : t`Could not add the integration`);
+      setError(errorText(err, t`Could not add the integration`));
     } finally {
       setAdding(false);
     }

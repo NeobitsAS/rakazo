@@ -15,6 +15,7 @@ import { useEffect, useId, useState } from "react";
 import { newClientId } from "../../lib/client-id";
 import { connectMcpOauth } from "../../lib/mcp-connect";
 import { rpc } from "../../lib/rpc";
+import { errorText } from "../../lib/user-error";
 import { ChoiceCard, ChoiceCards } from "./ChoiceCard";
 import { ConnectedStatus } from "./ConnectedStatus";
 import { IntegrationLogo } from "./IntegrationLogo";
@@ -33,6 +34,7 @@ export function IntegrationSetup({
   onBack,
   finishingLabel = null,
   finishError = null,
+  onBusyChange,
   layout = "panel",
 }: {
   onDone?: () => void;
@@ -51,6 +53,8 @@ export function IntegrationSetup({
   finishingLabel?: string | null;
   /** Why that last action failed; Continue tries it again. */
   finishError?: string | null;
+  /** Saving or connecting is under way; the page around it should not move on until it ends. */
+  onBusyChange?: (busy: boolean) => void;
   /** "page" sits in the entry frame, which shows the title, and uses the entry pages' sizes. */
   layout?: "panel" | "page";
 }) {
@@ -121,7 +125,7 @@ export function IntegrationSetup({
     try {
       await action();
     } catch (err) {
-      setError(err instanceof Error ? err.message : t`Could not connect`);
+      setError(errorText(err, t`Could not connect`));
     } finally {
       setPending(false);
     }
@@ -212,7 +216,11 @@ export function IntegrationSetup({
   }
 
   // A server mid-connection counts too: finishing now would open the bot without it.
-  const footerLocked = busy || pendingUrl !== null || finishingLabel !== null;
+  const working = busy || pendingUrl !== null;
+  useEffect(() => {
+    onBusyChange?.(working);
+  }, [working, onBusyChange]);
+  const footerLocked = working || finishingLabel !== null;
   const skipButton = (
     <Button
       variant="ghost"
@@ -276,78 +284,76 @@ export function IntegrationSetup({
         )
       ) : null}
       {choice === "composio" || choice === "pipedream" ? (
-        <>
-          {state?.canConfigure ? (
-            <>
-              {choice === "pipedream" ? (
-                <>
-                  <Field>
-                    <FieldLabel htmlFor={`${fieldId}-client-id`}>
-                      <Trans>Client ID</Trans>
-                    </FieldLabel>
-                    <Input
-                      id={`${fieldId}-client-id`}
-                      placeholder={t`Paste your Pipedream client ID`}
-                      value={clientId}
-                      onChange={(event) => setClientId(event.target.value)}
-                      autoComplete="off"
-                    />
-                  </Field>
-                  <Field>
-                    <FieldLabel htmlFor={`${fieldId}-project-id`}>
-                      <Trans>Project ID</Trans>
-                    </FieldLabel>
-                    <Input
-                      id={`${fieldId}-project-id`}
-                      placeholder={t`Paste your Pipedream project ID`}
-                      value={projectId}
-                      onChange={(event) => setProjectId(event.target.value)}
-                      autoComplete="off"
-                    />
-                  </Field>
-                </>
-              ) : null}
-              {/* The link belongs to the field above it, so it sits close. */}
-              <div className="space-y-2">
+        state?.canConfigure ? (
+          <>
+            {choice === "pipedream" ? (
+              <>
                 <Field>
-                  <FieldLabel htmlFor={`${fieldId}-key`}>
-                    {choice === "composio" ? t`API key` : t`Client secret`}
+                  <FieldLabel htmlFor={`${fieldId}-client-id`}>
+                    <Trans>Client ID</Trans>
                   </FieldLabel>
                   <Input
-                    id={`${fieldId}-key`}
-                    placeholder={
-                      configured
-                        ? t`Saved. Paste a new one to replace it.`
-                        : choice === "composio"
-                          ? t`Paste your Composio project API key (ak_…)`
-                          : t`Paste your Pipedream client secret`
-                    }
-                    type="password"
-                    value={apiKey}
-                    onChange={(event) => setApiKey(event.target.value)}
-                    autoComplete="new-password"
+                    id={`${fieldId}-client-id`}
+                    placeholder={t`Paste your Pipedream client ID`}
+                    value={clientId}
+                    onChange={(event) => setClientId(event.target.value)}
+                    autoComplete="off"
                   />
                 </Field>
-                <a
-                  className="inline-block text-sm text-muted-foreground underline"
-                  href={
-                    choice === "composio"
-                      ? "https://dashboard.composio.dev"
-                      : "https://pipedream.com/docs/connect/mcp/developers"
+                <Field>
+                  <FieldLabel htmlFor={`${fieldId}-project-id`}>
+                    <Trans>Project ID</Trans>
+                  </FieldLabel>
+                  <Input
+                    id={`${fieldId}-project-id`}
+                    placeholder={t`Paste your Pipedream project ID`}
+                    value={projectId}
+                    onChange={(event) => setProjectId(event.target.value)}
+                    autoComplete="off"
+                  />
+                </Field>
+              </>
+            ) : null}
+            {/* The link belongs to the field above it, so it sits close. */}
+            <div className="space-y-2">
+              <Field>
+                <FieldLabel htmlFor={`${fieldId}-key`}>
+                  {choice === "composio" ? t`API key` : t`Client secret`}
+                </FieldLabel>
+                <Input
+                  id={`${fieldId}-key`}
+                  placeholder={
+                    configured
+                      ? t`Saved. Paste a new one to replace it.`
+                      : choice === "composio"
+                        ? t`Paste your Composio project API key (ak_…)`
+                        : t`Paste your Pipedream client secret`
                   }
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <Trans>Get credentials</Trans>
-                </a>
-              </div>
-            </>
-          ) : state && !configured ? (
-            <p className="text-sm text-muted-foreground">
-              <Trans>Ask the server owner to configure this provider.</Trans>
-            </p>
-          ) : null}
-        </>
+                  type="password"
+                  value={apiKey}
+                  onChange={(event) => setApiKey(event.target.value)}
+                  autoComplete="new-password"
+                />
+              </Field>
+              <a
+                className="inline-block text-sm text-muted-foreground underline"
+                href={
+                  choice === "composio"
+                    ? "https://dashboard.composio.dev"
+                    : "https://pipedream.com/docs/connect/mcp/developers"
+                }
+                target="_blank"
+                rel="noreferrer"
+              >
+                <Trans>Get credentials</Trans>
+              </a>
+            </div>
+          </>
+        ) : state && !configured ? (
+          <p className="text-sm text-muted-foreground">
+            <Trans>Ask the server owner to configure this provider.</Trans>
+          </p>
+        ) : null
       ) : null}
       {choice === "direct" ? (
         <>

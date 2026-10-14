@@ -29,7 +29,7 @@ test("bot creation, editing, and deletion persist", async ({ page }, testInfo) =
   });
   await openNewBot(page);
   const form = page.getByTestId("create-bot-form");
-  await form.locator("label:has-text('Name') input").fill("New Bot");
+  await form.getByLabel("Name", { exact: true }).fill("New Bot");
   await form.getByRole("button", { name: "Create", exact: true }).click();
   await createAborted;
   // Failed create keeps the form open on the current bot chat.
@@ -64,9 +64,9 @@ test("bot creation, editing, and deletion persist", async ({ page }, testInfo) =
 
   await page.locator("main").getByRole("button", { name: "New Bot", exact: true }).click();
   await expect(page.getByText("Settings", { exact: true })).toBeVisible();
-  const nameInput = page.locator("label:has-text('Name') input");
-  const titleInput = page.locator("label:has-text('Title') input");
-  const descriptionInput = page.locator("label:has-text('Description') textarea");
+  const nameInput = page.getByLabel("Name", { exact: true });
+  const titleInput = page.getByLabel("Title", { exact: true });
+  const descriptionInput = page.getByLabel("Description", { exact: true });
   const longTitle = `Market researcher ${"and source verifier ".repeat(9)}`;
   const normalizedLongTitle = longTitle.trim();
   expect(longTitle.length).toBeGreaterThan(160);
@@ -95,7 +95,7 @@ test("bot creation, editing, and deletion persist", async ({ page }, testInfo) =
   await expect(studio).toBeVisible();
   await expect(studio.getByRole("button", { name: "Color #EAB308" })).toHaveClass(/ring-2/);
   await studio.getByRole("button", { name: "Done", exact: true }).click();
-  const modelSelect = settings.locator("label:has-text('Model') select");
+  const modelSelect = settings.getByLabel("Model", { exact: true });
   const teamComputer = settings.getByRole("button", { name: "Team" });
   const openWork = settings.getByTestId("bot-scratchpad");
   await expect(teamComputer).toBeHidden();
@@ -107,6 +107,15 @@ test("bot creation, editing, and deletion persist", async ({ page }, testInfo) =
   await expect(settings.getByRole("button", { name: "Update computer" })).toHaveCount(0);
   await captureScreenshot(page, testInfo, "27a-settings-panel");
   await settings.getByText("Advanced", { exact: true }).click();
+  const disabledTools = settings.getByLabel("Disabled tools");
+  await expect(disabledTools).toBeVisible();
+  await disabledTools.fill("not_a_tool");
+  await disabledTools.press("Enter");
+  await expect(settings.getByText("Unknown tool")).toBeVisible();
+  await disabledTools.fill("web_search");
+  await disabledTools.press("Enter");
+  await expect(settings.getByRole("switch", { name: "web_search" })).toBeChecked();
+  await captureScreenshot(page, testInfo, "27c-disabled-builtin-tools");
   await expect(teamComputer).toBeVisible();
   await expect(openWork).toBeVisible();
   await expect(modelSelect).toBeVisible();

@@ -1,10 +1,12 @@
 import { Trans } from "@lingui/react/macro";
 import { Check, X } from "lucide-react";
-import { type ReactNode, useState } from "react";
+import type { ReactNode } from "react";
+import { useState } from "react";
 
 /**
  * "Connected", in green. When the connection can be undone it turns into "Disconnect" on hover or
- * keyboard focus; a touch shows "Disconnect" first and a second touch disconnects. The labels can
+ * keyboard focus; a touch shows "Disconnect" first and a second touch disconnects. Hover only
+ * turns it once the pointer has left it, so the click that connected cannot land on Disconnect. The labels can
  * say what kind of connection it is, such as "Signed in" and "Sign out".
  */
 export function ConnectedStatus({
@@ -22,6 +24,7 @@ export function ConnectedStatus({
   pendingLabel?: ReactNode;
 }) {
   const [armed, setArmed] = useState(false);
+  const [hoverReady, setHoverReady] = useState(false);
   const connected = (
     <>
       <Check />
@@ -50,12 +53,17 @@ export function ConnectedStatus({
         onDisconnect();
       }}
       onBlur={() => setArmed(false)}
-      className="group/connected flex h-9 items-center gap-1.5 rounded-md text-sm font-medium text-success outline-none hover:text-destructive focus-visible:text-destructive focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50 data-armed:text-destructive [&_svg]:size-4"
+      onPointerLeave={() => setHoverReady(true)}
+      className={`group/connected flex h-9 items-center gap-1.5 rounded-md text-sm font-medium text-success outline-none ${hoverReady ? "hover:text-destructive" : ""} focus-visible:text-destructive focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50 data-armed:text-destructive [&_svg]:size-4`}
     >
-      <span className="flex items-center gap-1.5 group-hover/connected:hidden group-focus-visible/connected:hidden group-data-armed/connected:hidden">
+      <span
+        className={`flex items-center gap-1.5 ${hoverReady ? "group-hover/connected:hidden" : ""} group-focus-visible/connected:hidden group-data-armed/connected:hidden`}
+      >
         {connected}
       </span>
-      <span className="hidden items-center gap-1.5 group-hover/connected:flex group-focus-visible/connected:flex group-data-armed/connected:flex">
+      <span
+        className={`hidden items-center gap-1.5 ${hoverReady ? "group-hover/connected:flex" : ""} group-focus-visible/connected:flex group-data-armed/connected:flex`}
+      >
         <X />
         {pending
           ? (pendingLabel ?? <Trans>Disconnecting…</Trans>)

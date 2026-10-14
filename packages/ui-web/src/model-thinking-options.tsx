@@ -76,6 +76,7 @@ export function ModelThinkingOptions({
       {showThinking &&
       reasoning &&
       onThinkingLevelChange &&
+      thinkingLevelLabel &&
       thinkingLevelDefaultLabel &&
       thinkingLevelOptions &&
       thinkingLevelOptions.length > 0 ? (

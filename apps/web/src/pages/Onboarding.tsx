@@ -1,5 +1,7 @@
 import { Plural, Trans, useLingui } from "@lingui/react/macro";
 import {
+  CLOUDFLARE_AI_GATEWAY_PROVIDER_ID,
+  cloudflareGatewayRouting,
   DEFAULT_MODEL_CONTEXT_WINDOW,
   DEFAULT_MODEL_MAX_TOKENS,
   type IntegrationSetupState,
@@ -37,6 +39,10 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { IntegrationSetup } from "../components/integrations/IntegrationSetup";
 import { LivelyLogo } from "../components/LivelyLogo";
+import {
+  ModelPreflightFeedback,
+  modelPreflightTestingLabel,
+} from "../components/ModelConnectionPreflightNotice";
 import { PageLoader } from "../components/PageLoader";
 import {
   ServerCredentialsUnavailable,
@@ -46,8 +52,17 @@ import { useBrandAccentCycle } from "../lib/brand-accent";
 import { useCopyText } from "../lib/copy-text";
 import type { ModelCatalogEntry } from "../lib/model-auth";
 import { thinkingLevelLabel } from "../lib/model-catalog";
+import type { ModelPreflightFailure } from "../lib/model-connection-preflight";
+import {
+  classifyModelConnectionFailure,
+  loadStoredModelAuth,
+  modelPreflightSuccessMessage,
+  runModelConnectionPreflight,
+  unavailableSelectedModel,
+} from "../lib/model-connection-preflight";
 import { rpc } from "../lib/rpc";
 import { useModelOAuthSignIn } from "../lib/use-model-oauth-signin";
+import { errorText } from "../lib/user-error";
 import { WindowStrip } from "./WindowChrome";
 
 const CUSTOM_MODEL_OPTION = "__rakazo_custom_model__";
@@ -136,11 +151,17 @@ export function OnboardingPage() {
   const [integrationSetup, setIntegrationSetup] = useState<IntegrationSetupState | null>(null);
   const needsIntegrationSetup = integrationSetup?.needsSetup ?? false;
   const [integrationServers, setIntegrationServers] = useState<string[]>([]);
+  /** The integrations step is saving or connecting; leaving it would drop that work. */
+  const [integrationBusy, setIntegrationBusy] = useState(false);
   const [catalog, setCatalog] = useState<ModelCatalogEntry[]>([]);
   const [serverCredentials, setServerCredentials] = useState<ServerCredentialState | null>(null);
   const [provider, setProvider] = useState("openrouter");
   const [modelId, setModelId] = useState("");
+  const modelIdRef = useRef(modelId);
+  modelIdRef.current = modelId;
   const [apiKey, setApiKey] = useState("");
+  const [accountId, setAccountId] = useState("");
+  const [gatewayId, setGatewayId] = useState("");
   const [baseUrl, setBaseUrl] = useState("");
   const [reasoning, setReasoning] = useState(false);
   const [manualModelId, setManualModelId] = useState(false);
@@ -158,6 +179,13 @@ export function OnboardingPage() {
   const deploymentDefaultModelRef = useRef<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [preflightTesting, setPreflightTesting] = useState(false);
+  const [preflightTarget, setPreflightTarget] = useState<
+    "api-key" | "sign-in" | "compatible" | null
+  >(null);
+  const [preflightSuccess, setPreflightSuccess] = useState<string | null>(null);
+  const [preflightFailure, setPreflightFailure] = useState<ModelPreflightFailure | null>(null);
+  const preflightRevisionRef = useRef(0);
   const [codeCopied, copyOAuthCode] = useCopyText();
 
   const {
@@ -239,6 +267,9 @@ export function OnboardingPage() {
 
   const selected = modelsForProvider.find((entry) => entry.id === modelId) ?? modelsForProvider[0];
   const isOpenAiCompatible = provider === OPENAI_COMPATIBLE_PROVIDER_ID;
+  const isCloudflareGateway = provider === CLOUDFLARE_AI_GATEWAY_PROVIDER_ID;
+  const cloudflareRoutingReady =
+    !isCloudflareGateway || cloudflareGatewayRouting({ accountId, gatewayId }) !== undefined;
   // Effort levels for the staged catalog model — "off" stays out, matching the
   // model settings and per-bot Thinking pickers.
   const catalogThinkingLevels =
@@ -267,6 +298,7 @@ export function OnboardingPage() {
     selected &&
       modelId.trim() &&
       !oauthPending &&
+      cloudflareRoutingReady &&
       (isOpenAiCompatible ? openAiCompatibleReady : acceptsKey && apiKey.trim()),
   );
   const otherModelLabel = t`Other model…`;
@@ -299,10 +331,19 @@ export function OnboardingPage() {
     [otherModelLabel, probeModels],
   );
 
+  function invalidatePreflight() {
+    preflightRevisionRef.current += 1;
+    setPreflightTesting(false);
+    setPreflightTarget(null);
+    setPreflightSuccess(null);
+    setPreflightFailure(null);
+  }
+
   function updateBaseUrl(nextBaseUrl: string) {
     setBaseUrl(nextBaseUrl);
     // Keep Other model… mode across URL edits; only provider change clears it.
     resetOpenAiCompatibleProbe();
+    invalidatePreflight();
     setError(null);
     setNotice(null);
   }
@@ -310,6 +351,7 @@ export function OnboardingPage() {
   function updateApiKey(nextApiKey: string) {
     setApiKey(nextApiKey);
     resetOpenAiCompatibleProbe();
+    invalidatePreflight();
   }
 
   function selectProvider(nextProvider: string) {
@@ -317,6 +359,8 @@ export function OnboardingPage() {
     cancelOAuthAttempt();
     setProvider(nextProvider);
     setApiKey("");
+    setAccountId("");
+    setGatewayId("");
     setModelId(
       nextProvider === OPENAI_COMPATIBLE_PROVIDER_ID
         ? ""
@@ -331,35 +375,109 @@ export function OnboardingPage() {
     setContextWindow(String(DEFAULT_MODEL_CONTEXT_WINDOW));
     setMaxImagesPerPrompt("");
     resetOpenAiCompatibleProbe();
+    invalidatePreflight();
     setError(null);
     setNotice(null);
   }
 
+  function preflightStillCurrent(revision: number): boolean {
+    return revision === preflightRevisionRef.current;
+  }
+
   async function probeServerModels() {
     if (!baseUrl.trim()) return;
+    const revision = preflightRevisionRef.current;
     setError(null);
     setNotice(null);
+    setPreflightSuccess(null);
+    setPreflightFailure(null);
+    setPreflightTarget("compatible");
     await modelProbe.probe({
       baseUrl,
       apiKey,
       request: rpc.models.probeOpenAiCompatible,
       onSuccess: (models) => {
-        setModelId((current) => {
-          const trimmed = current.trim();
-          const next = trimmed || models[0] || "";
-          if (next !== trimmed) setThinkingLevel(null);
-          // Stay in manual entry across re-probes so a typed id that matches a
-          // discovered model cannot yank the freeform field back to the Select.
-          setManualModelId(
-            (wasManual) => wasManual || (Boolean(trimmed) && !models.includes(trimmed)),
-          );
-          return next;
-        });
+        if (!preflightStillCurrent(revision)) return;
+        const trimmed = modelIdRef.current.trim();
+        const next = trimmed || models[0] || "";
+        if (next !== trimmed) setThinkingLevel(null);
+        // Stay in manual entry across re-probes so a typed id that matches a
+        // discovered model cannot yank the freeform field back to the Select.
+        setManualModelId(
+          (wasManual) => wasManual || (Boolean(trimmed) && !models.includes(trimmed)),
+        );
+        setModelId(next);
+        const unavailable = unavailableSelectedModel(trimmed, models);
+        if (unavailable) {
+          setPreflightFailure(unavailable);
+          setNotice(null);
+          return;
+        }
+        setPreflightTarget(null);
+        setPreflightFailure(null);
         setNotice(openAiCompatibleProbeSuccessMessage(models.length));
       },
-      onError: (err) =>
-        setError(err instanceof Error ? err.message : t`Could not reach this model server`),
+      onError: (err) => {
+        if (!preflightStillCurrent(revision)) return;
+        setPreflightFailure(classifyModelConnectionFailure(err, { modelId }));
+        setNotice(null);
+      },
     });
+  }
+
+  async function testApiKeyConnection() {
+    if (!selected?.catalogProbe) return;
+    const revision = preflightRevisionRef.current;
+    setPreflightTarget("api-key");
+    setPreflightTesting(true);
+    setPreflightSuccess(null);
+    setPreflightFailure(null);
+    setError(null);
+    setNotice(null);
+    const result = await runModelConnectionPreflight({
+      authKind: "api-key",
+      provider: selected.provider,
+      apiKey,
+      modelId: selected.id,
+      catalogProbe: true,
+      probeCatalog: rpc.models.probeCatalog,
+    });
+    if (!preflightStillCurrent(revision)) return;
+    setPreflightTesting(false);
+    if (result.ok) {
+      setPreflightSuccess(modelPreflightSuccessMessage(result.discoveredModels.length));
+      return;
+    }
+    setPreflightFailure(result.failure);
+  }
+
+  async function testOAuthConnection() {
+    if (!selected) return;
+    const revision = preflightRevisionRef.current;
+    setPreflightTarget("sign-in");
+    setPreflightTesting(true);
+    setPreflightSuccess(null);
+    setPreflightFailure(null);
+    setError(null);
+    setNotice(null);
+    const stored = await loadStoredModelAuth(
+      selected.provider,
+      () => rpc.models.credentials(),
+      selected.id,
+    );
+    if (!preflightStillCurrent(revision)) return;
+    const result = await runModelConnectionPreflight({
+      authKind: "oauth",
+      provider: selected.provider,
+      ...stored,
+    });
+    if (!preflightStillCurrent(revision)) return;
+    setPreflightTesting(false);
+    if (result.ok) {
+      setPreflightSuccess(t`A subscription credential is stored securely.`);
+      return;
+    }
+    setPreflightFailure(result.failure);
   }
 
   function stagedThinkingLevel(): ThinkingLevel | null {
@@ -416,6 +534,9 @@ export function OnboardingPage() {
         await rpc.models.connect({
           provider,
           apiKey,
+          ...(isCloudflareGateway
+            ? { accountId: accountId.trim(), gatewayId: gatewayId.trim() }
+            : {}),
           modelId,
           thinkingLevel: stagedThinkingLevel(),
           label: selected?.providerName ?? provider,
@@ -429,7 +550,7 @@ export function OnboardingPage() {
       }
       completeStep("model", nextStepAfterModel(needsIntegrationSetup));
     } catch (err) {
-      setError(err instanceof Error ? err.message : t`Could not save model`);
+      setError(errorText(err, t`Could not save model`));
     }
   }
 
@@ -481,7 +602,7 @@ export function OnboardingPage() {
     } catch (err) {
       createStartedRef.current = false;
       setOpeningChat(false);
-      setBotError(err instanceof Error ? err.message : t`Could not create your bot`);
+      setBotError(errorText(err, t`Could not create your bot`));
     }
   }
 
@@ -534,6 +655,7 @@ export function OnboardingPage() {
         </div>
         <Stepper
           aria-label={t`Onboarding steps`}
+          completeLabel={t`Done`}
           className="px-10 pt-10 pb-6"
           steps={[...steps, "bot" as const].map((id, index) => ({
             id,
@@ -546,6 +668,7 @@ export function OnboardingPage() {
             selectable:
               id !== "bot" &&
               !openingChat &&
+              !integrationBusy &&
               steps.slice(0, index).every((before) => completed.has(before)),
           }))}
           onSelect={(id) => {
@@ -599,6 +722,9 @@ export function OnboardingPage() {
                       >
                         {probing ? <Trans>Finding…</Trans> : <Trans>Find models</Trans>}
                       </Button>
+                      {preflightTarget === "compatible" ? (
+                        <ModelPreflightFeedback success={null} failure={preflightFailure} />
+                      ) : null}
                     </div>
                     <div className="mt-4 block">
                       <span className="font-medium">
@@ -610,6 +736,7 @@ export function OnboardingPage() {
                           className="mt-2"
                           value={modelId}
                           onValueChange={(next) => {
+                            invalidatePreflight();
                             if (next === CUSTOM_MODEL_OPTION) {
                               setManualModelId(true);
                               setModelId("");
@@ -626,6 +753,7 @@ export function OnboardingPage() {
                           onChange={(e) => {
                             setManualModelId(true);
                             setModelId(e.target.value);
+                            invalidatePreflight();
                           }}
                           aria-label={t`Model id`}
                           placeholder="exact-model-id"
@@ -640,6 +768,7 @@ export function OnboardingPage() {
                           onClick={() => {
                             setManualModelId(false);
                             setModelId(probeModels[0] ?? "");
+                            invalidatePreflight();
                           }}
                         >
                           <Trans>Use a found model</Trans>
@@ -696,6 +825,7 @@ export function OnboardingPage() {
                         cancelOAuthAttempt();
                         setModelId(value);
                         setThinkingLevel(null);
+                        invalidatePreflight();
                       }}
                       options={modelItems}
                     />
@@ -854,7 +984,51 @@ export function OnboardingPage() {
                       {oauthPending ? <Trans>Starting…</Trans> : signInLabel}
                     </Button>
                   )}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="lg"
+                    className="mt-3"
+                    disabled={oauthPending || preflightTesting}
+                    onClick={() => void testOAuthConnection()}
+                  >
+                    {modelPreflightTestingLabel(
+                      preflightTesting && preflightTarget === "sign-in",
+                      "sign-in",
+                    )}
+                  </Button>
+                  {preflightTarget === "sign-in" ? (
+                    <ModelPreflightFeedback success={preflightSuccess} failure={preflightFailure} />
+                  ) : null}
                 </div>
+              ) : null}
+              {isCloudflareGateway && acceptsKey ? (
+                <>
+                  <Field className="mt-4">
+                    <FieldLabel htmlFor={`${fieldId}-account-id`}>
+                      <Trans>Account ID</Trans>
+                    </FieldLabel>
+                    <Input
+                      id={`${fieldId}-account-id`}
+                      value={accountId}
+                      onChange={(event) => setAccountId(event.target.value)}
+                      autoComplete="off"
+                      spellCheck={false}
+                    />
+                  </Field>
+                  <Field className="mt-4">
+                    <FieldLabel htmlFor={`${fieldId}-gateway-id`}>
+                      <Trans>Gateway ID</Trans>
+                    </FieldLabel>
+                    <Input
+                      id={`${fieldId}-gateway-id`}
+                      value={gatewayId}
+                      onChange={(event) => setGatewayId(event.target.value)}
+                      autoComplete="off"
+                      spellCheck={false}
+                    />
+                  </Field>
+                </>
               ) : null}
               {serverCredentialsSource && serverCredentialsBlocked ? (
                 <div className="mt-6">
@@ -902,7 +1076,31 @@ export function OnboardingPage() {
                   </Field>
                 )
               ) : null}
-              {notice ? <p className="mt-3 text-sm text-success">{notice}</p> : null}
+              {acceptsKey && !isOpenAiCompatible && selected?.catalogProbe ? (
+                <>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="lg"
+                    className="mt-3"
+                    disabled={preflightTesting || apiKey.trim().length < 8}
+                    onClick={() => void testApiKeyConnection()}
+                  >
+                    {modelPreflightTestingLabel(
+                      preflightTesting && preflightTarget === "api-key",
+                      "api-key",
+                    )}
+                  </Button>
+                  {preflightTarget === "api-key" ? (
+                    <ModelPreflightFeedback success={preflightSuccess} failure={preflightFailure} />
+                  ) : null}
+                </>
+              ) : null}
+              {notice ? (
+                <p className="mt-3 text-sm text-success" role="status">
+                  {notice}
+                </p>
+              ) : null}
               {error ? <p className="mt-3 text-sm text-destructive">{error}</p> : null}
               {botError ? (
                 <p role="alert" className="mt-3 text-sm text-destructive">
@@ -931,6 +1129,7 @@ export function OnboardingPage() {
               onBack={previousStep("integrations")}
               finishingLabel={openingChat ? t`Opening chat…` : null}
               finishError={botError}
+              onBusyChange={setIntegrationBusy}
               onServerConnected={(id) =>
                 setIntegrationServers((current) => [...new Set([...current, id])])
               }

@@ -96,7 +96,8 @@ describe("ServerCredentialCheck", () => {
     expect(check.failed()).toBe(true);
   });
 
-  it("starts missing when the host has no credentials for the provider", () => {
+  it("waits for a check when Bedrock has no credentials in the environment", () => {
+    // An EC2 instance role resolves through IMDS at request time, so only the check can tell.
     for (const name of [
       "AWS_PROFILE",
       "AWS_ACCESS_KEY_ID",
@@ -110,8 +111,8 @@ describe("ServerCredentialCheck", () => {
     }
     const check = new ServerCredentialCheck(SETUP, vi.fn());
 
-    expect(check.state()?.status).toBe("missing");
-    expect(check.failed()).toBe(true);
+    expect(check.state()?.status).toBe("unchecked");
+    expect(check.failed()).toBe(false);
   });
 
   it("reuses a recent check and shares one that is running", async () => {

@@ -1,4 +1,5 @@
-import { expect, type Page, type TestInfo } from "@playwright/test";
+import type { Locator, Page, TestInfo } from "@playwright/test";
+import { expect } from "@playwright/test";
 
 export function isRealSandboxProvider(provider = process.env.SANDBOX_PROVIDER) {
   return provider === "e2b" || provider === "daytona" || provider === "box";
@@ -107,12 +108,12 @@ export async function createBotFromPicker(
   const name = options.name ?? "New Bot";
   await openNewBot(page);
   const form = page.getByTestId("create-bot-form");
-  await form.locator("label:has-text('Name') input").fill(name);
+  await form.getByLabel("Name", { exact: true }).fill(name);
   if (options.title != null) {
-    await form.locator("label:has-text('Title') input").fill(options.title);
+    await form.getByLabel("Title", { exact: true }).fill(options.title);
   }
   if (options.description != null) {
-    await form.locator("label:has-text('Description') textarea").fill(options.description);
+    await form.getByLabel("Description", { exact: true }).fill(options.description);
   }
   if (options.computerMode === "dedicated") {
     await form.getByTestId("create-bot-private").click();
@@ -127,7 +128,15 @@ export async function createBotFromPicker(
 /** Open the user Settings overlay, optionally switching to a sidebar section. */
 export async function openUserSettings(
   page: Page,
-  section?: "general" | "models" | "memory" | "voice" | "usage" | "computer" | "updates",
+  section?:
+    | "general"
+    | "models"
+    | "memory"
+    | "voice"
+    | "usage"
+    | "computer"
+    | "billing"
+    | "updates",
 ) {
   await page.getByTestId("user-menu-trigger").click();
   await page.getByRole("button", { name: "Settings", exact: true }).click();
@@ -155,4 +164,17 @@ export async function createNamedBot(
   await page.goto(`/app/${bot.id}`);
   await expect(page.getByPlaceholder(`Message ${name}`)).toBeVisible();
   return bot.id;
+}
+
+/**
+ * Picks an option from one of the kit's dropdowns. They open a menu of options rather than a
+ * native select, so selectOption() does not apply; options are matched by their visible name.
+ */
+export async function chooseOption(trigger: Locator, option: string | { index: number }) {
+  await trigger.click();
+  const options = trigger.page().getByRole("option");
+  await (typeof option === "string"
+    ? trigger.page().getByRole("option", { name: option, exact: true })
+    : options.nth(option.index)
+  ).click();
 }

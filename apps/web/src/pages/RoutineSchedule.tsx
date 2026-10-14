@@ -5,13 +5,14 @@ import {
   type CronFreq,
   type CronPreset,
   type CronUnit,
+  clampIntervalAmount,
   cronFromPreset,
+  cronIntervalAmounts,
 } from "@rakazo/core";
 import { Input, OptionSelect } from "@rakazo/ui-web";
 import { Clock } from "lucide-react";
 
 const UNITS: CronUnit[] = ["minutes", "hours", "days"];
-const NUMBERS = [1, 2, 3, 5, 10, 15, 30, 45];
 const TIMES = [
   "6:00 AM",
   "7:00 AM",
@@ -174,7 +175,7 @@ export function RoutineSchedule({
   const { i18n, t } = useLingui();
   const { lead, detail } = describeCronPresetLocalized(value, i18n.locale);
   const times = TIMES.includes(value.time) ? TIMES : [...TIMES, value.time];
-  const numbers = NUMBERS.includes(value.n) ? NUMBERS : [...NUMBERS, value.n].sort((a, b) => a - b);
+  const numbers = cronIntervalAmounts(value.unit, value.n);
 
   function patch(partial: Partial<CronPreset>) {
     onChange({ ...value, ...partial });
@@ -197,7 +198,7 @@ export function RoutineSchedule({
       className="w-auto"
       value={value.unit}
       aria-label={t`Interval unit`}
-      onValueChange={(unit) => patch({ unit })}
+      onValueChange={(unit) => patch({ unit, n: clampIntervalAmount(value.n, unit) })}
       options={UNITS.map((unit) => ({
         value: unit,
         label: i18n.locale === "ru" ? russianIntervalUnit(value.n, unit) : cronUnitLabel(unit),

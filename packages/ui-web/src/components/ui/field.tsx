@@ -231,10 +231,19 @@ function SwitchField({
   "data-testid"?: string;
 }) {
   const id = useId();
+  // Named from the label explicitly: Base UI only finds it after hydration otherwise.
+  const labelId = useId();
+  const descriptionId = useId();
   return (
-    <Field orientation="horizontal" className={cn("items-start gap-3", className)}>
+    <Field
+      orientation="horizontal"
+      data-disabled={disabled}
+      className={cn("items-start gap-3", className)}
+    >
       <Switch
         id={id}
+        aria-labelledby={labelId}
+        aria-describedby={description ? descriptionId : undefined}
         data-testid={testId}
         className="mt-0.5"
         checked={checked}
@@ -242,10 +251,10 @@ function SwitchField({
         onCheckedChange={onCheckedChange}
       />
       <FieldContent>
-        <FieldLabel htmlFor={id} className="font-normal text-foreground/75">
+        <FieldLabel id={labelId} htmlFor={id} className="font-normal text-foreground/75">
           {label}
         </FieldLabel>
-        {description ? <FieldDescription>{description}</FieldDescription> : null}
+        {description ? <FieldDescription id={descriptionId}>{description}</FieldDescription> : null}
       </FieldContent>
     </Field>
   );

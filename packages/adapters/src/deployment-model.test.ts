@@ -78,21 +78,24 @@ describe("resolveDeploymentModel", () => {
     ).toBe(false);
   });
 
-  it("needs both host credentials and an explicit model for a keyless provider", () => {
+  it("allows Bedrock instance roles without environment credentials, but requires an explicit model", () => {
     const provider = { PI_DEFAULT_PROVIDER: "amazon-bedrock", PI_DEFAULT_CREDENTIALS: "host" };
-    const model = { ...provider, PI_DEFAULT_MODEL: "eu.anthropic.claude-sonnet-5" };
-    expect(resolveDeploymentModel(model).configured).toBe(false);
-    vi.stubEnv("AWS_CONTAINER_CREDENTIALS_RELATIVE_URI", "/v2/credentials/example");
     expect(resolveDeploymentModel(provider).configured).toBe(false);
+    expect(
+      resolveDeploymentModel({ ...provider, PI_DEFAULT_MODEL: "eu.anthropic.claude-sonnet-5" }),
+    ).toMatchObject({
+      configured: true,
+      hostCredentials: true,
+      key: undefined,
+    });
   });
 
-  it("ignores credentials that only the passed env carries, since a run could not use them", () => {
+  it("does not assume host authentication for other providers", () => {
     expect(
       resolveDeploymentModel({
-        PI_DEFAULT_PROVIDER: "amazon-bedrock",
-        PI_DEFAULT_MODEL: "eu.anthropic.claude-sonnet-5",
+        PI_DEFAULT_PROVIDER: "unknown",
+        PI_DEFAULT_MODEL: "example-model",
         PI_DEFAULT_CREDENTIALS: "host",
-        AWS_CONTAINER_CREDENTIALS_RELATIVE_URI: "/v2/credentials/example",
       }).configured,
     ).toBe(false);
   });

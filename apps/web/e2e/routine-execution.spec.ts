@@ -99,7 +99,8 @@ test("Korean webhook routine keeps technical field labels in English", async ({
   await page.getByRole("button", { name: "Settings" }).click();
   const settings = page.getByTestId("user-settings");
   await settings.getByTestId("ui-locale-select").click();
-  await settings.getByRole("option", { name: "한국어", exact: true }).click();
+  // The menu opens outside the dialog, so its options are found on the page.
+  await page.getByRole("option", { name: "한국어", exact: true }).click();
   await page.getByRole("button", { name: "계정 설정 닫기" }).click();
 
   await page.getByTitle("Agent 컴퓨터").click();
@@ -126,14 +127,14 @@ test("routine test-run completes and survives reload", async ({ page }, testInfo
   await page.getByTitle("Agent computer").click();
   await expect(page.getByRole("button", { name: "Test run" })).toHaveCount(0);
   await page.getByRole("button", { name: "Create Routine" }).click();
-  await page.locator("label:has-text('Name') input").fill("Daily verification");
+  await page.getByLabel("Name", { exact: true }).fill("Daily verification");
   await page
-    .locator("label:has-text('Instruction') textarea")
+    .getByLabel("Instruction", { exact: true })
     .fill("write routine-run-now-ok into the durable task result");
   await page.getByRole("button", { name: "Add trigger" }).click();
   await page.getByRole("menuitem", { name: "On a schedule" }).hover();
   await page.getByRole("menuitem", { name: "Weekdays", exact: true }).click();
-  await expect(page.getByLabel("How often")).toHaveValue("Weekdays");
+  await expect(page.getByLabel("How often")).toHaveText("Weekdays");
   await captureScreenshot(page, testInfo, "32-routine-configured");
 
   const saved = page.waitForResponse(

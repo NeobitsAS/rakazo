@@ -26,7 +26,8 @@ import {
   Switch,
 } from "@rakazo/ui-web";
 import { Pencil, Plug, Plus, RotateCw, Settings, Trash } from "lucide-react";
-import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import type { ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { DialogPageHeader } from "../components/DialogPageHeader";
 import { AddIntegration } from "../components/integrations/AddIntegration";
 import { ConnectedStatus } from "../components/integrations/ConnectedStatus";
@@ -35,6 +36,7 @@ import { Loader } from "../components/PageLoader";
 import { SettingRow } from "../components/SettingRow";
 import { connectMcpOauth } from "../lib/mcp-connect";
 import { rpc } from "../lib/rpc";
+import { errorText } from "../lib/user-error";
 
 type ConnectionTool = { name: string; description: string };
 
@@ -122,7 +124,7 @@ export function PluginsOverlay({
   /** A provider was just set up: list its apps. */
   function refreshAfterSetup() {
     void refresh().catch((err: unknown) =>
-      setCatalogError(err instanceof Error ? err.message : t`Could not load integrations`),
+      setCatalogError(errorText(err, t`Could not load integrations`)),
     );
   }
 
@@ -159,9 +161,7 @@ export function PluginsOverlay({
 
   useEffect(() => {
     void refresh()
-      .catch((err: unknown) =>
-        setCatalogError(err instanceof Error ? err.message : t`Could not load integrations`),
-      )
+      .catch((err: unknown) => setCatalogError(errorText(err, t`Could not load integrations`)))
       .finally(() => setLoading(false));
     return () => connectionAttempt.current?.abort();
   }, []);
@@ -283,7 +283,7 @@ export function PluginsOverlay({
       await refresh().catch(() => undefined);
     } catch (err) {
       if (controller.signal.aborted) return;
-      setCatalogError(err instanceof Error ? err.message : t`Could not connect`);
+      setCatalogError(errorText(err, t`Could not connect`));
     } finally {
       if (connectionAttempt.current === controller) {
         connectionAttempt.current = null;
@@ -304,7 +304,7 @@ export function PluginsOverlay({
       await refresh().catch(() => undefined);
       setToolsTick((tick) => tick + 1);
     } catch (err) {
-      setCatalogError(err instanceof Error ? err.message : t`Could not revoke connection`);
+      setCatalogError(errorText(err, t`Could not revoke connection`));
     } finally {
       setPending(null);
     }
@@ -327,7 +327,7 @@ export function PluginsOverlay({
       await refresh().catch(() => undefined);
       closeDetail();
     } catch (err) {
-      setCatalogError(err instanceof Error ? err.message : t`Could not revoke connection`);
+      setCatalogError(errorText(err, t`Could not revoke connection`));
       await refresh().catch(() => undefined);
     } finally {
       setPending(null);
@@ -348,7 +348,7 @@ export function PluginsOverlay({
       );
       setLabelDrafts((current) => ({ ...current, [row.id]: updated.displayName }));
     } catch (err) {
-      setCatalogError(err instanceof Error ? err.message : t`Could not rename connection`);
+      setCatalogError(errorText(err, t`Could not rename connection`));
     } finally {
       setPending(null);
     }
@@ -361,7 +361,7 @@ export function PluginsOverlay({
       await rpc.capabilities.remove({ id: install.id });
       setSources((current) => current.filter((source) => source.id !== install.id));
     } catch (err) {
-      setSourceError(err instanceof Error ? err.message : t`Could not remove connector`);
+      setSourceError(errorText(err, t`Could not remove connector`));
     } finally {
       setPending(null);
     }
@@ -377,7 +377,7 @@ export function PluginsOverlay({
       setAssignments((current) => current.filter((entry) => entry.serverId !== server.id));
       setServerDetailId(null);
     } catch (err) {
-      setSourceError(err instanceof Error ? err.message : t`Could not remove the server`);
+      setSourceError(errorText(err, t`Could not remove the server`));
     } finally {
       setPending(null);
     }
@@ -476,7 +476,7 @@ export function PluginsOverlay({
       }
       setAssignments(await rpc.mcp.assignments.all());
     } catch (err) {
-      setSourceError(err instanceof Error ? err.message : t`Could not change who can use it`);
+      setSourceError(errorText(err, t`Could not change who can use it`));
     } finally {
       setPending(null);
     }
@@ -493,7 +493,7 @@ export function PluginsOverlay({
       }
       setMcpServers(await rpc.mcp.servers.list());
     } catch (err) {
-      setSourceError(err instanceof Error ? err.message : t`Could not change the sign-in`);
+      setSourceError(errorText(err, t`Could not change the sign-in`));
     } finally {
       setPending(null);
     }
@@ -505,15 +505,37 @@ export function PluginsOverlay({
     setServerDetailId(id);
   }
 
+  /**
+   * Replaces a remote server's credential where it was set: its one auth header when it has
+   * one, otherwise the bearer token. Local commands keep theirs in their own configuration.
+   */
   async function saveServerToken(server: McpServer) {
+    if (server.transport === "stdio" || !server.endpoint) return;
+    const value = serverToken.trim();
+    const header = server.headerKeys[0];
     setPending(`token:${server.id}`);
     setSourceError(null);
     try {
-      await rpc.mcp.servers.update({ id: server.id, secret: serverToken.trim() });
+      await rpc.mcp.servers.update(
+        header
+          ? {
+              id: server.id,
+              config: {
+                slug: server.slug,
+                name: server.name,
+                description: server.description,
+                enabled: server.enabled,
+                transport: server.transport,
+                endpoint: server.endpoint,
+                headers: { [header]: value },
+              },
+            }
+          : { id: server.id, secret: value },
+      );
       setServerToken("");
       setMcpServers(await rpc.mcp.servers.list());
     } catch (err) {
-      setSourceError(err instanceof Error ? err.message : t`Could not save the access token`);
+      setSourceError(errorText(err, t`Could not save the access token`));
     } finally {
       setPending(null);
     }
@@ -522,6 +544,12 @@ export function PluginsOverlay({
   function renderServerDetail(server: McpServer) {
     const signInPending = pending === `signin:${server.id}`;
     const tokenPending = pending === `token:${server.id}`;
+    const authHeader = server.headerKeys.length === 1 ? server.headerKeys[0] : undefined;
+    // Only a remote server's single credential can be replaced here without losing another.
+    const tokenEditable =
+      server.oauthStatus !== "connected" &&
+      server.transport !== "stdio" &&
+      server.headerKeys.length <= 1;
     return (
       <div data-testid="mcp-server-detail" className="space-y-8">
         <ul className="divide-y divide-border">
@@ -597,10 +625,10 @@ export function PluginsOverlay({
           })}
         </ul>
 
-        {server.oauthStatus === "connected" ? null : (
+        {tokenEditable ? (
           <Field>
             <FieldLabel htmlFor={`server-token-${server.id}`}>
-              <Trans>Access token</Trans>
+              {authHeader ?? <Trans>Access token</Trans>}
             </FieldLabel>
             <ButtonGroup className="w-full">
               <Input
@@ -610,7 +638,7 @@ export function PluginsOverlay({
                 value={serverToken}
                 onChange={(event) => setServerToken(event.target.value)}
                 placeholder={
-                  server.hasSecret
+                  server.hasSecret || authHeader
                     ? t`Saved. Paste a new one to replace it.`
                     : t`Paste an access token`
                 }
@@ -624,7 +652,7 @@ export function PluginsOverlay({
               </Button>
             </ButtonGroup>
           </Field>
-        )}
+        ) : null}
 
         <Button
           variant="destructive"

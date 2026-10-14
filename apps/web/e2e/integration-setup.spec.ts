@@ -96,7 +96,7 @@ test("direct MCP connects a catalog result without asking for a URL and assigns 
   });
   await signup(page, `direct-mcp-setup-${Date.now()}@rakazo.test`, "password12", "Direct MCP");
   await page.getByRole("textbox", { name: "Search apps", exact: true }).fill("Notion");
-  await page.getByRole("button", { name: "Search integrations.sh", exact: true }).click();
+  await page.getByRole("button", { name: "Search", exact: true }).click();
   await expect(page.getByText("Notion", { exact: true })).toBeVisible();
   await expect(page.getByRole("textbox", { name: "Server URL" })).toBeHidden();
   await page.getByRole("button", { name: "Connect", exact: true }).click();
@@ -222,7 +222,9 @@ test("remote members skip server setup and keep direct MCP connections", async (
   await expect(page.getByRole("heading", { name: "Server integrations" })).toBeHidden();
 });
 
-test("configured server owners manage providers from settings", async ({ page }, testInfo) => {
+test("configured server owners manage the catalog provider from Apps", async ({
+  page,
+}, testInfo) => {
   await page.route("**/rpc/bootstrap", async (route) => {
     const response = await route.fetch();
     const body = await response.json();
@@ -246,15 +248,16 @@ test("configured server owners manage providers from settings", async ({ page },
   await signup(page, `configured-owner-${Date.now()}@rakazo.test`, "password12", "Server Owner");
   await expect(page.getByRole("heading", { name: "Server integrations" })).toBeHidden();
   await completeOnboarding(page);
-  await page.getByTestId("user-menu-trigger").click();
-  await page.getByRole("button", { name: "Settings", exact: true }).click();
-  const settings = page.getByTestId("user-settings");
-  const link = settings.getByRole("link", { name: "Server integrations", exact: true });
-  await expect(link).toBeVisible();
+  await page.getByRole("button", { name: "Apps", exact: true }).click();
+  const apps = page.getByRole("dialog");
+  // The owner opens the catalog's provider setup next to the Catalog heading.
+  await apps.getByRole("button", { name: "Settings", exact: true }).click();
+  await expect(apps.getByRole("heading", { name: "Catalog settings" })).toBeVisible();
   await captureScreenshot(page, testInfo, "server-integrations-settings");
-  await link.click();
-  await expect(page.getByRole("heading", { name: "Server integrations" })).toBeVisible();
-  await page.getByRole("button", { name: "Composio", exact: true }).click();
-  await expect(page.getByText("Connected", { exact: true })).toBeVisible();
+  // A provider that is set up carries a check on its card.
+  const composio = apps.getByRole("button", { name: /^Composio/ });
+  await expect(composio.getByRole("img", { name: "Connected" })).toBeVisible();
+  await composio.click();
+  await expect(apps.getByPlaceholder("Saved. Paste a new one to replace it.")).toBeVisible();
   await captureScreenshot(page, testInfo, "server-integrations-configured");
 });

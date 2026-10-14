@@ -26,21 +26,17 @@ export function supportedHostCredentialSource(provider: string): string | undefi
 
 /** Whether Pi finds credentials for the provider on this host, where a run authenticates from. */
 export function hostCredentialsPresent(provider: string): boolean {
-  return getEnvApiKey(provider) === HOST_CREDENTIALS;
+  // Bedrock also resolves EC2 instance roles through IMDS at request time.
+  return provider === "amazon-bedrock" || getEnvApiKey(provider) === HOST_CREDENTIALS;
 }
 
 /**
  * The deployment-wide model default: which provider a run falls back to when no user
  * credential applies, and the key for that provider.
  *
- * `configured` is whether that default can run: the provider has a deployment key, or the
- * operator opted in with `PI_DEFAULT_CREDENTIALS=host`, the provider authenticates from the host
- * (`hostCredentials`), and `PI_DEFAULT_MODEL` names the model, since no default model id is
- * assumed for such a provider. The opt-in keeps a host that merely has cloud credentials from paying for every
- * user's runs without anyone choosing it. Host credentials are never returned as `key`; Pi
- * resolves them itself when a run passes no key. They are read from the process, where the
- * runtime authenticates from, never from `env`: credentials only `env` carries could not be
- * used by a run.
+ * Keyless host authentication requires explicit opt-in and a model id. Bedrock resolves
+ * its credential chain (including instance roles) at request time; other providers must
+ * report host credentials in the process environment. Host credentials never become `key`.
  *
  * Vendor env names and model ids live here, in the adapter layer, not in core.
  */

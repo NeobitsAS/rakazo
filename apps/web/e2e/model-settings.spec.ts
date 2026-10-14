@@ -1,7 +1,14 @@
 import { createServer } from "node:http";
 import type { AddressInfo } from "node:net";
 import { expect, test } from "@playwright/test";
-import { captureScreenshot, completeOnboarding, openUserSettings, rpc, signup } from "./helpers";
+import {
+  captureScreenshot,
+  chooseOption,
+  completeOnboarding,
+  openUserSettings,
+  rpc,
+  signup,
+} from "./helpers";
 
 const LOCAL_MODEL_ID = "rakazo-e2e-local";
 const LOCAL_MODEL_REPLY = "OpenAI-compatible endpoint verified end to end.";
@@ -22,7 +29,7 @@ test("custom connections persist reasoning support and bot thinking", async ({
   await expect(page.getByRole("checkbox", { name: "Supports images" })).toBeHidden();
   await page.getByText("Advanced", { exact: true }).click();
   await page.getByRole("checkbox", { name: "Supports thinking" }).check();
-  await page.getByRole("combobox", { name: "Reasoning effort", exact: true }).selectOption("low");
+  await chooseOption(page.getByRole("combobox", { name: "Reasoning effort", exact: true }), "Low");
   await page.getByLabel("Maximum output tokens").fill("8192");
   await page.getByLabel("Context limit").fill("65536");
   await page.getByRole("checkbox", { name: "Supports images" }).check();
@@ -59,24 +66,27 @@ test("custom connections persist reasoning support and bot thinking", async ({
   await openUserSettings(page, "models");
   await page.getByText("Advanced", { exact: true }).click();
   await expect(page.getByRole("checkbox", { name: "Supports thinking" })).toBeChecked();
-  await expect(page.getByRole("combobox", { name: "Reasoning effort", exact: true })).toHaveValue(
-    "low",
+  await expect(page.getByRole("combobox", { name: "Reasoning effort", exact: true })).toHaveText(
+    "Low",
   );
   await expect(page.getByLabel("Maximum output tokens")).toHaveValue("8192");
   await expect(page.getByLabel("Context limit")).toHaveValue("65536");
   await expect(page.getByRole("checkbox", { name: "Supports images" })).toBeChecked();
   await expect(page.getByLabel("Maximum images per request")).toHaveValue("1");
   await page.getByLabel("Maximum images per request").fill("");
+  // "Default" is the empty option, so choosing it clears the saved level.
+  await chooseOption(
+    page.getByRole("combobox", { name: "Reasoning effort", exact: true }),
+    "Default",
+  );
   await page.getByRole("button", { name: "Save", exact: true }).click();
   await expect(page.getByText("Saved.", { exact: true })).toBeVisible();
-  const clearedCredentials = await rpc<Array<{ modelId?: string; maxImagesPerPrompt?: number }>>(
-    page,
-    "models/credentials",
-    {},
-  );
-  expect(
-    clearedCredentials.find((entry) => entry.modelId === "arbitrary-model")?.maxImagesPerPrompt,
-  ).toBeUndefined();
+  const clearedCredentials = await rpc<
+    Array<{ modelId?: string; maxImagesPerPrompt?: number; thinkingLevel?: string | null }>
+  >(page, "models/credentials", {});
+  const cleared = clearedCredentials.find((entry) => entry.modelId === "arbitrary-model");
+  expect(cleared?.maxImagesPerPrompt).toBeUndefined();
+  expect(cleared?.thinkingLevel ?? null).toBeNull();
   await page.getByRole("button", { name: "Close model settings" }).click();
   await page.locator("main").getByRole("button", { name: "Chief", exact: true }).click();
   const settings = page.getByTestId("bot-settings");
@@ -85,17 +95,18 @@ test("custom connections persist reasoning support and bot thinking", async ({
   await advanced.evaluate((element) => {
     (element as HTMLDetailsElement).open = true;
   });
-  // NativeSelect sits inside a wrapping <label>, so label text includes option
-  // copy and getByLabel(..., { exact: true }) misses the control. Use the
-  // combobox accessible name, matching other model E2E tests.
   const model = settings.getByRole("combobox", { name: "Model", exact: true });
   await expect(model).toBeVisible();
   await expect(model).toContainText("arbitrary-model");
-  // Value key — not a /arbitrary-model/ label match, which also hits "Space default (arbitrary-model)".
-  await model.selectOption("openai-compatible::arbitrary-model");
+  // The connected model itself, not "Space default (arbitrary-model)".
+  await model.click();
+  await page
+    .getByRole("option", { name: /arbitrary-model/ })
+    .filter({ hasNotText: "Space default" })
+    .click();
   const thinking = settings.getByRole("combobox", { name: "Thinking", exact: true });
   await expect(thinking).toBeVisible();
-  await thinking.selectOption("low");
+  await chooseOption(thinking, "Low");
   await thinking.scrollIntoViewIfNeeded();
   await captureScreenshot(page, testInfo, "openai-compatible-thinking");
   const saved = page.waitForResponse(
@@ -109,7 +120,7 @@ test("custom connections persist reasoning support and bot thinking", async ({
   await advanced.evaluate((element) => {
     (element as HTMLDetailsElement).open = true;
   });
-  await expect(thinking).toHaveValue("low");
+  await expect(thinking).toHaveText("Low");
 });
 
 test("connects, lists, and uses an OpenAI-compatible endpoint", async ({ page }, testInfo) => {
@@ -192,17 +203,17 @@ test("connects, lists, and uses an OpenAI-compatible endpoint", async ({ page },
     await expect(page.getByLabel("Model id")).toHaveValue("manual-model-not-listed");
     await page.getByRole("button", { name: "Use a found model" }).click();
     const discoveredModels = page.getByRole("combobox", { name: "Models from server" });
-    await expect(discoveredModels).toHaveValue(LOCAL_MODEL_ID);
-    await discoveredModels.selectOption("");
+    await expect(discoveredModels).toHaveText(LOCAL_MODEL_ID);
+    await chooseOption(discoveredModels, "Other model…");
     await expect(page.getByLabel("Model id")).toBeVisible();
     await page.getByRole("button", { name: "Find models" }).click();
-    await expect(discoveredModels).toHaveValue(LOCAL_MODEL_ID);
+    await expect(discoveredModels).toHaveText(LOCAL_MODEL_ID);
     await expect(page.getByText("Found 1 model.")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Save" })).toBeEnabled();
+    await expect(page.getByRole("button", { name: "Save", exact: true })).toBeEnabled();
     await captureScreenshot(page, testInfo, "openai-compatible-model-discovery");
 
-    await page.getByRole("button", { name: "Save" }).click();
-    await expect(page.getByText("Saved.")).toBeVisible();
+    await page.getByRole("button", { name: "Save", exact: true }).click();
+    await expect(page.getByText("Saved.", { exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: /OpenAI-compatible/ })).toContainText(
       "Connected",
     );
@@ -210,9 +221,9 @@ test("connects, lists, and uses an OpenAI-compatible endpoint", async ({ page },
 
     await page.getByLabel("OpenAI-compatible server URL").fill("");
     await expect(page.getByRole("button", { name: "Find models" })).toBeDisabled();
-    await expect(page.getByRole("button", { name: "Save" })).toBeDisabled();
+    await expect(page.getByRole("button", { name: "Save", exact: true })).toBeDisabled();
     await page.getByLabel("OpenAI-compatible server URL").fill(baseUrl);
-    await expect(page.getByRole("button", { name: "Save" })).toBeEnabled();
+    await expect(page.getByRole("button", { name: "Save", exact: true })).toBeEnabled();
 
     if (process.env.AGENT_RUNTIME === "pi") {
       await page.getByRole("button", { name: "Close model settings" }).click();
@@ -243,7 +254,9 @@ test("model settings connect, replace, and cancel provider authentication", asyn
   const providerSearch = page.getByPlaceholder("Search providers");
   await providerSearch.fill("scripted");
   await page.getByRole("button", { name: /Scripted/ }).click();
-  await expect(page.getByRole("combobox", { name: "Model" })).toHaveText(/Scripted runtime/);
+  await expect(page.getByRole("combobox", { name: "Model", exact: true })).toHaveText(
+    /Scripted runtime/,
+  );
   const apiKeyInput = page.getByLabel("API key");
   await expect(apiKeyInput).toHaveAttribute("autocomplete", "new-password");
   await apiKeyInput.fill("fake-scripted-key-one");
@@ -258,8 +271,12 @@ test("model settings connect, replace, and cancel provider authentication", asyn
     {},
   );
   expect(connected.find((entry) => entry.provider === "scripted")?.maxTokens).toBe(8192);
-  await page.getByText("Advanced", { exact: true }).click();
-  await page.getByLabel("Maximum output tokens").fill("16384");
+  // Connecting preserves the open disclosure; only open it if the form remounted.
+  const outputLimit = page.getByLabel("Maximum output tokens");
+  if (!(await outputLimit.isVisible())) {
+    await page.getByText("Advanced", { exact: true }).click();
+  }
+  await outputLimit.fill("16384");
   await page.getByRole("button", { name: "Save limits", exact: true }).click();
   await expect(page.getByText("Saved.", { exact: true })).toBeVisible();
   const updated = await rpc<Array<{ provider: string; maxTokens?: number }>>(
@@ -270,7 +287,9 @@ test("model settings connect, replace, and cancel provider authentication", asyn
   expect(updated.find((entry) => entry.provider === "scripted")?.maxTokens).toBe(16384);
   await page.reload();
   await openUserSettings(page, "models");
-  await expect(page.getByRole("combobox", { name: "Model" })).toHaveText(/Scripted runtime/);
+  await expect(page.getByRole("combobox", { name: "Model", exact: true })).toHaveText(
+    /Scripted runtime/,
+  );
   const storedKey = page.getByLabel("Replace API key");
   await expect(storedKey).toHaveValue("");
   await expect(storedKey).toHaveAttribute("placeholder", "Paste a replacement key");
@@ -301,6 +320,7 @@ test("model settings connect, replace, and cancel provider authentication", asyn
     hasKey: false,
     isDefault: false,
     modelId: "gpt-6-luna",
+    authKind: "oauth",
   };
   let oauthReady = false;
   let oauthFinished = false;
@@ -442,21 +462,77 @@ test("a deployment default on server credentials says so and keeps an own key op
   const serverNote = page.getByText(
     "Uses this server's own AWS IAM credentials to access Amazon Bedrock.",
   );
-  const useServerCredentials = page.getByRole("switch", { name: "Use server credentials" });
-  await expect(useServerCredentials).toBeChecked();
+  const ownKeyDisclosure = page.getByText("Use your own key", { exact: true });
   await expect(serverNote).toBeVisible();
   await expect(page.getByRole("button", { name: "Connect API key" })).toBeHidden();
   await captureScreenshot(page, testInfo, "model-settings-server-credentials");
 
-  await useServerCredentials.click();
+  await ownKeyDisclosure.click();
   await expect(page.getByRole("button", { name: "Connect API key" })).toBeVisible();
-  await expect(
-    page.getByText("Server credentials stay in use until you connect a key."),
-  ).toBeVisible();
-  await expect(serverNote).toBeHidden();
-
-  await useServerCredentials.click();
   await expect(serverNote).toBeVisible();
+  await ownKeyDisclosure.click();
+  await expect(page.getByRole("button", { name: "Connect API key" })).toBeHidden();
+  await expect(serverNote).toBeVisible();
+});
+
+test("a key connected in another space can replace server credentials for the same model", async ({
+  page,
+}, testInfo) => {
+  const stamp = Date.now();
+  await signup(page, `shared-model-${stamp}@rakazo.test`, "password12", "Model Owner");
+  await completeOnboarding(page);
+  const otherSpace = await rpc<{ id: string }>(page, "spaces/create", { name: "Other space" });
+  const provider = "amazon-bedrock";
+  const modelId = "eu.anthropic.claude-haiku-4-5-20251001-v1:0";
+  const connected = await page.request.post("/rpc/models/connect", {
+    headers: { "x-rakazo-space-id": otherSpace.id },
+    data: { json: { provider, modelId, apiKey: "fake-bedrock-key" } },
+  });
+  expect(connected.ok()).toBe(true);
+  await page.route("**/rpc/me", async (route) => {
+    const response = await route.fetch();
+    const body = (await response.json()) as { json: Record<string, unknown> };
+    // The offline deployment uses Scripted; expose its untouched default as host Bedrock.
+    if (body.json.defaultProvider !== provider) {
+      Object.assign(body.json, {
+        defaultProvider: provider,
+        defaultModel: modelId,
+        hostCredentialProvider: provider,
+        hostCredentialSource: "AWS IAM",
+      });
+    }
+    await route.fulfill({ response, json: body });
+  });
+  await openUserSettings(page, "models");
+  await expect(page.getByRole("combobox", { name: "Model", exact: true })).toHaveText(
+    /Claude Haiku/,
+  );
+  await expect(
+    page.getByText("Uses this server's own AWS IAM credentials to access Amazon Bedrock."),
+  ).toBeVisible();
+  const useModel = page.getByRole("button", { name: "Use this model", exact: true });
+  await expect(useModel).toBeVisible();
+  const personalBillingNote = page.getByText(
+    "Uses your Amazon Bedrock API key. Rakazo does not pay for model usage.",
+  );
+  await expect(personalBillingNote).toBeHidden();
+  await captureScreenshot(page, testInfo, "model-settings-server-credentials-connected-key");
+  const saved = page.waitForRequest("**/rpc/models/setDefault");
+  await useModel.click();
+  const request = await saved;
+  expect(request.postDataJSON().json).toMatchObject({ provider, modelId });
+  expect(request.headers()["x-rakazo-space-id"]).not.toBe(otherSpace.id);
+  await expect(page.getByText(/Now using/)).toBeVisible();
+  await expect(useModel).toBeHidden();
+  await expect(personalBillingNote).toBeVisible();
+  await expect(
+    page.getByText("Uses this server's own AWS IAM credentials to access Amazon Bedrock."),
+  ).toBeHidden();
+  expect(await rpc(page, "me", {})).toMatchObject({
+    defaultProvider: provider,
+    defaultModel: modelId,
+    hostCredentialProvider: null,
+  });
 });
 
 test("catalog models keep a space default thinking level per saved model", async ({
@@ -472,7 +548,7 @@ test("catalog models keep a space default thinking level per saved model", async
   // A non-reasoning provider never shows the control.
   await providerSearch.fill("scripted");
   await page.getByRole("button", { name: /Scripted/ }).click();
-  await expect(page.getByRole("combobox", { name: "Thinking" })).toBeHidden();
+  await expect(page.getByRole("combobox", { name: "Thinking", exact: true })).toBeHidden();
 
   await providerSearch.fill("anthropic");
   await page.getByRole("button", { name: /^Anthropic / }).click();
@@ -482,13 +558,15 @@ test("catalog models keep a space default thinking level per saved model", async
 
   const thinking = page.getByRole("combobox", { name: "Thinking", exact: true });
   await expect(thinking).toBeVisible();
-  await expect(thinking).toHaveValue("");
-  await thinking.selectOption("high");
+  // The menu shows "Default (…)" until a level is chosen.
+  await expect(thinking).toHaveText(/^Default/);
+  await chooseOption(thinking, "High");
   await captureScreenshot(page, testInfo, "catalog-model-thinking");
   await page.getByRole("button", { name: "Save", exact: true }).click();
   await expect(page.getByText(/Now using/)).toBeVisible();
   // The Active model banner surfaces the effective effort while the model can think.
-  await expect(page.getByText("Thinking: High", { exact: true })).toBeVisible();
+  // It shares a line with the provider: "Anthropic · Thinking: High".
+  await expect(page.getByText(/· Thinking: High$/)).toBeVisible();
 
   const credentials = await rpc<Array<{ provider: string; thinkingLevel?: string | null }>>(
     page,
@@ -502,13 +580,15 @@ test("catalog models keep a space default thinking level per saved model", async
   await openUserSettings(page, "models");
   await providerSearch.fill("anthropic");
   await page.getByRole("button", { name: /^Anthropic / }).click();
-  await expect(page.getByRole("combobox", { name: "Thinking", exact: true })).toHaveValue("high");
+  await expect(page.getByRole("combobox", { name: "Thinking", exact: true })).toHaveText("High");
 
   // The stored level is bound to the saved model: staging another model resets the
   // staged level, and saving the new model clears the old level instead of leaking it.
   await page.getByRole("combobox", { name: "Model", exact: true }).click();
   await page.getByRole("option", { name: "Claude Opus 4.8", exact: true }).click();
-  await expect(page.getByRole("combobox", { name: "Thinking", exact: true })).toHaveValue("");
+  await expect(page.getByRole("combobox", { name: "Thinking", exact: true })).toHaveText(
+    /^Default/,
+  );
   await page.getByRole("button", { name: "Use this model", exact: true }).click();
   await expect(page.getByText(/Now using/)).toBeVisible();
   const updated = await rpc<Array<{ provider: string; thinkingLevel?: string | null }>>(
@@ -517,4 +597,89 @@ test("catalog models keep a space default thinking level per saved model", async
     {},
   );
   expect(updated.find((entry) => entry.provider === "anthropic")?.thinkingLevel).toBeUndefined();
+});
+
+test("saves and reloads an ordered backup model list for connected models", async ({
+  page,
+}, testInfo) => {
+  const stamp = Date.now();
+  await signup(page, `backup-models-${stamp}@rakazo.test`, "password12", `Backups ${stamp}`);
+  await completeOnboarding(page);
+
+  const catalog = await rpc<
+    Array<{
+      provider: string;
+      id: string;
+      label: string;
+      providerName?: string;
+      placeholder?: boolean;
+    }>
+  >(page, "models/list", {});
+  const targets = ["anthropic", "openai"].map((provider) => {
+    const model = catalog.find((entry) => entry.provider === provider && !entry.placeholder);
+    expect(model, `expected a ${provider} catalog entry`).toBeDefined();
+    return model!;
+  });
+  // Fake credentials exercise the connected-model picker without calling a provider.
+  for (const model of targets) {
+    await rpc(page, "models/connect", {
+      provider: model.provider,
+      apiKey: `fake-backup-${model.provider}-key`,
+      modelId: model.id,
+    });
+  }
+
+  const settings = await openUserSettings(page, "models");
+  const panel = settings.getByTestId("model-backups");
+  await panel.scrollIntoViewIfNeeded();
+  await expect(panel).toBeVisible();
+  await expect(panel.getByText("Add connected models to use them as backups.")).toBeVisible();
+  const picker = panel.getByRole("combobox", { name: "Add connected model" });
+  const firstLabel = `${targets[0]!.providerName ?? targets[0]!.provider} · ${targets[0]!.label}`;
+  const secondLabel = `${targets[1]!.providerName ?? targets[1]!.provider} · ${targets[1]!.label}`;
+  await chooseOption(picker, firstLabel);
+  await panel.getByRole("button", { name: "Add", exact: true }).click();
+  await chooseOption(picker, secondLabel);
+  await panel.getByRole("button", { name: "Add", exact: true }).click();
+  await panel.getByRole("button", { name: `Move ${secondLabel} up` }).click();
+  const rows = panel.locator('[data-testid^="model-backup-"]');
+  await expect(rows.nth(0)).toContainText(secondLabel);
+  await expect(rows.nth(1)).toContainText(firstLabel);
+  await panel.scrollIntoViewIfNeeded();
+  await expect(panel).toBeInViewport();
+
+  const savedResponse = page.waitForResponse(
+    (response) => response.url().includes("/rpc/models/setBackups") && response.ok(),
+  );
+  await panel.getByRole("button", { name: "Save backups", exact: true }).click();
+  await savedResponse;
+  await expect(panel.getByText("Backup models saved.")).toBeVisible();
+  expect(await rpc(page, "models/backups", {})).toEqual([
+    { provider: targets[1]!.provider, modelId: targets[1]!.id },
+    { provider: targets[0]!.provider, modelId: targets[0]!.id },
+  ]);
+
+  await page.reload();
+  const reloadedSettings = await openUserSettings(page, "models");
+  const reloadedPanel = reloadedSettings.getByTestId("model-backups");
+  await reloadedPanel.scrollIntoViewIfNeeded();
+  const reloadedRows = reloadedPanel.locator('[data-testid^="model-backup-"]');
+  await expect(reloadedRows.nth(0)).toContainText(secondLabel);
+  await expect(reloadedRows.nth(1)).toContainText(firstLabel);
+  await reloadedPanel.scrollIntoViewIfNeeded();
+  await expect(reloadedPanel).toBeInViewport();
+  await testInfo.attach("settings-backup-models-control", {
+    body: await reloadedPanel.screenshot({ animations: "disabled" }),
+    contentType: "image/png",
+  });
+  await captureScreenshot(page, testInfo, "settings-backup-models-order");
+  await reloadedPanel.getByRole("button", { name: `Remove ${firstLabel}` }).click();
+  const removalResponse = page.waitForResponse(
+    (response) => response.url().includes("/rpc/models/setBackups") && response.ok(),
+  );
+  await reloadedPanel.getByRole("button", { name: "Save backups", exact: true }).click();
+  await removalResponse;
+  expect(await rpc(page, "models/backups", {})).toEqual([
+    { provider: targets[1]!.provider, modelId: targets[1]!.id },
+  ]);
 });
