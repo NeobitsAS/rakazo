@@ -4418,6 +4418,10 @@ msgstr "रीसेट लिंक भेजें"
 msgid "Send with Enter"
 msgstr "Enter से भेजें"
 
+#: src/pages/RoutineEditor.tsx
+msgid "Send to {linkedChat}"
+msgstr "{linkedChat} पर भेजें"
+
 #: src/components/AskCard.tsx
 msgid "Sending…"
 msgstr "भेजा जा रहा है…"

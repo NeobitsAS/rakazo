@@ -4418,6 +4418,10 @@ msgstr "Отправить ссылку для сброса"
 msgid "Send with Enter"
 msgstr "Отправлять по Enter"
 
+#: src/pages/RoutineEditor.tsx
+msgid "Send to {linkedChat}"
+msgstr "Отправлять в {linkedChat}"
+
 #: src/components/AskCard.tsx
 msgid "Sending…"
 msgstr "Отправка…"

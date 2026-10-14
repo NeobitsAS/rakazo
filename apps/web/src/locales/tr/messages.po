@@ -4418,6 +4418,10 @@ msgstr "Sıfırlama bağlantısı gönder"
 msgid "Send with Enter"
 msgstr "Enter ile gönder"
 
+#: src/pages/RoutineEditor.tsx
+msgid "Send to {linkedChat}"
+msgstr "{linkedChat} üzerinden gönder"
+
 #: src/components/AskCard.tsx
 msgid "Sending…"
 msgstr "Gönderiliyor…"

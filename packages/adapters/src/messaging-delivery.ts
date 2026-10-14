@@ -38,12 +38,13 @@ type IdentityRow = {
 
 /**
  * Automatic mirror, not a send tool: every text-bearing bot message of a
- * messaging run is copied into the uniform outbox and sent, so delivery does
- * not depend on prompt compliance. DM runs go to the owner's conversation;
- * channel runs go to the group with an attribution prefix and are fanned
- * out internally to peer approved bots (agent-to-agent traffic never
- * transits the messaging provider). Also drains pending outbox rows (invites
- * and intros are enqueued by the channels slice).
+ * messaging run (or of a routine run that opted in) is copied into the
+ * uniform outbox and sent, so delivery does not depend on prompt compliance.
+ * DM runs go to the owner's conversation; channel runs go to the group with
+ * an attribution prefix and are fanned out internally to peer approved bots
+ * (agent-to-agent traffic never transits the messaging provider). Also
+ * drains pending outbox rows (invites and intros are enqueued by the
+ * channels slice).
  */
 export async function deliverMessagingOutbound(
   deps: MessagingDeliveryDeps,
@@ -70,7 +71,7 @@ export async function mirrorMessagingOutbound(
 async function mirrorRun(deps: MessagingDeliveryDeps, runId: string): Promise<void> {
   const run = await deps.prisma.run.findUnique({
     where: { id: runId },
-    include: { sourceMessage: true },
+    include: { sourceMessage: true, routine: { select: { deliverToMessaging: true } } },
   });
   if (!run) return;
 
@@ -80,9 +81,13 @@ async function mirrorRun(deps: MessagingDeliveryDeps, runId: string): Promise<vo
       await mirrorChannelRun(deps, run, channelBlock);
       return;
     }
+  } else if (run.trigger === "routine") {
+    // Opt-in per routine, and only once the run is done: a run paused on an
+    // ask or approval must not send its partial output.
+    if (!run.routine?.deliverToMessaging || run.status !== "completed") return;
   } else if (run.trigger !== "bot_message") {
     // Mirror inbound messaging runs and delegated bot_message replies only.
-    // Do not push in-app user/routine runs out to the linked chat.
+    // Do not push in-app user runs out to the linked chat.
     return;
   }
 

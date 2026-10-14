@@ -49,6 +49,53 @@ test("Slack message trigger uses the mounted messaging provider and persists", a
   await captureScreenshot(page, testInfo, "routine-slack-message");
 });
 
+test("a routine can send its replies to the bot's linked chat", async ({ page }, testInfo) => {
+  let botId = "";
+  await page.route("**/rpc/messaging/status", (route) =>
+    route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        json: {
+          enabled: true,
+          providers: ["gchat"],
+          openSignup: false,
+          identities: botId
+            ? [{ id: "identity-1", provider: "gchat", address: "users/1", botId, botName: "Bot" }]
+            : [],
+        },
+      }),
+    }),
+  );
+  const stamp = Date.now();
+  await signup(page, `routine-chat-${stamp}@rakazo.test`, "password12", "Chat Routine");
+  await completeOnboarding(page);
+  botId = activeBotId(page);
+  await page.reload();
+
+  await page.getByTitle("Agent computer").click();
+  await page.getByRole("button", { name: "Create Routine" }).click();
+  await page.getByPlaceholder("Name this routine").fill("Morning brief");
+  await page
+    .getByPlaceholder("What should this routine do each time it runs?")
+    .fill("Summarize today's calendar");
+  await page.getByRole("button", { name: "Add trigger" }).click();
+  await page.getByRole("menuitem", { name: "On a schedule" }).hover();
+  await page.getByRole("menuitem", { name: "Weekdays", exact: true }).click();
+  const deliver = page.getByRole("switch", { name: "Send to Google Chat" });
+  await expect(deliver).not.toBeChecked();
+  await deliver.click();
+  await expect(deliver).toBeChecked();
+
+  const saved = page.waitForResponse(
+    (response) => response.url().includes("/rpc/routines/create") && response.ok(),
+  );
+  await page.getByRole("button", { name: "Save", exact: true }).click();
+  await saved;
+  const [routine] = await rpc<Routine[]>(page, "routines/list", { botId });
+  expect(routine).toMatchObject({ name: "Morning brief", deliverToMessaging: true });
+  await captureScreenshot(page, testInfo, "routine-send-to-chat");
+});
+
 test("GitHub event trigger exposes signed delivery settings and persists", async ({
   page,
 }, testInfo) => {

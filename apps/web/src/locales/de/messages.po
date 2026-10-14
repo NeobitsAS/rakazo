@@ -4418,6 +4418,10 @@ msgstr "Link zum Zurücksetzen senden"
 msgid "Send with Enter"
 msgstr "Mit Enter senden"
 
+#: src/pages/RoutineEditor.tsx
+msgid "Send to {linkedChat}"
+msgstr "An {linkedChat} senden"
+
 #: src/components/AskCard.tsx
 msgid "Sending…"
 msgstr "Wird gesendet…"

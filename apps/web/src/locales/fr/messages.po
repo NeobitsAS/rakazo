@@ -4418,6 +4418,10 @@ msgstr "Envoyer le lien de réinitialisation"
 msgid "Send with Enter"
 msgstr "Envoyer avec Entrée"
 
+#: src/pages/RoutineEditor.tsx
+msgid "Send to {linkedChat}"
+msgstr "Envoyer vers {linkedChat}"
+
 #: src/components/AskCard.tsx
 msgid "Sending…"
 msgstr "Envoi en cours…"

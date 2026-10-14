@@ -789,6 +789,8 @@ model Routine {
   webhookEnabled Boolean   @default(false)
   githubEnabled  Boolean   @default(false)
   messageProvider String?
+  /// Mirror each completed run's reply to the bot's linked messaging DM.
+  deliverToMessaging Boolean @default(false)
   modelProvider  String?
   modelId        String?
   thinkingLevel  String?

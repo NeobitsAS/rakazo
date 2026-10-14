@@ -30,6 +30,7 @@ import {
   Field,
   FieldLabel,
   Input,
+  Label,
   OptionSelect,
   Popover,
   PopoverContent,
@@ -50,6 +51,7 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useId, useState } from "react";
+import { providerLabel } from "../lib/messaging";
 import {
   connectedModelOptions,
   modelOptionKey,
@@ -100,6 +102,7 @@ export type RoutineDraftState = {
   webhookEnabled: boolean;
   githubEnabled: boolean;
   messageProvider: string | null;
+  deliverToMessaging: boolean;
   active: boolean;
   runAtLocal: string;
   /** Empty runs this routine on the bot's model. */
@@ -196,6 +199,7 @@ export function emptyRoutineDraft(): RoutineDraftState {
     webhookEnabled: false,
     githubEnabled: false,
     messageProvider: null,
+    deliverToMessaging: false,
     active: true,
     runAtLocal: "",
     modelKey: "",
@@ -212,6 +216,7 @@ export function draftFromRoutine(routine: Routine): RoutineDraftState {
     webhookEnabled: routine.webhookEnabled,
     githubEnabled: routine.githubEnabled,
     messageProvider: routine.messageProvider,
+    deliverToMessaging: routine.deliverToMessaging,
     active: routine.active,
     runAtLocal: routineNeedsOneShotArm(routine, routine.crons) ? defaultArmRunAtLocal() : "",
     modelKey:
@@ -313,6 +318,7 @@ export function RoutineEditor({
   webhook,
   githubPath,
   messageProviders,
+  linkedProvider,
   saving,
   running,
   error,
@@ -330,6 +336,8 @@ export function RoutineEditor({
   webhook: { path: string; secret: string | null; configured: boolean };
   githubPath: string;
   messageProviders: string[];
+  /** Messaging provider of this bot's linked chat, if any. */
+  linkedProvider: string | null;
   saving: boolean;
   running: boolean;
   error: string | null;
@@ -370,6 +378,7 @@ export function RoutineEditor({
     []
   ).filter((level) => level !== "off");
   const defaultThinkingLevel = selectedCredential?.thinkingLevel ?? "medium";
+  const linkedChat = linkedProvider ? providerLabel(linkedProvider) : null;
   const slackAvailable = messageProviders.includes("slack");
   const slackDisabledReasonId = `${fieldId}-slack-disabled-reason`;
   const hasTriggers =
@@ -725,6 +734,22 @@ export function RoutineEditor({
           </p>
         ) : null}
       </div>
+
+      {linkedChat ? (
+        <div className="mt-5 flex items-center gap-3">
+          <Switch
+            id={`${fieldId}-deliver`}
+            checked={draft.deliverToMessaging}
+            onCheckedChange={(deliverToMessaging) => onChange({ ...draft, deliverToMessaging })}
+          />
+          <Label
+            htmlFor={`${fieldId}-deliver`}
+            className="text-[14px] font-normal text-foreground/75"
+          >
+            {t`Send to ${linkedChat}`}
+          </Label>
+        </div>
+      ) : null}
 
       <div className="mt-5">
         <Button disabled={saving || running || !hasTriggers} onClick={onSave}>
