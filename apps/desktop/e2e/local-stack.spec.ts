@@ -3,6 +3,7 @@ import { createServer, type RequestListener, type Server } from "node:http";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { type ElectronApplication, _electron as electron, expect, test } from "@playwright/test";
+import { appWindows, firstWindow, nextWindow } from "./windows";
 
 const APP_MARKER = "Local Rakazo stack ready";
 const IMAGE_TAG = "v9.9.9";
@@ -167,7 +168,7 @@ async function readLog() {
 
 test("This computer installs and starts the stack, then opens the app", async () => {
   app = await launch("ok");
-  const setup = await app.firstWindow();
+  const setup = await firstWindow(app);
 
   await expect(setup.getByRole("radio", { name: /This computer/ })).toBeChecked();
   // The panel is empty until a start begins, so check the attribute rather than the box.
@@ -175,7 +176,7 @@ test("This computer installs and starts the stack, then opens the app", async ()
   await expect(setup.locator("#stack")).toBeHidden();
   await expect(setup.getByRole("button", { name: "Check connection" })).toBeHidden();
 
-  const appWindowPromise = app.waitForEvent("window");
+  const appWindowPromise = nextWindow(app);
   await setup.getByRole("button", { name: "Continue" }).click();
   await expect(setup.locator("#stack-phase")).toHaveText("Downloading Rakazo…");
   await expect(setup.getByRole("button", { name: "Continue" })).toBeDisabled();
@@ -222,7 +223,7 @@ test("This computer installs and starts the stack, then opens the app", async ()
 
 test("without Docker the app explains how to get it and offers to check again", async () => {
   app = await launch("missing");
-  const setup = await app.firstWindow();
+  const setup = await firstWindow(app);
 
   await setup.getByRole("button", { name: "Continue" }).click();
   await expect(setup.locator("#stack-phase")).toHaveText(
@@ -246,7 +247,7 @@ test("without Docker the app explains how to get it and offers to check again", 
 
 test("switching to Existing instance while the stack starts keeps that choice", async () => {
   app = await launch("ok");
-  const setup = await app.firstWindow();
+  const setup = await firstWindow(app);
 
   await setup.getByRole("button", { name: "Continue" }).click();
   await expect(setup.locator("#stack-phase")).toHaveText("Downloading Rakazo…");
@@ -267,7 +268,7 @@ test("switching to Existing instance while the stack starts keeps that choice", 
 
   // Back on This computer, Continue starts (or re-follows) and opens the app.
   await setup.getByRole("radio", { name: /This computer/ }).check();
-  const appWindowPromise = app.waitForEvent("window");
+  const appWindowPromise = nextWindow(app);
   await setup.getByRole("button", { name: "Continue" }).click();
   await expect((await appWindowPromise).getByText(APP_MARKER)).toBeVisible();
   await expect.poll(savedSetup).toEqual({ mode: "new", serverUrl });
@@ -275,7 +276,7 @@ test("switching to Existing instance while the stack starts keeps that choice", 
 
 test("a stopped Docker daemon is reported and Check again asks Docker once more", async () => {
   app = await launch("daemon-down");
-  const setup = await app.firstWindow();
+  const setup = await firstWindow(app);
 
   await setup.getByRole("button", { name: "Continue" }).click();
   await expect(setup.locator("#stack-phase")).toHaveText(
@@ -292,7 +293,7 @@ test("a stopped Docker daemon is reported and Check again asks Docker once more"
 
 test("unpublished images show the docker output and a Retry button", async () => {
   app = await launch("pull-fails");
-  const setup = await app.firstWindow();
+  const setup = await firstWindow(app);
 
   await setup.getByRole("button", { name: "Continue" }).click();
   await expect(setup.locator("#stack-phase")).toHaveText(
@@ -322,12 +323,12 @@ test("a saved local stack that is down is started again without asking", async (
   );
 
   app = await launch("ok");
-  const setup = await app.firstWindow();
+  const setup = await firstWindow(app);
   await expect(setup.getByRole("radio", { name: /This computer/ })).toBeChecked();
   await expect(setup.locator("#stack")).toBeVisible();
   await expect(setup.locator("#status")).toBeEmpty();
 
-  const appWindow = await app.waitForEvent("window");
+  const appWindow = await nextWindow(app);
   await expect(appWindow.getByText(APP_MARKER)).toBeVisible();
   await expect.poll(savedSetup).toEqual({ mode: "new", serverUrl });
   expect((await readLog()).some((line) => line.includes(" pull"))).toBe(true);
@@ -347,7 +348,7 @@ test("a saved local stack is reused only after its private identity matches", as
   );
 
   app = await launch("ok");
-  const appWindow = await app.firstWindow();
+  const appWindow = await firstWindow(app);
   await expect(appWindow.getByText(APP_MARKER)).toBeVisible();
   expect(await readLog()).toEqual([]);
 });
@@ -385,7 +386,7 @@ test("a saved local target is the exact origin authenticated before reuse", asyn
     );
 
     app = await launch("ok");
-    const setup = await app.firstWindow();
+    const setup = await firstWindow(app);
     await expect(setup.getByRole("radio", { name: /This computer/ })).toBeChecked();
     await expect(setup.locator("#stack")).toBeVisible();
     await expect(setup.getByText("Unchecked listener")).toHaveCount(0);
@@ -403,8 +404,8 @@ test("an existing stack .env is never rewritten", async () => {
   await writeFile(path.join(stackDir, ".env"), sentinel, { encoding: "utf8", mode: 0o600 });
 
   app = await launch("ok");
-  const setup = await app.firstWindow();
-  const appWindowPromise = app.waitForEvent("window");
+  const setup = await firstWindow(app);
+  const appWindowPromise = nextWindow(app);
   await setup.getByRole("button", { name: "Continue" }).click();
   const appWindow = await appWindowPromise;
   await expect(appWindow.getByText(APP_MARKER)).toBeVisible();
@@ -414,7 +415,7 @@ test("an existing stack .env is never rewritten", async () => {
 
 test("exhausted address pools explain recovery", async () => {
   app = await launch("pool-exhausted");
-  const setup = await app.firstWindow();
+  const setup = await firstWindow(app);
   await setup.getByRole("button", { name: "Continue" }).click();
   await expect(setup.locator("#stack-phase")).toHaveText(
     "Docker has no free network address pools. Remove unused Docker networks or expand Docker’s address pools, then retry.",
@@ -427,8 +428,8 @@ test("exhausted address pools explain recovery", async () => {
 
 test("a port conflict opens and saves the replacement managed origin", async () => {
   app = await launch("port-conflict");
-  const setup = await app.firstWindow();
-  const appWindowPromise = app.waitForEvent("window");
+  const setup = await firstWindow(app);
+  const appWindowPromise = nextWindow(app);
   await setup.getByRole("button", { name: "Continue" }).click();
   const urlFile = path.join(userData, "stack", ".desktop-web-url");
   let replacementUrl = "";
@@ -458,7 +459,7 @@ test("a port conflict opens and saves the replacement managed origin", async () 
 
 test("repeated port conflicts stop with a retry action", async () => {
   app = await launch("ports-exhausted");
-  const setup = await app.firstWindow();
+  const setup = await firstWindow(app);
   await setup.getByRole("button", { name: "Continue" }).click();
   await expect(setup.locator("#stack-phase")).toHaveText(
     "Could not bind a local port after retrying. Retry to choose another port.",
@@ -472,10 +473,10 @@ test("repeated port conflicts stop with a retry action", async () => {
 
 test("the native settings menu opens an isolated logged-out settings capability", async () => {
   app = await launch("ok");
-  const setup = await app.firstWindow();
-  const nextWindow = app.waitForEvent("window");
+  const setup = await firstWindow(app);
+  const mainOpened = nextWindow(app);
   await setup.getByRole("button", { name: "Continue", exact: true }).click();
-  const main = await nextWindow;
+  const main = await mainOpened;
   await expect(main.getByText(APP_MARKER)).toBeVisible();
   await expect.poll(savedSetup).toEqual({ mode: "new", serverUrl });
   const denied = await main.evaluate(async () => {
@@ -490,7 +491,7 @@ test("the native settings menu opens an isolated logged-out settings capability"
     }
   });
   expect(denied).toBe(true);
-  const settingsOpened = app.waitForEvent("window");
+  const settingsOpened = nextWindow(app);
   await app.evaluate(({ Menu }) => {
     const item = Menu.getApplicationMenu()?.getMenuItemById("local-server-settings");
     if (!item) throw new Error("Missing settings menu");
@@ -509,7 +510,7 @@ test("the native settings menu opens an isolated logged-out settings capability"
   await app.evaluate(({ Menu }) =>
     Menu.getApplicationMenu()?.getMenuItemById("local-server-settings")?.click(),
   );
-  expect(app.windows()).toHaveLength(2);
+  expect(await appWindows(app)).toHaveLength(2);
   await settings.close();
   await expect(main.getByText(APP_MARKER)).toBeVisible();
 });

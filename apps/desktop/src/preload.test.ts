@@ -83,9 +83,9 @@ describe("desktop preload bridge", () => {
   });
 
   it("forwards captured codes without leaking the IPC event to the renderer", () => {
-    const listeners: Array<(event: unknown, callback: unknown) => void> = [];
-    const on = vi.fn((_channel: string, handler: (event: unknown, callback: unknown) => void) => {
-      listeners.push(handler);
+    const listeners = new Map<string, (event: unknown, callback: unknown) => void>();
+    const on = vi.fn((channel: string, handler: (event: unknown, callback: unknown) => void) => {
+      listeners.set(channel, handler);
     });
     const off = vi.fn();
     const { exposeInMainWorld } = runPreload("preload.cjs", { on, off });
@@ -95,7 +95,10 @@ describe("desktop preload bridge", () => {
     const unsubscribe = bridge.oauth.onCallback((callback) => received.push(callback));
 
     expect(on).toHaveBeenCalledWith("desktop.oauth.callback", expect.any(Function));
-    listeners[0]?.({ sender: "ipc-event" }, { code: "ac_123", state: "verifier_456" });
+    listeners.get("desktop.oauth.callback")?.(
+      { sender: "ipc-event" },
+      { code: "ac_123", state: "verifier_456" },
+    );
     expect(received).toEqual([{ code: "ac_123", state: "verifier_456" }]);
 
     unsubscribe();
@@ -112,9 +115,9 @@ describe("setup preload bridge", () => {
     expect(globalName).toBe("rakazoSetup");
     expect(bridge.platform).toBe("linux");
     expect(Object.keys(bridge).sort()).toEqual([
+      "cancel",
       "openLink",
       "platform",
-      "quit",
       "save",
       "stack",
       "state",
@@ -125,7 +128,7 @@ describe("setup preload bridge", () => {
     await bridge.state();
     await bridge.test("http://127.0.0.1:5173");
     await bridge.save({ mode: "new", serverUrl: "http://127.0.0.1:5173" });
-    await bridge.quit();
+    await bridge.cancel();
     await bridge.openLink("orbstack");
     await bridge.stack.state();
     await bridge.stack.start();
@@ -133,7 +136,7 @@ describe("setup preload bridge", () => {
       "desktop.setup.state",
       "desktop.setup.test",
       "desktop.setup.save",
-      "desktop.setup.quit",
+      "desktop.setup.cancel",
       "desktop.setup.openLink",
       "desktop.setup.stack.state",
       "desktop.setup.stack.start",
