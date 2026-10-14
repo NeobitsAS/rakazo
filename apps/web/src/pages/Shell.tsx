@@ -14,6 +14,7 @@ import type {
   Group,
   Me,
   MessageReaction,
+  MessagingLinkedIdentity,
   ProductEvent,
   Routine,
   SearchHit,
@@ -559,6 +560,7 @@ export function ShellPage() {
   const [messagingSettingsOpen, setMessagingSettingsOpen] = useState(false);
   const [messagingSurfaceEnabled, setMessagingSurfaceEnabled] = useState(false);
   const [messagingProviders, setMessagingProviders] = useState<string[]>([]);
+  const [messagingIdentities, setMessagingIdentities] = useState<MessagingLinkedIdentity[]>([]);
   const [memoryProviderConfig, setMemoryProviderConfig] = useState<
     SpaceMemoryConfig | null | undefined
   >(undefined);
@@ -717,6 +719,7 @@ export function ShellPage() {
       viewport.removeEventListener("scroll", sync);
     };
   }, [computerOpen]);
+  const routinePanelOpen = panel === "routine";
   useEffect(() => {
     if (!session.data?.user) return;
     let cancelled = false;
@@ -726,13 +729,15 @@ export function ShellPage() {
         if (!cancelled) {
           setMessagingSurfaceEnabled(status.enabled);
           setMessagingProviders(status.providers);
+          setMessagingIdentities(status.identities);
         }
       })
       .catch(() => undefined);
     return () => {
       cancelled = true;
     };
-  }, [session.data?.user]);
+    // Refetch when a routine opens: a chat linked meanwhile enables its delivery switch.
+  }, [session.data?.user, routinePanelOpen]);
   const [usage, setUsage] = useState<{
     inputTokens: number | null;
     outputTokens: number | null;
@@ -4007,6 +4012,10 @@ export function ShellPage() {
                     : `/api/v1/bots/${active.id}/github`
                 }
                 messageProviders={messagingProviders}
+                linkedProvider={
+                  messagingIdentities.find((identity) => identity.botId === active.id)?.provider ??
+                  null
+                }
                 saving={savingRoutine}
                 running={runningRoutine}
                 error={routineError}
@@ -4077,6 +4086,7 @@ export function ShellPage() {
                         webhookEnabled: routineDraft.webhookEnabled,
                         githubEnabled: routineDraft.githubEnabled,
                         messageProvider: routineDraft.messageProvider,
+                        deliverToMessaging: routineDraft.deliverToMessaging,
                         ...(routineModel.modelProvider !== targetRoutine.modelProvider ||
                         routineModel.modelId !== targetRoutine.modelId ||
                         routineModel.thinkingLevel !== targetRoutine.thinkingLevel
@@ -4096,6 +4106,7 @@ export function ShellPage() {
                         webhookEnabled: routineDraft.webhookEnabled,
                         githubEnabled: routineDraft.githubEnabled,
                         messageProvider: routineDraft.messageProvider,
+                        deliverToMessaging: routineDraft.deliverToMessaging,
                         ...routineModel,
                       });
                     }
