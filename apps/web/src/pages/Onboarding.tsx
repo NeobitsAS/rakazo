@@ -48,6 +48,7 @@ import {
   ServerCredentialsUnavailable,
   serverCredentialsBlocker,
 } from "../components/ServerCredentialsUnavailable";
+import { useBrandAccentCycle } from "../lib/brand-accent";
 import { useCopyText } from "../lib/copy-text";
 import type { ModelCatalogEntry } from "../lib/model-auth";
 import { thinkingLevelLabel } from "../lib/model-catalog";
@@ -138,6 +139,9 @@ export function OnboardingPage() {
   const navigate = useNavigate();
   const fieldId = useId();
   const [step, setStep] = useState<OnboardingStep | "loading">("loading");
+  // State, not a ref: the page first renders a loader, and the cycle starts once this mounts.
+  const [accentElement, setAccentElement] = useState<HTMLDivElement | null>(null);
+  useBrandAccentCycle(accentElement);
   /**
    * The steps this user goes through, decided once the server says what is missing. Finishing
    * the last one creates the first bot and opens its chat; with no steps, that happens at once.
@@ -639,8 +643,9 @@ export function OnboardingPage() {
 
   return (
     <div
+      ref={setAccentElement}
       data-rakazo-surface="onboarding"
-      className="flex min-h-full flex-col bg-background text-foreground md:flex-row"
+      className="flex min-h-full flex-col bg-background text-foreground [--link:var(--brand-accent)] [--ring:var(--brand-accent)] md:flex-row"
     >
       <aside className="shrink-0 border-b border-sidebar-border bg-sidebar text-sidebar-foreground md:w-[28%] md:border-r md:border-b-0">
         <WindowStrip />

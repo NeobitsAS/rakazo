@@ -1,5 +1,8 @@
 import { useEffect, useRef } from "react";
 
+/** The eye colour of the app icon (public/favicon.svg). */
+const EYE = "#F2F2F0";
+
 /** Where the eyes look, in icon units, and how long they rest there in milliseconds. */
 const GLANCES = [
   { x: 0, y: 0, rest: 900 },
@@ -27,8 +30,8 @@ const GLANCE_KEYFRAMES = [
 ];
 
 /**
- * The Rakazo mark, alive: its eyes look around. It has the sign-in mark's colours. Its eyes hold
- * still for people who ask for less motion.
+ * The app icon, alive: its eyes look around, and it takes the brand accent (lib/brand-accent.ts)
+ * of the page it sits on. Its eyes hold still for people who ask for less motion.
  */
 export function LivelyLogo({ className }: { className?: string }) {
   const eyesRef = useRef<SVGGElement>(null);
@@ -46,10 +49,10 @@ export function LivelyLogo({ className }: { className?: string }) {
 
   return (
     <svg viewBox="0 0 512 512" aria-hidden="true" className={className}>
-      <rect width="512" height="512" rx="148" className="fill-muted" />
+      <rect width="512" height="512" rx="148" className="fill-(--brand-accent)" />
       <g ref={eyesRef}>
-        <rect x="157" y="196" width="62" height="120" rx="31" className="fill-primary" />
-        <rect x="293" y="196" width="62" height="120" rx="31" className="fill-primary" />
+        <rect x="157" y="196" width="62" height="120" rx="31" fill={EYE} />
+        <rect x="293" y="196" width="62" height="120" rx="31" fill={EYE} />
       </g>
     </svg>
   );

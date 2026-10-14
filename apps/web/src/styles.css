@@ -42,6 +42,14 @@ body,
   -webkit-app-region: no-drag;
 }
 
+/* The brand accent that cycles through the palette (lib/brand-accent.ts); registered as a colour
+   so it fades between values instead of jumping. */
+@property --brand-accent {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #3b82f6;
+}
+
 @keyframes rkPulse {
   0%,
   100% {
