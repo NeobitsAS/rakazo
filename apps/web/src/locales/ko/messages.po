@@ -17,34 +17,6 @@ msgstr ""
 msgid " (unread)"
 msgstr " (읽지 않음)"
 
-#: src/pages/ModelSettingsOverlay.tsx
-msgid "Server credentials stay in use until you connect a key."
-msgstr "키를 연결할 때까지 서버 자격 증명이 계속 사용됩니다."
-
-#: src/pages/ModelSettingsOverlay.tsx
-msgid "Use server credentials"
-msgstr "서버 자격 증명 사용"
-
-#: src/components/ServerCredentialsUnavailable.tsx
-msgid "This server isn't set up to use its own {source} credentials. To enable it, set PI_DEFAULT_CREDENTIALS=host with PI_DEFAULT_PROVIDER and PI_DEFAULT_MODEL on the server."
-msgstr "이 서버는 자체 {source} 자격 증명을 사용하도록 설정되어 있지 않습니다. 사용하려면 서버에서 PI_DEFAULT_PROVIDER 및 PI_DEFAULT_MODEL과 함께 PI_DEFAULT_CREDENTIALS=host를 설정하세요."
-
-#: src/components/ServerCredentialsUnavailable.tsx
-msgid "This server has no usable {source} credentials."
-msgstr "이 서버에 사용할 수 있는 {source} 자격 증명이 없습니다."
-
-#: src/components/ServerCredentialsUnavailable.tsx
-msgid "This server's {source} credentials aren't allowed to use {modelLabel}."
-msgstr "이 서버의 {source} 자격 증명에는 {modelLabel}을(를) 사용할 권한이 없습니다."
-
-#: src/components/ServerCredentialsUnavailable.tsx
-msgid "{modelLabel} isn't available to this server's {source} credentials."
-msgstr "{modelLabel}은(는) 이 서버의 {source} 자격 증명으로 사용할 수 없습니다."
-
-#: src/pages/Onboarding.tsx
-msgid "Could not check the server's credentials"
-msgstr "서버 자격 증명을 확인할 수 없습니다"
-
 #. placeholder {0}: group.entries.length
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "{0, plural, one {# model} other {# models}}"
@@ -189,6 +161,10 @@ msgstr "{name}의 질문"
 #: src/lib/activity-list-filters.ts
 msgid "{name} asked: {text}"
 msgstr "{name}의 질문: {text}"
+
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "{modelLabel} isn't available to this server's {source} credentials."
+msgstr "{modelLabel}은(는) 이 서버의 {source} 자격 증명으로 사용할 수 없습니다."
 
 #. js-lingui-explicit-id
 #: src/lib/browser-notifications.ts
@@ -1064,6 +1040,7 @@ msgid "Chat Settings"
 msgstr "채팅 설정"
 
 #: src/components/ComputersUnavailableHint.tsx
+#: src/components/ServerCredentialsUnavailable.tsx
 #: src/pages/HostComputerPrompt.tsx
 msgid "Check again"
 msgstr ""
@@ -1108,6 +1085,7 @@ msgstr ""
 
 #: src/components/ComputersUnavailableHint.tsx
 #: src/components/DesktopUpdates.tsx
+#: src/components/ServerCredentialsUnavailable.tsx
 #: src/components/SoftwareUpdateSection.tsx
 #: src/pages/HostComputerPrompt.tsx
 msgid "Checking…"
@@ -1507,6 +1485,10 @@ msgstr "저장된 인증 정보를 확인하지 못했습니다."
 #: src/components/teach/TeachComputerOverlay.tsx
 msgid "Could not check teaching status. Refresh the view to continue."
 msgstr "가르치기 상태를 확인하지 못했습니다. 화면을 새로고침한 뒤 이어가세요."
+
+#: src/pages/Onboarding.tsx
+msgid "Could not check the server's credentials"
+msgstr "서버 자격 증명을 확인할 수 없습니다"
 
 #: src/pages/shell/dialogs.tsx
 msgid "Could not clear conversation"
@@ -4981,6 +4963,18 @@ msgstr "이 재설정 링크는 유효하지 않거나 만료되었습니다"
 msgid "This server cannot be assigned without a bot."
 msgstr "연결할 Bot이 없어 이 서버를 배정할 수 없습니다."
 
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "This server has no usable {source} credentials."
+msgstr "이 서버에 사용할 수 있는 {source} 자격 증명이 없습니다."
+
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "This server isn't set up to use its own {source} credentials. To enable it, set PI_DEFAULT_CREDENTIALS=host with PI_DEFAULT_PROVIDER and PI_DEFAULT_MODEL on the server."
+msgstr "이 서버는 자체 {source} 자격 증명을 사용하도록 설정되어 있지 않습니다. 사용하려면 서버에서 PI_DEFAULT_PROVIDER 및 PI_DEFAULT_MODEL과 함께 PI_DEFAULT_CREDENTIALS=host를 설정하세요."
+
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "This server's {source} credentials aren't allowed to use {modelLabel}."
+msgstr "이 서버의 {source} 자격 증명에는 {modelLabel}을(를) 사용할 권한이 없습니다."
+
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "This subscription sign-in is not available in Rakazo yet. Use a deployment credential or choose another provider."
 msgstr "이 구독 로그인 방식은 아직 Rakazo에서 지원되지 않습니다. 서버에 설정된 인증 정보를 사용하거나 다른 서비스를 선택하세요."
@@ -5247,6 +5241,10 @@ msgstr ""
 #: src/components/teach/TeachRecordingChrome.tsx
 msgid "Use Protected input for passwords."
 msgstr ""
+
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "Use server credentials"
+msgstr "서버 자격 증명 사용"
 
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "Use this model"

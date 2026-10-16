@@ -17,34 +17,6 @@ msgstr ""
 msgid " (unread)"
 msgstr " (okunmadı)"
 
-#: src/pages/ModelSettingsOverlay.tsx
-msgid "Server credentials stay in use until you connect a key."
-msgstr "Bir anahtar bağlayana kadar sunucu kimlik bilgileri kullanılmaya devam eder."
-
-#: src/pages/ModelSettingsOverlay.tsx
-msgid "Use server credentials"
-msgstr "Sunucu kimlik bilgilerini kullan"
-
-#: src/components/ServerCredentialsUnavailable.tsx
-msgid "This server isn't set up to use its own {source} credentials. To enable it, set PI_DEFAULT_CREDENTIALS=host with PI_DEFAULT_PROVIDER and PI_DEFAULT_MODEL on the server."
-msgstr "Bu sunucu kendi {source} kimlik bilgilerini kullanacak şekilde ayarlanmamış. Etkinleştirmek için sunucuda PI_DEFAULT_PROVIDER ve PI_DEFAULT_MODEL ile birlikte PI_DEFAULT_CREDENTIALS=host ayarlayın."
-
-#: src/components/ServerCredentialsUnavailable.tsx
-msgid "This server has no usable {source} credentials."
-msgstr "Bu sunucunun kullanılabilir {source} kimlik bilgileri yok."
-
-#: src/components/ServerCredentialsUnavailable.tsx
-msgid "This server's {source} credentials aren't allowed to use {modelLabel}."
-msgstr "Bu sunucunun {source} kimlik bilgilerinin {modelLabel} kullanma izni yok."
-
-#: src/components/ServerCredentialsUnavailable.tsx
-msgid "{modelLabel} isn't available to this server's {source} credentials."
-msgstr "{modelLabel}, bu sunucunun {source} kimlik bilgileriyle kullanılamıyor."
-
-#: src/pages/Onboarding.tsx
-msgid "Could not check the server's credentials"
-msgstr "Sunucunun kimlik bilgileri kontrol edilemedi"
-
 #. placeholder {0}: group.entries.length
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "{0, plural, one {# model} other {# models}}"
@@ -189,6 +161,10 @@ msgstr "{name} soruyor"
 #: src/lib/activity-list-filters.ts
 msgid "{name} asked: {text}"
 msgstr "{name} soruyor: {text}"
+
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "{modelLabel} isn't available to this server's {source} credentials."
+msgstr "{modelLabel}, bu sunucunun {source} kimlik bilgileriyle kullanılamıyor."
 
 #. js-lingui-explicit-id
 #: src/lib/browser-notifications.ts
@@ -1064,6 +1040,7 @@ msgid "Chat Settings"
 msgstr "Sohbet Ayarları"
 
 #: src/components/ComputersUnavailableHint.tsx
+#: src/components/ServerCredentialsUnavailable.tsx
 #: src/pages/HostComputerPrompt.tsx
 msgid "Check again"
 msgstr ""
@@ -1108,6 +1085,7 @@ msgstr ""
 
 #: src/components/ComputersUnavailableHint.tsx
 #: src/components/DesktopUpdates.tsx
+#: src/components/ServerCredentialsUnavailable.tsx
 #: src/components/SoftwareUpdateSection.tsx
 #: src/pages/HostComputerPrompt.tsx
 msgid "Checking…"
@@ -1507,6 +1485,10 @@ msgstr "Kayıtlı kimlik bilgileri kontrol edilemedi."
 #: src/components/teach/TeachComputerOverlay.tsx
 msgid "Could not check teaching status. Refresh the view to continue."
 msgstr ""
+
+#: src/pages/Onboarding.tsx
+msgid "Could not check the server's credentials"
+msgstr "Sunucunun kimlik bilgileri kontrol edilemedi"
 
 #: src/pages/shell/dialogs.tsx
 msgid "Could not clear conversation"
@@ -4981,6 +4963,18 @@ msgstr "Bu sıfırlama bağlantısı geçersiz veya süresi dolmuş"
 msgid "This server cannot be assigned without a bot."
 msgstr "Bu sunucu bir bot olmadan atanamaz."
 
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "This server has no usable {source} credentials."
+msgstr "Bu sunucunun kullanılabilir {source} kimlik bilgileri yok."
+
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "This server isn't set up to use its own {source} credentials. To enable it, set PI_DEFAULT_CREDENTIALS=host with PI_DEFAULT_PROVIDER and PI_DEFAULT_MODEL on the server."
+msgstr "Bu sunucu kendi {source} kimlik bilgilerini kullanacak şekilde ayarlanmamış. Etkinleştirmek için sunucuda PI_DEFAULT_PROVIDER ve PI_DEFAULT_MODEL ile birlikte PI_DEFAULT_CREDENTIALS=host ayarlayın."
+
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "This server's {source} credentials aren't allowed to use {modelLabel}."
+msgstr "Bu sunucunun {source} kimlik bilgilerinin {modelLabel} kullanma izni yok."
+
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "This subscription sign-in is not available in Rakazo yet. Use a deployment credential or choose another provider."
 msgstr "Bu abonelik girişi Rakazo'da henüz kullanılamıyor. Bir dağıtım kimlik bilgisi kullan veya başka bir sağlayıcı seç."
@@ -5247,6 +5241,10 @@ msgstr ""
 #: src/components/teach/TeachRecordingChrome.tsx
 msgid "Use Protected input for passwords."
 msgstr ""
+
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "Use server credentials"
+msgstr "Sunucu kimlik bilgilerini kullan"
 
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "Use this model"
