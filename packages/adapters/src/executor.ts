@@ -3188,6 +3188,7 @@ export function createRunExecutor(deps: ExecutorDeps) {
             status: "queued",
             trigger: "routine",
             routineId: routine.id,
+            deliverToMessaging: routine.deliverToMessaging,
             ...routineRunModelPin(currentModel),
           },
         });

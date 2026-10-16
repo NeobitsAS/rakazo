@@ -48,6 +48,7 @@ function createDeps(
       modelProvider?: string | null;
       modelId?: string | null;
       thinkingLevel?: string | null;
+      deliverToMessaging?: boolean;
     }>;
   } = {},
 ): WebhookDeps & {
@@ -375,6 +376,39 @@ describe("inbound webhook HTTP route", () => {
     });
     expect(res.status).toBe(200);
     expect(deps.sendUserMessage.mock.calls[0]?.[0]).not.toHaveProperty("modelPin");
+  });
+
+  it("sends the reply to the linked chat when a matching routine opted in", async () => {
+    const routine = {
+      name: "Alarm",
+      prompt: "Investigate",
+      modelProvider: null,
+      modelId: null,
+      thinkingLevel: null,
+    };
+    const post = (deps: ReturnType<typeof createDeps>) =>
+      mount(deps).request("/api/v1/bots/bot-1/webhook", {
+        method: "POST",
+        headers: { authorization: `Bearer ${SECRET}`, "content-type": "application/json" },
+        body: JSON.stringify({ event: "alarm" }),
+      });
+
+    const optedIn = createDeps({
+      routines: [
+        { ...routine, id: "routine-1", deliverToMessaging: false },
+        { ...routine, id: "routine-2", deliverToMessaging: true },
+      ],
+    });
+    expect((await post(optedIn)).status).toBe(200);
+    expect(optedIn.sendUserMessage).toHaveBeenCalledWith(
+      expect.objectContaining({ trigger: "webhook", deliverToMessaging: true }),
+    );
+
+    const optedOut = createDeps({
+      routines: [{ ...routine, id: "routine-1", deliverToMessaging: false }],
+    });
+    expect((await post(optedOut)).status).toBe(200);
+    expect(optedOut.sendUserMessage.mock.calls[0]?.[0]).not.toHaveProperty("deliverToMessaging");
   });
 
   it("accepts a plain text payload as untrusted delivery data", async () => {
