@@ -38,7 +38,7 @@ type IdentityRow = {
 
 /**
  * Automatic mirror, not a send tool: every text-bearing bot message of a
- * messaging run (or of a routine run that opted in) is copied into the
+ * messaging run (or of a run a routine opted in) is copied into the
  * uniform outbox and sent, so delivery does not depend on prompt compliance.
  * DM runs go to the owner's conversation; channel runs go to the group with
  * an attribution prefix and are fanned out internally to peer approved bots
@@ -71,7 +71,7 @@ export async function mirrorMessagingOutbound(
 async function mirrorRun(deps: MessagingDeliveryDeps, runId: string): Promise<void> {
   const run = await deps.prisma.run.findUnique({
     where: { id: runId },
-    include: { sourceMessage: true, routine: { select: { deliverToMessaging: true } } },
+    include: { sourceMessage: true },
   });
   if (!run) return;
 
@@ -81,10 +81,11 @@ async function mirrorRun(deps: MessagingDeliveryDeps, runId: string): Promise<vo
       await mirrorChannelRun(deps, run, channelBlock);
       return;
     }
-  } else if (run.trigger === "routine") {
-    // Opt-in per routine, and only once the run is done: a run paused on an
-    // ask or approval must not send its partial output.
-    if (!run.routine?.deliverToMessaging || run.status !== "completed") return;
+  } else if (run.deliverToMessaging) {
+    // A routine opted in, whether it ran on schedule or from a webhook. Only
+    // once the run is done: one paused on an ask or approval must not send
+    // its partial output.
+    if (run.status !== "completed") return;
   } else if (run.trigger !== "bot_message") {
     // Mirror inbound messaging runs and delegated bot_message replies only.
     // Do not push in-app user runs out to the linked chat.

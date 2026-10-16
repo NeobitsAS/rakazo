@@ -25,6 +25,7 @@ export type WebhookEvents = {
       modelId: string;
       thinkingLevel: string | null;
     };
+    deliverToMessaging?: boolean;
   }): Promise<{ messageId: string; runId: string | null; seq: number }>;
 };
 
@@ -270,6 +271,7 @@ export async function deliverWebhookEvent(
       modelProvider: string | null;
       modelId: string | null;
       thinkingLevel: string | null;
+      deliverToMessaging?: boolean;
     }>;
     source: "webhook" | "github" | "messaging";
     idempotencyKey?: string;
@@ -308,6 +310,10 @@ export async function deliverWebhookEvent(
     trigger: "webhook",
     clientNonce,
     ...(input.allowParallelRun ? { allowParallelRun: true } : {}),
+    // One run answers every matched routine, so one opted-in routine sends its reply to the chat.
+    ...(input.routines.some((routine) => routine.deliverToMessaging)
+      ? { deliverToMessaging: true }
+      : {}),
     ...(pin.modelProvider && pin.modelId
       ? {
           modelPin: {
