@@ -274,7 +274,7 @@ describe("deliverMessagingOutbound", () => {
 
   it("mirrors a completed cron routine run to the linked DM when the routine opts in", async () => {
     const routineRun = { ...messagingRun, trigger: "routine", status: "completed" };
-    const optedIn = createDeps({ run: { ...routineRun, routine: { deliverToMessaging: true } } });
+    const optedIn = createDeps({ run: { ...routineRun, deliverToMessaging: true } });
     await deliverMessagingOutbound(optedIn, { runId: "run-1" }, context);
     expect(optedIn.rows).toEqual([
       expect.objectContaining({ idempotencyKey: "msg:m-1", kind: "dm", identityId: "mi-1" }),
@@ -284,16 +284,30 @@ describe("deliverMessagingOutbound", () => {
       context,
     );
 
-    const optedOut = createDeps({ run: { ...routineRun, routine: { deliverToMessaging: false } } });
+    const optedOut = createDeps({ run: { ...routineRun, deliverToMessaging: false } });
     await deliverMessagingOutbound(optedOut, { runId: "run-1" }, context);
     expect(optedOut.prisma.messagingOutbound.createMany).not.toHaveBeenCalled();
     expect(optedOut.rows).toHaveLength(0);
 
     const paused = createDeps({
-      run: { ...routineRun, status: "waiting_input", routine: { deliverToMessaging: true } },
+      run: { ...routineRun, status: "waiting_input", deliverToMessaging: true },
     });
     await deliverMessagingOutbound(paused, { runId: "run-1" }, context);
     expect(paused.rows).toHaveLength(0);
+  });
+
+  it("mirrors a webhook-triggered routine run once it completes, and not plain webhook runs", async () => {
+    const webhookRun = { ...messagingRun, trigger: "webhook", status: "completed" };
+    const optedIn = createDeps({ run: { ...webhookRun, deliverToMessaging: true } });
+    await deliverMessagingOutbound(optedIn, { runId: "run-1" }, context);
+    expect(optedIn.sendToThread).toHaveBeenCalledWith(
+      { threadId: "sendblue:dm-1", body: "Hello from your bot" },
+      context,
+    );
+
+    const optedOut = createDeps({ run: { ...webhookRun, deliverToMessaging: false } });
+    await deliverMessagingOutbound(optedOut, { runId: "run-1" }, context);
+    expect(optedOut.rows).toHaveLength(0);
   });
 
   it("holds sendblue DM sends at the consecutive-outbound cap", async () => {

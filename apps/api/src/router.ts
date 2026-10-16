@@ -3571,6 +3571,7 @@ export function createRouter(deps: RouterDeps) {
                 status: "queued",
                 trigger: "routine",
                 routineId: routine.id,
+                deliverToMessaging: routine.deliverToMessaging,
                 ...routineRunModelPin(currentModel),
                 clientNonce: nonce,
               },
