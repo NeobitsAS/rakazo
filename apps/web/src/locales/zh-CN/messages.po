@@ -17,34 +17,6 @@ msgstr ""
 msgid " (unread)"
 msgstr "（未读）"
 
-#: src/pages/ModelSettingsOverlay.tsx
-msgid "Server credentials stay in use until you connect a key."
-msgstr "在连接密钥之前，将继续使用服务器凭据。"
-
-#: src/pages/ModelSettingsOverlay.tsx
-msgid "Use server credentials"
-msgstr "使用服务器凭据"
-
-#: src/components/ServerCredentialsUnavailable.tsx
-msgid "This server isn't set up to use its own {source} credentials. To enable it, set PI_DEFAULT_CREDENTIALS=host with PI_DEFAULT_PROVIDER and PI_DEFAULT_MODEL on the server."
-msgstr "此服务器未设置为使用自己的 {source} 凭据。要启用，请在服务器上设置 PI_DEFAULT_CREDENTIALS=host，并同时设置 PI_DEFAULT_PROVIDER 和 PI_DEFAULT_MODEL。"
-
-#: src/components/ServerCredentialsUnavailable.tsx
-msgid "This server has no usable {source} credentials."
-msgstr "此服务器没有可用的 {source} 凭据。"
-
-#: src/components/ServerCredentialsUnavailable.tsx
-msgid "This server's {source} credentials aren't allowed to use {modelLabel}."
-msgstr "此服务器的 {source} 凭据无权使用 {modelLabel}。"
-
-#: src/components/ServerCredentialsUnavailable.tsx
-msgid "{modelLabel} isn't available to this server's {source} credentials."
-msgstr "此服务器的 {source} 凭据无法使用 {modelLabel}。"
-
-#: src/pages/Onboarding.tsx
-msgid "Could not check the server's credentials"
-msgstr "无法检查服务器的凭据"
-
 #. placeholder {0}: group.entries.length
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "{0, plural, one {# model} other {# models}}"
@@ -178,6 +150,10 @@ msgstr "{hours} 小时前"
 #: src/pages/ActivityList.tsx
 msgid "{minutes}m ago"
 msgstr "{minutes} 分钟前"
+
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "{modelLabel} isn't available to this server's {source} credentials."
+msgstr "此服务器的 {source} 凭据无法使用 {modelLabel}。"
 
 #. js-lingui-explicit-id
 #: src/lib/browser-notifications.ts
@@ -895,6 +871,7 @@ msgid "Chat Settings"
 msgstr "聊天设置"
 
 #: src/components/ComputersUnavailableHint.tsx
+#: src/components/ServerCredentialsUnavailable.tsx
 #: src/pages/HostComputerPrompt.tsx
 msgid "Check again"
 msgstr ""
@@ -930,6 +907,7 @@ msgstr ""
 
 #: src/components/ComputersUnavailableHint.tsx
 #: src/components/DesktopUpdates.tsx
+#: src/components/ServerCredentialsUnavailable.tsx
 #: src/components/SoftwareUpdateSection.tsx
 #: src/pages/HostComputerPrompt.tsx
 msgid "Checking…"
@@ -1313,6 +1291,10 @@ msgstr "无法检查已存储的凭据。"
 #: src/components/teach/TeachComputerOverlay.tsx
 msgid "Could not check teaching status. Refresh the view to continue."
 msgstr ""
+
+#: src/pages/Onboarding.tsx
+msgid "Could not check the server's credentials"
+msgstr "无法检查服务器的凭据"
 
 #: src/pages/shell/dialogs.tsx
 msgid "Could not clear conversation"
@@ -4529,6 +4511,18 @@ msgstr "此重置链接无效或已过期"
 msgid "This server cannot be assigned without a bot."
 msgstr "没有 Bot 就无法分配此服务器。"
 
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "This server has no usable {source} credentials."
+msgstr "此服务器没有可用的 {source} 凭据。"
+
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "This server isn't set up to use its own {source} credentials. To enable it, set PI_DEFAULT_CREDENTIALS=host with PI_DEFAULT_PROVIDER and PI_DEFAULT_MODEL on the server."
+msgstr "此服务器未设置为使用自己的 {source} 凭据。要启用，请在服务器上设置 PI_DEFAULT_CREDENTIALS=host，并同时设置 PI_DEFAULT_PROVIDER 和 PI_DEFAULT_MODEL。"
+
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "This server's {source} credentials aren't allowed to use {modelLabel}."
+msgstr "此服务器的 {source} 凭据无权使用 {modelLabel}。"
+
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "This subscription sign-in is not available in Rakazo yet. Use a deployment credential or choose another provider."
 msgstr "此订阅登录在 Rakazo 中尚不可用。请使用部署凭据或选择其他提供方。"
@@ -4741,6 +4735,10 @@ msgstr ""
 #: src/components/teach/TeachRecordingChrome.tsx
 msgid "Use Protected input for passwords."
 msgstr ""
+
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "Use server credentials"
+msgstr "使用服务器凭据"
 
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "Use this model"

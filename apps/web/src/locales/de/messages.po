@@ -17,34 +17,6 @@ msgstr ""
 msgid " (unread)"
 msgstr " (ungelesen)"
 
-#: src/pages/ModelSettingsOverlay.tsx
-msgid "Server credentials stay in use until you connect a key."
-msgstr "Die Server-Zugangsdaten bleiben in Gebrauch, bis ein Schlüssel verbunden ist."
-
-#: src/pages/ModelSettingsOverlay.tsx
-msgid "Use server credentials"
-msgstr "Server-Zugangsdaten verwenden"
-
-#: src/components/ServerCredentialsUnavailable.tsx
-msgid "This server isn't set up to use its own {source} credentials. To enable it, set PI_DEFAULT_CREDENTIALS=host with PI_DEFAULT_PROVIDER and PI_DEFAULT_MODEL on the server."
-msgstr "Dieser Server ist nicht dafür eingerichtet, seine eigenen {source}-Zugangsdaten zu verwenden. Zum Aktivieren auf dem Server PI_DEFAULT_CREDENTIALS=host zusammen mit PI_DEFAULT_PROVIDER und PI_DEFAULT_MODEL setzen."
-
-#: src/components/ServerCredentialsUnavailable.tsx
-msgid "This server has no usable {source} credentials."
-msgstr "Dieser Server hat keine nutzbaren {source}-Zugangsdaten."
-
-#: src/components/ServerCredentialsUnavailable.tsx
-msgid "This server's {source} credentials aren't allowed to use {modelLabel}."
-msgstr "Die {source}-Zugangsdaten dieses Servers dürfen {modelLabel} nicht verwenden."
-
-#: src/components/ServerCredentialsUnavailable.tsx
-msgid "{modelLabel} isn't available to this server's {source} credentials."
-msgstr "{modelLabel} ist für die {source}-Zugangsdaten dieses Servers nicht verfügbar."
-
-#: src/pages/Onboarding.tsx
-msgid "Could not check the server's credentials"
-msgstr "Die Zugangsdaten des Servers konnten nicht geprüft werden"
-
 #. placeholder {0}: group.entries.length
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "{0, plural, one {# model} other {# models}}"
@@ -178,6 +150,10 @@ msgstr "vor {hours} Std."
 #: src/pages/ActivityList.tsx
 msgid "{minutes}m ago"
 msgstr "vor {minutes} Min."
+
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "{modelLabel} isn't available to this server's {source} credentials."
+msgstr "{modelLabel} ist für die {source}-Zugangsdaten dieses Servers nicht verfügbar."
 
 #. js-lingui-explicit-id
 #: src/lib/browser-notifications.ts
@@ -895,6 +871,7 @@ msgid "Chat Settings"
 msgstr "Chat-Einstellungen"
 
 #: src/components/ComputersUnavailableHint.tsx
+#: src/components/ServerCredentialsUnavailable.tsx
 #: src/pages/HostComputerPrompt.tsx
 msgid "Check again"
 msgstr ""
@@ -930,6 +907,7 @@ msgstr ""
 
 #: src/components/ComputersUnavailableHint.tsx
 #: src/components/DesktopUpdates.tsx
+#: src/components/ServerCredentialsUnavailable.tsx
 #: src/components/SoftwareUpdateSection.tsx
 #: src/pages/HostComputerPrompt.tsx
 msgid "Checking…"
@@ -1313,6 +1291,10 @@ msgstr "Gespeicherte Zugangsdaten konnten nicht geprüft werden."
 #: src/components/teach/TeachComputerOverlay.tsx
 msgid "Could not check teaching status. Refresh the view to continue."
 msgstr ""
+
+#: src/pages/Onboarding.tsx
+msgid "Could not check the server's credentials"
+msgstr "Die Zugangsdaten des Servers konnten nicht geprüft werden"
 
 #: src/pages/shell/dialogs.tsx
 msgid "Could not clear conversation"
@@ -4529,6 +4511,18 @@ msgstr "Dieser Link zum Zurücksetzen ist ungültig oder abgelaufen"
 msgid "This server cannot be assigned without a bot."
 msgstr "Dieser Server kann ohne Bot nicht zugewiesen werden."
 
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "This server has no usable {source} credentials."
+msgstr "Dieser Server hat keine nutzbaren {source}-Zugangsdaten."
+
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "This server isn't set up to use its own {source} credentials. To enable it, set PI_DEFAULT_CREDENTIALS=host with PI_DEFAULT_PROVIDER and PI_DEFAULT_MODEL on the server."
+msgstr "Dieser Server ist nicht dafür eingerichtet, seine eigenen {source}-Zugangsdaten zu verwenden. Zum Aktivieren auf dem Server PI_DEFAULT_CREDENTIALS=host zusammen mit PI_DEFAULT_PROVIDER und PI_DEFAULT_MODEL setzen."
+
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "This server's {source} credentials aren't allowed to use {modelLabel}."
+msgstr "Die {source}-Zugangsdaten dieses Servers dürfen {modelLabel} nicht verwenden."
+
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "This subscription sign-in is not available in Rakazo yet. Use a deployment credential or choose another provider."
 msgstr "Diese Abonnementanmeldung ist in Rakazo noch nicht verfügbar. Verwende Zugangsdaten der Bereitstellung oder wähle einen anderen Anbieter."
@@ -4741,6 +4735,10 @@ msgstr ""
 #: src/components/teach/TeachRecordingChrome.tsx
 msgid "Use Protected input for passwords."
 msgstr ""
+
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "Use server credentials"
+msgstr "Server-Zugangsdaten verwenden"
 
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "Use this model"

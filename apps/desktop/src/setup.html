@@ -87,6 +87,7 @@
           />
           <div class="tunnel">
             <label class="toggle" for="tunnel-toggle">
+              <!-- biome-ignore lint/a11y/useAriaPropsForRole: a native checkbox exposes its own checked state; ARIA in HTML says not to add aria-checked -->
               <input id="tunnel-toggle" class="switch" type="checkbox" role="switch" />
               <span>Connect through a tunnel</span>
             </label>
