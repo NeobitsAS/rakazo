@@ -171,16 +171,10 @@ export async function createNamedBot(
  * native select, so selectOption() does not apply; options are matched by their visible name.
  */
 export async function chooseOption(trigger: Locator, option: string | { index: number }) {
-  const page = trigger.page();
-  const target =
-    typeof option === "string"
-      ? page.getByRole("option", { name: option, exact: true })
-      : page.getByRole("option").nth(option.index);
-  // Base UI ignores a press that lands while the menu is still moving into place beside its
-  // trigger, so retry until the pick closes the menu.
-  await expect(async () => {
-    if (!(await target.isVisible())) await trigger.click();
-    await target.click({ timeout: 2_000 });
-    await expect(target).toBeHidden({ timeout: 1_000 });
-  }).toPass();
+  await trigger.click();
+  const options = trigger.page().getByRole("option");
+  await (typeof option === "string"
+    ? trigger.page().getByRole("option", { name: option, exact: true })
+    : options.nth(option.index)
+  ).click();
 }
