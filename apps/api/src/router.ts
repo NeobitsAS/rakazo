@@ -3304,6 +3304,7 @@ export function createRouter(deps: RouterDeps) {
             webhookEnabled: input.webhookEnabled,
             githubEnabled: input.githubEnabled,
             messageProvider: input.messageProvider,
+            deliverToMessaging: input.deliverToMessaging,
             modelProvider: input.modelProvider,
             modelId: input.modelId,
             thinkingLevel: input.thinkingLevel,
@@ -3456,6 +3457,7 @@ export function createRouter(deps: RouterDeps) {
               webhookEnabled: input.webhookEnabled,
               githubEnabled: input.githubEnabled,
               messageProvider: input.messageProvider,
+              deliverToMessaging: input.deliverToMessaging,
               ...(touchesModel ? { modelProvider, modelId, thinkingLevel } : {}),
               nextRunAt,
             },
@@ -6856,6 +6858,7 @@ function mapRoutine(row: {
   webhookEnabled: boolean;
   githubEnabled: boolean;
   messageProvider: string | null;
+  deliverToMessaging: boolean;
   modelProvider: string | null;
   modelId: string | null;
   thinkingLevel: string | null;
@@ -6875,6 +6878,7 @@ function mapRoutine(row: {
     webhookEnabled: row.webhookEnabled,
     githubEnabled: row.githubEnabled,
     messageProvider: row.messageProvider,
+    deliverToMessaging: row.deliverToMessaging,
     modelProvider: row.modelProvider ?? null,
     modelId: row.modelId ?? null,
     thinkingLevel: (row.thinkingLevel as Routine["thinkingLevel"]) ?? null,

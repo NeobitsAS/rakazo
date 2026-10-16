@@ -4001,6 +4001,10 @@ msgstr "Send it"
 msgid "Send reset link"
 msgstr "Send reset link"
 
+#: src/pages/RoutineEditor.tsx
+msgid "Send to {linkedChat}"
+msgstr "Send to {linkedChat}"
+
 #: src/components/AskCard.tsx
 msgid "Sending…"
 msgstr "Sending…"

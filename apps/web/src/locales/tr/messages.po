@@ -4001,6 +4001,10 @@ msgstr "Gönder"
 msgid "Send reset link"
 msgstr "Sıfırlama bağlantısı gönder"
 
+#: src/pages/RoutineEditor.tsx
+msgid "Send to {linkedChat}"
+msgstr "{linkedChat} üzerinden gönder"
+
 #: src/components/AskCard.tsx
 msgid "Sending…"
 msgstr "Gönderiliyor…"

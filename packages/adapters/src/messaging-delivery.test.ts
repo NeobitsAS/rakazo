@@ -272,6 +272,30 @@ describe("deliverMessagingOutbound", () => {
     );
   });
 
+  it("mirrors a completed cron routine run to the linked DM when the routine opts in", async () => {
+    const routineRun = { ...messagingRun, trigger: "routine", status: "completed" };
+    const optedIn = createDeps({ run: { ...routineRun, routine: { deliverToMessaging: true } } });
+    await deliverMessagingOutbound(optedIn, { runId: "run-1" }, context);
+    expect(optedIn.rows).toEqual([
+      expect.objectContaining({ idempotencyKey: "msg:m-1", kind: "dm", identityId: "mi-1" }),
+    ]);
+    expect(optedIn.sendToThread).toHaveBeenCalledWith(
+      { threadId: "sendblue:dm-1", body: "Hello from your bot" },
+      context,
+    );
+
+    const optedOut = createDeps({ run: { ...routineRun, routine: { deliverToMessaging: false } } });
+    await deliverMessagingOutbound(optedOut, { runId: "run-1" }, context);
+    expect(optedOut.prisma.messagingOutbound.createMany).not.toHaveBeenCalled();
+    expect(optedOut.rows).toHaveLength(0);
+
+    const paused = createDeps({
+      run: { ...routineRun, status: "waiting_input", routine: { deliverToMessaging: true } },
+    });
+    await deliverMessagingOutbound(paused, { runId: "run-1" }, context);
+    expect(paused.rows).toHaveLength(0);
+  });
+
   it("holds sendblue DM sends at the consecutive-outbound cap", async () => {
     const deps = createDeps({
       identity: {

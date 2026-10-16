@@ -4001,6 +4001,10 @@ msgstr "보내기"
 msgid "Send reset link"
 msgstr "재설정 링크 보내기"
 
+#: src/pages/RoutineEditor.tsx
+msgid "Send to {linkedChat}"
+msgstr "{linkedChat}(으)로 보내기"
+
 #: src/components/AskCard.tsx
 msgid "Sending…"
 msgstr "보내는 중…"
