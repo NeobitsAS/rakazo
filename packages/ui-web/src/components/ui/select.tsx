@@ -213,7 +213,10 @@ function OptionSelect<T extends string>({
       value={value}
       items={options}
       disabled={disabled}
-      onValueChange={(next) => {
+      onValueChange={(next, details) => {
+        // When the options change, Base UI can reset the value itself from a stale render
+        // (reason "none"). The caller owns both the value and the options, so report picks only.
+        if (details.reason === "none") return;
         const option = options.find((entry) => entry.value === next);
         if (option) onValueChange(option.value);
       }}
