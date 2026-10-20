@@ -58,6 +58,7 @@ import {
   parseSetupInput,
   parseTunnelInput,
   probeFailureMessage,
+  RAKAZO_CLOUD_URL,
   readProbeJson,
   resolveStartupTarget,
   safeExternalUrl,
@@ -1396,6 +1397,7 @@ app.whenReady().then(async () => {
     if (!fromSetupWindow(event)) return null;
     return {
       defaultLocalUrl: localStack.webUrl(),
+      cloudUrl: RAKAZO_CLOUD_URL,
       saved: currentSetup,
       error: setupError ?? undefined,
       canCancel: canCancelSetup(),

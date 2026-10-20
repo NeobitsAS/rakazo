@@ -54,6 +54,7 @@
   const PULL_SCALE_BYTES = 1.2e9;
 
   let defaultLocalUrl = "";
+  let cloudUrl = "";
   let stackPolling = false;
   let lastStack = null;
   let lastProgress = 0;
@@ -65,7 +66,7 @@
 
   function selectedMode() {
     const checked = form.querySelector('input[name="mode"]:checked');
-    return checked === null ? "new" : checked.value;
+    return checked === null ? "cloud" : checked.value;
   }
 
   /** The tunnel to start before connecting, or undefined when no command is entered. */
@@ -98,8 +99,8 @@
   function syncPanels() {
     const mode = selectedMode();
     panelNew.hidden = mode !== "new";
-    panelExisting.hidden = mode === "new";
-    checkButton.hidden = mode === "new";
+    panelExisting.hidden = mode !== "existing";
+    checkButton.hidden = mode !== "existing";
     if (mode !== "new") continueButton.textContent = "Continue";
     setStatus("");
   }
@@ -331,7 +332,10 @@
 
   form.addEventListener("submit", (event) => {
     event.preventDefault();
-    if (selectedMode() === "new") void runStack();
+    const mode = selectedMode();
+    if (mode === "new") void runStack();
+    // Cloud is an existing server at a fixed address, reached without a tunnel.
+    else if (mode === "cloud") void save("existing", cloudUrl);
     else void save("existing", serverUrl.value, tunnelValue());
   });
 
@@ -356,17 +360,22 @@
     }
 
     watchStack();
+    // Continue needs the Cloud address and any saved choice before it can submit.
+    setBusy(true);
     try {
       const state = await bridge.state();
       if (state === null) throw new Error("Setup is not active");
       defaultLocalUrl = state.defaultLocalUrl;
       cancelButton.hidden = !state.canCancel;
+      cloudUrl = state.cloudUrl;
       if (state.saved !== null) {
         // Coming back to change the server rather than setting up for the first time.
         heading.textContent = "Server settings";
-        const modeInput = document.querySelector(`input[name="mode"][value="${state.saved.mode}"]`);
+        const savedCloud = state.saved.mode === "existing" && state.saved.serverUrl === cloudUrl;
+        const mode = savedCloud ? "cloud" : state.saved.mode;
+        const modeInput = document.querySelector(`input[name="mode"][value="${mode}"]`);
         if (modeInput !== null) modeInput.checked = true;
-        if (state.saved.mode === "existing") {
+        if (mode === "existing") {
           serverUrl.value = state.saved.serverUrl;
           if (state.saved.tunnel !== undefined) {
             tunnelCommand.value = state.saved.tunnel.command;
@@ -382,6 +391,7 @@
       const attached = stack !== null && stack.phase !== "idle";
       if (attached) document.getElementById("mode-new").checked = true;
       syncPanels();
+      setBusy(false);
       if (state.error) setStatus(state.error, "error");
       if (attached) {
         renderStack(stack);

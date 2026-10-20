@@ -10,6 +10,7 @@ import {
   parseSetupInput,
   parseStoredSetup,
   probeFailureMessage,
+  RAKAZO_CLOUD_URL,
   readProbeJson,
   resolveStartupTarget,
   safeExternalUrl,
@@ -167,6 +168,17 @@ describe("saved setup", () => {
         tunnel: { command: "x".repeat(2001) },
       }),
     ).toBeNull();
+  });
+
+  it("saves Rakazo Cloud as an existing server under the exact origin setup matches", () => {
+    // The setup window recognizes a saved Cloud choice by comparing against this constant.
+    expect(normalizeServerUrl(RAKAZO_CLOUD_URL)).toBe(RAKAZO_CLOUD_URL);
+    expect(parseSetupInput({ mode: "existing", serverUrl: RAKAZO_CLOUD_URL })).toEqual({
+      mode: "existing",
+      serverUrl: RAKAZO_CLOUD_URL,
+    });
+    expect(parseSetupInput({ mode: "new", serverUrl: RAKAZO_CLOUD_URL })).toBeNull();
+    expect(servesBundledRenderer(RAKAZO_CLOUD_URL, false)).toBe(false);
   });
 });
 

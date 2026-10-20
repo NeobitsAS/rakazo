@@ -370,7 +370,6 @@ msgstr ""
 msgid "Active model"
 msgstr "Modelo ativo"
 
-#: src/components/computer/TerminalApp.tsx
 #: src/pages/Shell.tsx
 msgid "Activity"
 msgstr "Atividade"
@@ -726,10 +725,6 @@ msgstr "Pelo menos 8 caracteres"
 msgid "Attach file"
 msgstr "Escolher arquivo"
 
-#: src/components/computer/TerminalApp.tsx
-msgid "Attached {path}"
-msgstr ""
-
 #: src/pages/Shell.tsx
 #: src/pages/shell/chat-context.tsx
 msgid "Attachment"
@@ -780,7 +775,6 @@ msgstr "Estúdio de avatar"
 msgid "Avatars"
 msgstr ""
 
-#: src/components/computer/FilesApp.tsx
 #: src/components/DialogPageHeader.tsx
 #: src/components/integrations/IntegrationSetup.tsx
 #: src/pages/Board.tsx
@@ -889,10 +883,6 @@ msgstr ""
 
 #: src/pages/memory-providers/SerenitySettingsForm.tsx
 msgid "Brain label"
-msgstr ""
-
-#: src/components/computer/ComputerWorkspace.tsx
-msgid "Browser"
 msgstr ""
 
 #: src/pages/KnowledgeSection.tsx
@@ -1129,10 +1119,6 @@ msgstr ""
 #: src/pages/WindowChrome.tsx
 msgid "Close"
 msgstr "Fechar"
-
-#: src/components/computer/ComputerWorkspace.tsx
-msgid "Close {title}"
-msgstr ""
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Close apps"
@@ -1561,14 +1547,6 @@ msgstr "Não foi possível baixar o {0}. Tente novamente."
 msgid "Could not download {name}. Try again."
 msgstr "Não foi possível baixar o {name}. Tente novamente."
 
-#: src/components/computer/FilesApp.tsx
-msgid "Could not download file"
-msgstr ""
-
-#: src/components/computer/FilesApp.tsx
-msgid "Could not list files"
-msgstr ""
-
 #: src/components/ErrorBoundary.tsx
 #: src/pages/KnowledgeSection.tsx
 msgid "Could not load"
@@ -1596,10 +1574,6 @@ msgstr ""
 
 #: src/pages/IntegrationSetup.tsx
 msgid "Could not load bots. Reload to try again."
-msgstr ""
-
-#: src/components/computer/TerminalApp.tsx
-msgid "Could not load commands"
 msgstr ""
 
 #: src/pages/shell/bot-credentials.tsx
@@ -1657,17 +1631,9 @@ msgstr "Não foi possível sair. Tente novamente."
 msgid "Could not open billing"
 msgstr ""
 
-#: src/components/computer/FilesApp.tsx
-msgid "Could not open file"
-msgstr ""
-
 #: src/pages/LocalSettings.tsx
 msgid "Could not open local settings. Start the local server and create its owner account, then try again."
 msgstr ""
-
-#: src/components/computer/TerminalApp.tsx
-msgid "Could not open terminal"
-msgstr "Não foi possível abrir o terminal"
 
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "Could not play a test clip"
@@ -1832,10 +1798,6 @@ msgstr ""
 #: src/pages/MemorySettingsOverlay.tsx
 msgid "Could not update the default memory scope"
 msgstr "Não foi possível atualizar o escopo de memória padrão"
-
-#: src/components/computer/FilesApp.tsx
-msgid "Could not upload file"
-msgstr ""
 
 #: src/components/ComputersUnavailableHint.tsx
 msgid "Could not verify computer setup ({failureMessage}). Fix the connection, then check again."
@@ -2168,15 +2130,12 @@ msgstr "Não tem uma conta?"
 msgid "Done"
 msgstr "Concluído"
 
-#: src/components/computer/FilesApp.tsx
 #: src/pages/Artifacts.tsx
 msgid "Download"
 msgstr ""
 
-#. placeholder {0}: basename(entry.path)
 #. placeholder {0}: props.name
 #: src/components/ArtifactFileCard.tsx
-#: src/components/computer/FilesApp.tsx
 msgid "Download {0}"
 msgstr "Baixar {0}"
 
@@ -2386,15 +2345,6 @@ msgstr "Campos que indicam uma alteração"
 #: src/pages/RoutineEditor.tsx
 msgid "Fields to compare, e.g. id, modifiedTime (optional)"
 msgstr "Campos para comparar, por exemplo id, modifiedTime (opcional)"
-
-#. placeholder {0}: attachmentSizeLabel(getMaxUploadSizeBytes())
-#: src/components/computer/FilesApp.tsx
-msgid "File exceeds the {0} upload limit."
-msgstr "O arquivo excede o limite de upload de {0}."
-
-#: src/components/computer/ComputerWorkspace.tsx
-msgid "Files"
-msgstr ""
 
 #: src/pages/RoutineEditor.tsx
 msgid "Files or folders on the computer"
@@ -2753,10 +2703,6 @@ msgstr "Última verificação {0}: sem alterações"
 
 #: src/components/DesktopUpdates.tsx
 msgid "Later"
-msgstr ""
-
-#: src/components/computer/TerminalApp.tsx
-msgid "Launched {app}"
 msgstr ""
 
 #: src/pages/MessagingSettingsOverlay.tsx
@@ -3250,10 +3196,6 @@ msgstr ""
 msgid "No authentication"
 msgstr "Sem autenticação"
 
-#: src/components/computer/TerminalApp.tsx
-msgid "No bot activity yet."
-msgstr "Ainda não há atividade do bot."
-
 #: src/pages/shell/command-palette.tsx
 msgid "No bots"
 msgstr ""
@@ -3474,10 +3416,6 @@ msgstr "Abrir em janela cheia"
 msgid "Open navigation"
 msgstr "Abrir a navegação"
 
-#: src/components/computer/TerminalApp.tsx
-msgid "Open shell"
-msgstr "Abrir shell"
-
 #: src/pages/ScratchpadSection.tsx
 msgid "Open work"
 msgstr "Trabalho aberto"
@@ -3486,10 +3424,6 @@ msgstr "Trabalho aberto"
 #: src/pages/Onboarding.tsx
 msgid "OpenAI-compatible server URL"
 msgstr "URL do servidor compatível com OpenAI"
-
-#: src/components/computer/TerminalApp.tsx
-msgid "Opened {path}"
-msgstr ""
 
 #: src/pages/Shell.tsx
 msgid "Opened its thread."
@@ -4404,10 +4338,6 @@ msgstr "Documentos compartilhados"
 msgid "Shared skills"
 msgstr "Habilidades compartilhadas"
 
-#: src/components/computer/TerminalApp.tsx
-msgid "Shell"
-msgstr "Shell"
-
 #: src/pages/GroupPanel.tsx
 msgid "Show all"
 msgstr ""
@@ -4729,10 +4659,6 @@ msgstr ""
 
 #: src/pages/RoutineEditor.tsx
 msgid "Teams not enabled"
-msgstr ""
-
-#: src/components/computer/ComputerWorkspace.tsx
-msgid "Terminal"
 msgstr ""
 
 #: src/components/teach/SkillDraftCard.tsx
@@ -5098,7 +5024,6 @@ msgstr ""
 msgid "Updating…"
 msgstr "Atualizando…"
 
-#: src/components/computer/FilesApp.tsx
 #: src/pages/shell/avatar-studio-popover.tsx
 msgid "Upload"
 msgstr "Enviar"
@@ -5303,10 +5228,6 @@ msgstr "Trabalhando…"
 
 #: src/pages/memory-providers/HonchoSettingsForm.tsx
 msgid "Workspace"
-msgstr ""
-
-#: src/components/computer/TerminalApp.tsx
-msgid "Wrote {path}"
 msgstr ""
 
 #: src/lib/billing.ts
