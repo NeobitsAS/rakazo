@@ -2429,10 +2429,12 @@ function fallbackAwareModelStream(
   const signal = options?.signal ? AbortSignal.any([state.signal, options.signal]) : state.signal;
   // Once a signature is rejected, requests omit those thinking blocks. Backup fit
   // must use that same context, or a usable backup can be skipped on discarded text.
-  const requestContext = () => {
+  // A backup is judged on the context it would get after the switch, without earlier thinking.
+  const requestContext = (switching = false) => {
     if (state.dropThinkingBlocks) return withoutThinkingBlocks(context);
-    if (!state.messagesBeforeSwitch) return context;
-    const messages = withoutThinkingFrom(context.messages, 0, state.messagesBeforeSwitch);
+    const before = switching ? context.messages.length : state.messagesBeforeSwitch;
+    if (!before) return context;
+    const messages = withoutThinkingFrom(context.messages, 0, before);
     return messages === context.messages ? context : { ...context, messages };
   };
   const signalAborted = () => signal.aborted;
@@ -2506,7 +2508,7 @@ function fallbackAwareModelStream(
         if (
           !fallbackSupportsContext(
             candidate,
-            requestContext(),
+            requestContext(true),
             options,
             state.request.model.thinkingLevel,
             state.request.tools,
