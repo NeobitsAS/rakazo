@@ -22,14 +22,15 @@ export function withoutThinkingBlocks(context: TranscriptContext): TranscriptCon
   return messages === context.messages ? context : { ...context, messages };
 }
 
-/** The messages with thinking blocks removed from assistant messages at or after `from`. */
+/** The messages with thinking blocks removed from assistant messages from `from` up to `to`. */
 export function withoutThinkingFrom<T extends TranscriptContext["messages"][number]>(
   messages: T[],
   from: number,
+  to = messages.length,
 ): T[] {
   let changed = false;
   const result = messages.map((message, index) => {
-    if (index < from || message.role !== "assistant") return message;
+    if (index < from || index >= to || message.role !== "assistant") return message;
     const content = message.content.filter((part) => part.type !== "thinking");
     if (content.length === message.content.length) return message;
     changed = true;
