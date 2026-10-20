@@ -195,11 +195,12 @@ it("observes actual Pi post-selection JSON controls through twelve dependent com
       ).toBe(true);
       expect(record.results?.at(-1)?.bytes).toBeLessThanOrEqual(12000);
       // Earlier results go out as first sent until a rebuild compresses them all at once.
-      const earlier = record.results?.slice(0, -1).map((r) => r.bytes) ?? [];
-      const sentBefore = records[index]!.results?.map((r) => r.bytes) ?? [];
+      const earlier = record.results?.slice(0, -1) ?? [];
+      const sentBefore = records[index]!.results ?? [];
+      const compressed = (result: { bytes: number }) => result.bytes <= 1024;
       expect(
-        earlier.every((bytes, i) => bytes === sentBefore[i]) ||
-          earlier.every((bytes) => bytes <= 1024),
+        earlier.every((result, i) => result.contentDigest === sentBefore[i]?.contentDigest) ||
+          (!sentBefore.every(compressed) && earlier.every(compressed)),
       ).toBe(true);
     }
     expect(records.at(-1)?.results?.at(-1)?.nextCursor).toBeNull();
