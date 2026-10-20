@@ -35,7 +35,12 @@ const buttonVariants = cva(
       },
     },
     // A text button reads as text, so it sits flush with what is around it.
-    compoundVariants: [{ variant: "text", className: "px-0" }],
+    compoundVariants: [
+      {
+        variant: "text",
+        className: "px-0 has-data-[icon=inline-end]:pr-0 has-data-[icon=inline-start]:pl-0",
+      },
+    ],
     defaultVariants: {
       variant: "default",
       size: "default",

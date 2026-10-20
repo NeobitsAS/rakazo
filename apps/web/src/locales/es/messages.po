@@ -842,6 +842,7 @@ msgstr "Iniciando la computadora de {0}"
 msgid "bot"
 msgstr "bot"
 
+#: src/lib/identity-display.ts
 #: src/pages/IntegrationSetup.tsx
 #: src/pages/Shell.tsx
 #: src/pages/shell/avatar-studio-popover.tsx
@@ -1003,6 +1004,10 @@ msgstr "Apps de chat"
 #: src/pages/Shell.tsx
 msgid "Chat Settings"
 msgstr "Configuración del chat"
+
+#: src/lib/identity-display.ts
+msgid "Chats"
+msgstr "Chats"
 
 #: src/components/ComputersUnavailableHint.tsx
 #: src/components/ServerCredentialsUnavailable.tsx
@@ -2462,6 +2467,7 @@ msgstr ""
 msgid "Git event"
 msgstr "Evento de Git"
 
+#: src/lib/identity-display.ts
 #: src/pages/MessagingSettingsOverlay.tsx
 #: src/pages/Shell.tsx
 msgid "Group"
@@ -2909,6 +2915,10 @@ msgstr "Medio"
 #: src/lib/model-catalog.ts
 msgid "Medium"
 msgstr ""
+
+#: src/lib/identity-display.ts
+msgid "Member"
+msgstr "Miembro"
 
 #. placeholder {0}: selected.length
 #: src/pages/GroupPanel.tsx
@@ -3476,9 +3486,10 @@ msgstr "Mensaje original no disponible"
 msgid "Other model…"
 msgstr "Otro modelo…"
 
+#: src/lib/identity-display.ts
 #: src/pages/Board.tsx
 msgid "Owner"
-msgstr ""
+msgstr "Propietario"
 
 #: src/pages/RoutineEditor.tsx
 msgid "PagerDuty incident"
@@ -3498,6 +3509,10 @@ msgstr "Contraseña"
 #: src/pages/Auth.tsx
 msgid "Password recovery is not configured for this server"
 msgstr "La recuperación de contraseña no está configurada para este servidor"
+
+#: src/lib/user-error.ts
+msgid "Password sign-in is turned off on this server"
+msgstr "El inicio de sesión con contraseña está desactivado en este servidor"
 
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/Auth.tsx
@@ -4044,6 +4059,7 @@ msgstr ""
 msgid "Rotate key"
 msgstr "Rotar clave"
 
+#: src/lib/identity-display.ts
 #: src/pages/RoutineEditor.tsx
 #: src/pages/Shell.tsx
 msgid "Routine"
@@ -4493,9 +4509,10 @@ msgstr "Actualización de software"
 msgid "Something went wrong. Try again."
 msgstr "Algo salió mal. Inténtalo de nuevo."
 
+#: src/lib/identity-display.ts
 #: src/pages/SettingsOverlay.tsx
 msgid "Space"
-msgstr ""
+msgstr "Espacio"
 
 #: src/pages/ModelBackupsSettings.tsx
 msgid "Space changed. Reopen Models to load its backup list."
@@ -4590,6 +4607,7 @@ msgstr "Detenido."
 msgid "Stream replies"
 msgstr "Transmitir respuestas"
 
+#: src/lib/identity-display.ts
 #: src/pages/Shell.tsx
 msgid "subagent"
 msgstr "subagente"
@@ -5239,6 +5257,7 @@ msgstr ""
 msgid "Yesterday"
 msgstr "Ayer"
 
+#: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/Shell.tsx
 msgid "You"
 msgstr "Tú"
