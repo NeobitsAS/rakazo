@@ -107,6 +107,11 @@ export function pruneComputerScreenshotContext(
   return transformed ?? messages;
 }
 
+/** What a rebuild drops: stale page state, and screenshots over the default or model limit. */
+export function pruneForRebuild(messages: Message[], maxImagesPerPrompt?: number): Message[] {
+  return pruneComputerScreenshotContext(pruneStalePageStateContext(messages), maxImagesPerPrompt);
+}
+
 /** A model's image limit as a whole number, or undefined when it has none. */
 export function normalizedImageLimit(maxImagesPerPrompt?: number): number | undefined {
   if (maxImagesPerPrompt === undefined) return undefined;

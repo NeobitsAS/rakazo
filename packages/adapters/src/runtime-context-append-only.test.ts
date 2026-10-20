@@ -348,6 +348,30 @@ describe("append-only run transcript", () => {
     expect(JSON.stringify(sent.at(-1))).toContain("Earlier page state trimmed");
   });
 
+  it("keeps steering through a rebuild that reuses the previous call's projection", () => {
+    const cacheTracker = new ContextCacheTracker(() => 0);
+    const input = request({
+      contextStrategy: "cache-aware",
+      model: {
+        provider: "synthetic-provider",
+        id: "synthetic-model",
+        maxImagesPerPrompt: 3,
+        cacheCapabilities: { scope: "account", retentionMs: 300_000, minimumTokens: 1 },
+      },
+    });
+    const steps: Step[] = [
+      { tool: "shell", text: "listing" },
+      { steer: "Never delete files" },
+      ...Array.from({ length: 5 }, (): Step => ({ tool: "computer_observe", screenshot: true })),
+    ];
+    const sent = simulateRun(input, steps, { cacheTracker });
+    expect(rewrites(sent).length).toBeGreaterThan(0);
+    for (const context of sent.slice(2)) {
+      expect(JSON.stringify(context.messages)).toContain("Never delete files");
+    }
+    for (const context of sent) expect(staleThinking(context)).toEqual([]);
+  });
+
   it("drops earlier thinking when the instructions change mid-run", () => {
     const input = request({ contextStrategy: "retrieval" });
     const sent = simulateRun(input, toolHeavyRun.slice(0, 4), {

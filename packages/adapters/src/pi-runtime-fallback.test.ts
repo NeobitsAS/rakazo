@@ -1173,6 +1173,54 @@ describe("Pi runtime ordered model fallback", () => {
     );
   });
 
+  it("accepts a backup whose image limit fits once accumulated screenshots are pruned", async () => {
+    const input = request([
+      { provider: backupA.provider, id: backupA.id, apiKey: "backup-key", maxImagesPerPrompt: 2 },
+    ]);
+    input.tools = [
+      {
+        name: "computer_observe",
+        description: "Observe the computer",
+        inputSchema: { type: "object", properties: {} },
+      },
+    ];
+    let shots = 0;
+    input.executeTool = vi.fn(async () => {
+      shots += 1;
+      return {
+        kind: "agent_tool_result" as const,
+        content: [{ type: "image" as const, data: "iVBORw0KGgo=", mimeType: "image/png" as const }],
+        details: { frameId: `frame-${shots}` },
+      };
+    });
+    let primaryCalls = 0;
+    const backupImageCounts: number[] = [];
+    providerState.stream.mockImplementation(
+      (target: Model<"openai-completions">, context: { messages?: unknown[] }) => {
+        if (target.provider === primary.provider) {
+          primaryCalls += 1;
+          if (primaryCalls > 3)
+            return stream(target, message(target, [], "error", "429 rate_limit_error"));
+          const call = {
+            type: "toolCall" as const,
+            id: `observe-${primaryCalls}`,
+            name: "computer_observe",
+            arguments: {},
+          };
+          return stream(target, message(target, [call], "toolUse"));
+        }
+        backupImageCounts.push(countContextImages(context));
+        return stream(target, message(target, [{ type: "text", text: "backup answer" }], "stop"));
+      },
+    );
+
+    const events = await run(input);
+
+    expect(shots).toBe(3);
+    expect(events.at(-1)).toEqual({ type: "done", text: "backup answer" });
+    expect(backupImageCounts).toEqual([2]);
+  });
+
   it("prunes later screenshots with the active backup image limit", async () => {
     const input = request([
       {

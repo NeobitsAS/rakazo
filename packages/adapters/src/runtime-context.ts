@@ -2,12 +2,7 @@ import { createHash, randomBytes } from "node:crypto";
 import type { Api, Context, Message, Model } from "@earendil-works/pi-ai";
 import type { AdapterContext, AgentRunRequest, AgentUsage } from "@rakazo/adapter-kit";
 import { DEFAULT_CONTEXT_STRATEGY } from "@rakazo/adapter-kit";
-import {
-  imagePartCount,
-  normalizedImageLimit,
-  pruneComputerScreenshotContext,
-  pruneStalePageStateContext,
-} from "./context-pruning.js";
+import { imagePartCount, normalizedImageLimit, pruneForRebuild } from "./context-pruning.js";
 import type { CacheRequest, ContextBudget } from "./context-selection.js";
 import {
   ContextBudgetError,
@@ -460,10 +455,7 @@ export function createRuntimeContextPolicy(
   }
   /** Removes what only a rebuild may drop: stale page state and screenshots over the budget. */
   function pruned(ctx: Context): Context {
-    const messages = pruneComputerScreenshotContext(
-      pruneStalePageStateContext(ctx.messages),
-      request.model.maxImagesPerPrompt,
-    );
+    const messages = pruneForRebuild(ctx.messages, request.model.maxImagesPerPrompt);
     return messages === ctx.messages ? ctx : { ...ctx, messages };
   }
   /** Records the context about to be sent for cache prediction and cross-run reuse. */
@@ -574,22 +566,21 @@ export function createRuntimeContextPolicy(
         else built = rebuildWithHeadroom(ctx, model) ?? built;
       }
       if (previous && appended && append) {
-        sent = { ...previous, source, messages: appended, appends: previous.appends + 1 };
-        return commit(
-          { ...ctx, messages: appended },
-          built,
-          [
-            ...previous.projection,
-            ...ctx.messages
-              .slice(previous.source.length)
-              .map((message) => ({ hash: hash(message) })),
-          ],
-          model,
-          {
-            droppedMessages: Math.max(0, ctx.messages.length - appended.length),
-            truncatedToolResults: previous.truncatedToolResults,
-          },
-        );
+        const projection = [
+          ...previous.projection,
+          ...ctx.messages.slice(previous.source.length).map((message) => ({ hash: hash(message) })),
+        ];
+        sent = {
+          ...previous,
+          source,
+          messages: appended,
+          projection,
+          appends: previous.appends + 1,
+        };
+        return commit({ ...ctx, messages: appended }, built, projection, model, {
+          droppedMessages: Math.max(0, ctx.messages.length - appended.length),
+          truncatedToolResults: previous.truncatedToolResults,
+        });
       }
       const messages = previous
         ? withoutThinkingFrom(
