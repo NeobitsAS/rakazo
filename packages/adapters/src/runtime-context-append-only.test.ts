@@ -2,8 +2,12 @@ import { createHash } from "node:crypto";
 import type { Api, Context, Message, Model } from "@earendil-works/pi-ai";
 import type { AgentRunRequest } from "@rakazo/adapter-kit";
 import { describe, expect, it } from "vitest";
-import { ContextCacheTracker, providerContextPrefix } from "./context-selection.js";
-import { createRuntimeContextPolicy } from "./runtime-context.js";
+import {
+  ContextCacheTracker,
+  estimateContextTokens,
+  providerContextPrefix,
+} from "./context-selection.js";
+import { createRuntimeContextPolicy, rebuildPaysOff } from "./runtime-context.js";
 
 const model = {
   id: "synthetic-model",
@@ -381,5 +385,296 @@ describe("append-only run transcript", () => {
     expect(thinkingCount(sent[3]!)).toBe(0);
     for (const context of sent) expect(staleThinking(context)).toEqual([]);
     expect(extendsPrevious(sent[3]!, sent[4]!)).toBe(true);
+  });
+});
+
+/** Size as the policy measures it: a conservative byte estimate of the whole prefix. */
+function size(context: Context): number {
+  return estimateContextTokens(
+    providerContextPrefix(context.systemPrompt ?? "", context.tools ?? [], context.messages),
+  );
+}
+
+/** Drives one policy call by call, for sequences `simulateRun` can't express. */
+function driver(input: AgentRunRequest, callModel: Model<Api> = model) {
+  const policy = createRuntimeContextPolicy(input);
+  const messages = initialMessages(input);
+  const sent: Context[] = [];
+  const state = { systemPrompt: input.instructions, tools: [] as NonNullable<Context["tools"]> };
+  return {
+    policy,
+    messages,
+    sent,
+    state,
+    send(sourceMessages: Message[] = [...messages], at: Model<Api> = callModel) {
+      const context = policy.prepareContext(
+        { systemPrompt: state.systemPrompt, tools: state.tools, messages: sourceMessages },
+        at,
+      );
+      sent.push(context);
+      policy.onUsage({ inputTokens: 1000, outputTokens: 10, cacheReadTokens: 900 });
+      return context;
+    },
+    /** The model answers `context` with signed thinking and a tool call, and the tool replies. */
+    act(context: Context, id: string, text: string) {
+      messages.push(
+        {
+          role: "assistant",
+          content: [
+            {
+              type: "thinking",
+              thinking: `Plan ${id}`,
+              thinkingSignature: prefixSignature(context, context.messages.length),
+            },
+            { type: "toolCall", id, name: "shell", arguments: {} },
+          ],
+          timestamp: 2,
+        } as unknown as Message,
+        {
+          role: "toolResult",
+          toolCallId: id,
+          toolName: "shell",
+          content: [{ type: "text", text }],
+          isError: false,
+          timestamp: 3,
+        } as Message,
+      );
+    },
+  };
+}
+
+describe("append-only run transcript boundaries", () => {
+  it("rebuilds for stale text only from the minimum saving on", () => {
+    const fresh = { tokens: 1_000, images: 0 };
+    // Growth 0 isolates the minimum saving.
+    expect(rebuildPaysOff({ tokens: 17_383, images: 0 }, fresh, 17_383, 0)).toBe(false);
+    expect(rebuildPaysOff({ tokens: 17_384, images: 0 }, fresh, 17_384, 0)).toBe(true);
+  });
+
+  it("rebuilds exactly when stale content reaches the cost balance", () => {
+    // stale 20,000; 25 × fresh 16,000 × growth 1,000 = 20,000²
+    const kept = { tokens: 36_000, images: 0 };
+    const fresh = { tokens: 16_000, images: 0 };
+    expect(rebuildPaysOff(kept, fresh, 32_000, 3)).toBe(true);
+    expect(rebuildPaysOff(kept, fresh, 31_996, 3)).toBe(false);
+  });
+
+  it("rebuilds once sixteen stale images could be dropped, not at fifteen", () => {
+    const fresh = { tokens: 1_000, images: 2 };
+    expect(rebuildPaysOff({ tokens: 1_000, images: 17 }, fresh, 1_000, 0)).toBe(false);
+    expect(rebuildPaysOff({ tokens: 1_000, images: 18 }, fresh, 1_000, 0)).toBe(true);
+  });
+
+  it("never rebuilds when the rebuilt transcript would be larger", () => {
+    expect(rebuildPaysOff({ tokens: 50_000, images: 0 }, { tokens: 80_000, images: 0 }, 0, 0)).toBe(
+      false,
+    );
+  });
+
+  it("appends at exactly the available budget and rebuilds one token over it", () => {
+    const outcome = (headroom: number) => {
+      const run = driver(request({ contextStrategy: "retrieval" }, 0));
+      run.act(run.send(), "a", `old ${"x".repeat(5_000)}`);
+      const first = run.send();
+      run.act(first, "b", "ok");
+      const appendedSize = size({
+        ...first,
+        messages: [...first.messages, ...run.messages.slice(-2)],
+      });
+      const tight = { ...model, contextWindow: appendedSize + model.maxTokens + headroom };
+      const next = run.send(undefined, tight as Model<Api>);
+      expect(staleThinking(next)).toEqual([]);
+      return extendsPrevious(first, next);
+    };
+    expect(outcome(0)).toBe(true);
+    expect(outcome(-1)).toBe(false);
+  });
+
+  it("keeps screenshots within the image limit while text alone overflows the window", () => {
+    const input = request(
+      {
+        contextStrategy: "current",
+        model: {
+          provider: "synthetic-provider",
+          id: "synthetic-model",
+          contextWindow: 30_000,
+          maxImagesPerPrompt: 5,
+        },
+      },
+      0,
+    );
+    const steps: Step[] = Array.from({ length: 25 }, (_, index) =>
+      index % 2
+        ? { tool: "computer_observe", screenshot: true }
+        : { tool: "shell", text: `output ${index} ${"synthetic shell output ".repeat(150)}` },
+    );
+    const sent = simulateRun(input, steps);
+    expect(Math.max(...sent.map(imageCount))).toBeLessThanOrEqual(5);
+    expect(Math.max(...sent.map(size))).toBeGreaterThan(30_000);
+    for (const context of sent) expect(staleThinking(context)).toEqual([]);
+  });
+
+  it("keeps appending when a rebuild cannot bring the text under the window either", () => {
+    const input = request(
+      {
+        contextStrategy: "current",
+        model: { provider: "synthetic-provider", id: "synthetic-model", contextWindow: 20_000 },
+      },
+      0,
+    );
+    const steps: Step[] = Array.from({ length: 12 }, (_, index) => ({
+      tool: "shell",
+      text: `output ${index} ${"synthetic shell output ".repeat(150)}`,
+    }));
+    const sent = simulateRun(input, steps);
+    expect(Math.max(...sent.map(size))).toBeGreaterThan(20_000);
+    expect(rewrites(sent)).toEqual([]);
+  });
+
+  it("leaves a quarter of the window free after a rebuild the window forced", () => {
+    const window = 40_000;
+    const input = request({
+      contextStrategy: "retrieval",
+      model: { provider: "synthetic-provider", id: "synthetic-model", contextWindow: window },
+    });
+    const steps: Step[] = Array.from({ length: 30 }, (_, index) => ({
+      tool: "shell",
+      text: `output ${index} ${"synthetic shell output ".repeat(130)}`,
+    }));
+    const sent = simulateRun(input, steps);
+    const rebuilt = rewrites(sent);
+    expect(rebuilt.length).toBeGreaterThan(0);
+    for (const index of rebuilt) {
+      expect(size(sent[index]!)).toBeLessThanOrEqual(Math.floor((window - model.maxTokens) * 0.75));
+    }
+  });
+
+  it("falls back to the full window when the current turn needs more than the headroom allows", () => {
+    const window = 40_000;
+    const available = window - model.maxTokens;
+    const input = request(
+      {
+        contextStrategy: "retrieval",
+        prompt: `Current objective ${"p".repeat(Math.floor(available * 0.8))}`,
+        model: { provider: "synthetic-provider", id: "synthetic-model", contextWindow: window },
+      },
+      0,
+    );
+    const steps: Step[] = Array.from({ length: 4 }, (_, index) => ({
+      tool: "shell",
+      text: `output ${index} ${"x".repeat(4_000)}`,
+    }));
+    const sent = simulateRun(input, steps);
+    expect(rewrites(sent).length).toBeGreaterThan(0);
+    for (const context of sent) {
+      expect(size(context)).toBeLessThanOrEqual(available);
+      expect(staleThinking(context)).toEqual([]);
+      expect(JSON.stringify(context)).toContain("Current objective");
+    }
+  });
+
+  it("rebuilds when the newest result alone overflows the window", () => {
+    const window = 40_000;
+    const input = request(
+      {
+        contextStrategy: "retrieval",
+        model: { provider: "synthetic-provider", id: "synthetic-model", contextWindow: window },
+      },
+      0,
+    );
+    const sent = simulateRun(input, [
+      { tool: "shell", text: "small" },
+      { tool: "shell", text: `huge ${"x".repeat(60_000)}` },
+    ]);
+    const last = sent.at(-1)!;
+    expect(size(last)).toBeLessThanOrEqual(window - model.maxTokens);
+    expect(JSON.stringify(last)).toContain("truncated");
+    expect(staleThinking(last)).toEqual([]);
+  });
+
+  it("rebuilds without stale thinking when the run sends fewer messages than before", () => {
+    const run = driver(request({ contextStrategy: "retrieval" }, 0));
+    for (const id of ["a", "b", "c"]) run.act(run.send(), id, `result ${id}`);
+    const full = run.send();
+    const shorter = run.send(run.messages.slice(0, -2));
+    expect(extendsPrevious(full, shorter)).toBe(false);
+    expect(staleThinking(shorter)).toEqual([]);
+  });
+
+  it("keeps thinking before an edited earlier message and drops it from there on", () => {
+    const run = driver(request({ contextStrategy: "retrieval" }, 0));
+    for (const id of ["a", "b", "c", "d"]) run.act(run.send(), id, `result ${id}`);
+    run.send();
+    // Edit the result of tool call "b" (prompt, a-call, a-result, b-call, b-result, ...).
+    const edited = [...run.messages];
+    edited[4] = {
+      ...(edited[4] as Message),
+      content: [{ type: "text", text: "edited" }],
+    } as Message;
+    const next = run.send(edited);
+    expect(staleThinking(next)).toEqual([]);
+    const thinkingAt = next.messages.map((message) =>
+      message.role === "assistant"
+        ? message.content.some((part) => part.type === "thinking")
+        : null,
+    );
+    expect(thinkingAt).toEqual([null, true, null, true, null, false, null, false, null]);
+    run.act(next, "e", "result e");
+    expect(extendsPrevious(next, run.send([...edited, ...run.messages.slice(-2)]))).toBe(true);
+  });
+
+  it("drops all earlier thinking when the tools change, then appends again", () => {
+    const run = driver(request({ contextStrategy: "retrieval" }, 0));
+    for (const id of ["a", "b"]) run.act(run.send(), id, `result ${id}`);
+    run.send();
+    run.state.tools = [
+      { name: "shell", description: "Run", parameters: { type: "object" } },
+    ] as never;
+    const changed = run.send();
+    expect(thinkingCount(changed)).toBe(0);
+    expect(staleThinking(changed)).toEqual([]);
+    run.act(changed, "c", "result c");
+    expect(extendsPrevious(changed, run.send())).toBe(true);
+  });
+
+  it("is not affected by a caller that later grows the array it passed in", () => {
+    const run = driver(request({ contextStrategy: "current" }, 0));
+    const live = [...run.messages];
+    const first = run.send(live);
+    expect(first.messages).toBe(live);
+    run.act(first, "a", "result a");
+    live.push(...run.messages.slice(-2));
+    const next = run.send(live);
+    expect(next.messages).toHaveLength(live.length);
+    expect(extendsPrevious({ ...first, messages: live.slice(0, 1) }, next)).toBe(true);
+  });
+
+  it("never sends more than one image under a one-image limit", () => {
+    const input = request(
+      {
+        contextStrategy: "retrieval",
+        model: { provider: "synthetic-provider", id: "synthetic-model", maxImagesPerPrompt: 1 },
+      },
+      0,
+    );
+    const steps: Step[] = Array.from({ length: 6 }, () => ({
+      tool: "computer_observe",
+      screenshot: true,
+    }));
+    const sent = simulateRun(input, steps);
+    expect(sent.map(imageCount)).toEqual([0, 1, 1, 1, 1, 1, 1]);
+    for (const context of sent) expect(staleThinking(context)).toEqual([]);
+  });
+
+  it("rebuilds an unlimited run once sixteen stale screenshots could be dropped", () => {
+    const input = request({ contextStrategy: "retrieval" }, 0);
+    const steps: Step[] = Array.from({ length: 24 }, () => ({
+      tool: "computer_observe",
+      screenshot: true,
+    }));
+    const sent = simulateRun(input, steps);
+    expect(Math.max(...sent.map(imageCount))).toBe(17);
+    expect(rewrites(sent)).toEqual([18]);
+    expect(imageCount(sent[18]!)).toBe(2);
   });
 });

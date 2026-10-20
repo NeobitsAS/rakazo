@@ -1,5 +1,11 @@
+import type { Message } from "@earendil-works/pi-ai";
 import { describe, expect, it } from "vitest";
-import { pruneComputerScreenshotContext, pruneStalePageStateContext } from "./context-pruning.js";
+import {
+  normalizedImageLimit,
+  pruneComputerScreenshotContext,
+  pruneForRebuild,
+  pruneStalePageStateContext,
+} from "./context-pruning.js";
 
 describe("context pruning on rebuild", () => {
   const pageResult = (id: string, toolName: string, text = `page ${id} ${"x".repeat(1_200)}`) => ({
@@ -254,5 +260,106 @@ describe("context pruning on rebuild", () => {
     ];
 
     expect(pruneComputerScreenshotContext(messages)).toBe(messages);
+  });
+
+  const screenshot = (frameId: string): Message => ({
+    role: "toolResult",
+    toolCallId: frameId,
+    toolName: "computer_observe",
+    content: [{ type: "image", data: frameId, mimeType: "image/png" }],
+    details: { frameId },
+    isError: false,
+    timestamp: 1,
+  });
+  const userImage = (name: string): Message => ({
+    role: "user",
+    content: [{ type: "image", data: name, mimeType: "image/png" }],
+    timestamp: 1,
+  });
+  const kept = (messages: Message[]) =>
+    messages.map((message) =>
+      Array.isArray(message.content)
+        ? (message.content as Array<{ type: string }>).some((part) => part.type === "image")
+        : false,
+    );
+
+  it.each([
+    [undefined, undefined],
+    [0, 0],
+    [-3, 0],
+    [1, 1],
+    [2.9, 2],
+    [1000, 1000],
+    [Number.NaN, undefined],
+    [Number.POSITIVE_INFINITY, undefined],
+  ])("reads an image limit of %s as %s", (limit, expected) => {
+    expect(normalizedImageLimit(limit)).toBe(expected);
+  });
+
+  it("keeps two screenshots on a rebuild even when the model allows more", () => {
+    const messages = ["a", "b", "c", "d", "e"].map(screenshot);
+    expect(kept(pruneComputerScreenshotContext(messages, 5))).toEqual([
+      false,
+      false,
+      false,
+      true,
+      true,
+    ]);
+  });
+
+  it("drops every screenshot under a zero-image limit and rejects any user image", () => {
+    expect(kept(pruneComputerScreenshotContext(["a", "b"].map(screenshot), 0))).toEqual([
+      false,
+      false,
+    ]);
+    expect(() => pruneComputerScreenshotContext([userImage("u")], 0)).toThrow("image limit is 0");
+  });
+
+  it("accepts user images exactly at the limit and rejects one more", () => {
+    const atLimit = [userImage("u1"), userImage("u2"), screenshot("a")];
+    expect(kept(pruneComputerScreenshotContext(atLimit, 2))).toEqual([true, true, false]);
+    expect(() => pruneComputerScreenshotContext([...atLimit, userImage("u3")], 2)).toThrow(
+      "contains 3 non-screenshot images",
+    );
+  });
+
+  it("treats a non-finite limit as no limit", () => {
+    const messages = [
+      userImage("u1"),
+      userImage("u2"),
+      userImage("u3"),
+      ...["a", "b", "c"].map(screenshot),
+    ];
+    expect(kept(pruneComputerScreenshotContext(messages, Number.POSITIVE_INFINITY))).toEqual([
+      true,
+      true,
+      true,
+      false,
+      true,
+      true,
+    ]);
+  });
+
+  it("prunes stale page state and screenshots together on a rebuild", () => {
+    const page = (id: string): Message => ({
+      role: "toolResult",
+      toolCallId: id,
+      toolName: "browser_snapshot",
+      content: [{ type: "text", text: `${id} ${"x".repeat(1_200)}` }],
+      isError: false,
+      timestamp: 1,
+    });
+    const messages = [
+      page("p1"),
+      page("p2"),
+      page("p3"),
+      page("p4"),
+      ...["a", "b", "c"].map(screenshot),
+    ];
+    const pruned = pruneForRebuild(messages);
+    expect(JSON.stringify(pruned[0])).toContain("Earlier page state trimmed");
+    expect(JSON.stringify(pruned.slice(1, 4))).not.toContain("Earlier page state trimmed");
+    expect(kept(pruned.slice(4))).toEqual([false, true, true]);
+    expect(pruneForRebuild(messages.slice(1, 4))).toEqual(messages.slice(1, 4));
   });
 });

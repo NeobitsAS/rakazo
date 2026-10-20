@@ -112,12 +112,10 @@ export function pruneForRebuild(messages: Message[], maxImagesPerPrompt?: number
   return pruneComputerScreenshotContext(pruneStalePageStateContext(messages), maxImagesPerPrompt);
 }
 
-/** A model's image limit as a whole number, or undefined when it has none. */
+/** A model's image limit as a whole number, or undefined when it has none or it isn't finite. */
 export function normalizedImageLimit(maxImagesPerPrompt?: number): number | undefined {
-  if (maxImagesPerPrompt === undefined) return undefined;
-  return Number.isFinite(maxImagesPerPrompt)
-    ? Math.max(0, Math.floor(maxImagesPerPrompt))
-    : DEFAULT_COMPUTER_SCREENSHOTS_TO_KEEP;
+  if (maxImagesPerPrompt === undefined || !Number.isFinite(maxImagesPerPrompt)) return undefined;
+  return Math.max(0, Math.floor(maxImagesPerPrompt));
 }
 
 export function imagePartCount(message: Message): number {
