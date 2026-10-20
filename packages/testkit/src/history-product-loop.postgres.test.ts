@@ -27,7 +27,7 @@ describe.skipIf(!enabled)("product history diagnostic loop", () => {
       outgoingBytes: number;
       toolResults: number;
     }> = [];
-    let previousToolBytes: number[] = [];
+    let previousToolContent: string[] = [];
     const latest = (request: ModelEmulatorRequest) => {
       expect(JSON.stringify(request.messages)).toContain("Do not deploy.");
       const tools = request.messages.filter((row) => row.role === "tool");
@@ -52,13 +52,14 @@ describe.skipIf(!enabled)("product history diagnostic loop", () => {
         );
       }
       // Earlier results go out as first sent until a rebuild compresses them all at once.
-      const toolBytes = tools.map((row) => Buffer.byteLength(String(row.content)));
-      const earlier = toolBytes.slice(0, -1);
+      const toolContent = tools.map((row) => String(row.content));
+      const earlier = toolContent.slice(0, -1);
+      const compressed = (text: string) => Buffer.byteLength(text) <= 1024;
       expect(
-        earlier.every((bytes, i) => bytes === previousToolBytes[i]) ||
-          earlier.every((bytes) => bytes <= 1024),
+        earlier.every((text, i) => text === previousToolContent[i]) ||
+          (!previousToolContent.every(compressed) && earlier.every(compressed)),
       ).toBe(true);
-      previousToolBytes = toolBytes;
+      previousToolContent = toolContent;
       const message = tools.at(-1);
       const content = String(message?.content);
       const result = JSON.parse(content) as {
