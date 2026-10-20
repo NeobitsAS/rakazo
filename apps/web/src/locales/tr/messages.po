@@ -17,11 +17,6 @@ msgstr ""
 msgid " (unread)"
 msgstr " (okunmadı)"
 
-#. placeholder {0}: group.entries.length
-#: src/pages/ModelSettingsOverlay.tsx
-msgid "{0, plural, one {# model} other {# models}}"
-msgstr "{0, plural, one {# model} other {# model}}"
-
 #. placeholder {0}: tools.length
 #: src/pages/PluginsOverlay.tsx
 msgid "{0, plural, one {# tool} other {# tools}}"
@@ -154,6 +149,10 @@ msgstr "{hours} sa önce"
 msgid "{minutes}m ago"
 msgstr "{minutes} dk önce"
 
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "{modelLabel} isn't available to this server's {source} credentials."
+msgstr "{modelLabel}, bu sunucunun {source} kimlik bilgileriyle kullanılamıyor."
+
 #: src/lib/activity-list-filters.ts
 msgid "{name} asked"
 msgstr "{name} soruyor"
@@ -161,10 +160,6 @@ msgstr "{name} soruyor"
 #: src/lib/activity-list-filters.ts
 msgid "{name} asked: {text}"
 msgstr "{name} soruyor: {text}"
-
-#: src/components/ServerCredentialsUnavailable.tsx
-msgid "{modelLabel} isn't available to this server's {source} credentials."
-msgstr "{modelLabel}, bu sunucunun {source} kimlik bilgileriyle kullanılamıyor."
 
 #. js-lingui-explicit-id
 #: src/lib/browser-notifications.ts
@@ -408,34 +403,14 @@ msgstr ""
 msgid "Add a run time for this one-shot."
 msgstr ""
 
-#: src/pages/McpServersOverlay.tsx
-msgid "Add a server name."
-msgstr "Bir sunucu adı gir."
-
-#: src/pages/McpServersOverlay.tsx
-msgid "Add a stdio command."
-msgstr "Bir stdio komutu gir."
+#: src/pages/PluginsOverlay.tsx
+msgid "Add a server"
+msgstr "Sunucu ekle"
 
 #: src/pages/RoutineEditor.tsx
 #: src/pages/Shell.tsx
 msgid "Add a trigger to run this routine."
 msgstr "Bu rutini çalıştırmak için bir tetikleyici ekleyin."
-
-#: src/pages/McpServersOverlay.tsx
-msgid "Add an HTTPS server URL."
-msgstr "Bir HTTPS sunucu URL'si gir."
-
-#: src/pages/Shell.tsx
-msgid "Add a schedule, webhook, GitHub, or message trigger"
-msgstr ""
-
-#: src/pages/RoutineEditor.tsx
-msgid "Add a schedule, webhook, GitHub, or message trigger to run this routine."
-msgstr ""
-
-#: src/pages/PluginsOverlay.tsx
-msgid "Add a server"
-msgstr "Sunucu ekle"
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Add another"
@@ -1111,10 +1086,6 @@ msgstr "Yeni bir parola seçin"
 msgid "Choose file"
 msgstr "Dosya seç"
 
-#: src/pages/ModelSettingsOverlay.tsx
-msgid "Choose which connected model Rakazo uses."
-msgstr "Rakazo'nun hangi bağlı modeli kullanacağını seç."
-
 #: src/pages/Onboarding.tsx
 msgid "Choose your default model"
 msgstr "Varsayılan modelini seç"
@@ -1249,10 +1220,8 @@ msgstr ""
 msgid "Coming soon"
 msgstr ""
 
-#: src/pages/McpServersOverlay.tsx
-#: src/pages/RoutineEditor.tsx
-
 #: src/components/integrations/AddIntegration.tsx
+#: src/pages/RoutineEditor.tsx
 msgid "Command"
 msgstr "Komut"
 
@@ -1337,14 +1306,6 @@ msgstr ""
 msgid "Connect"
 msgstr "Bağlan"
 
-#: src/pages/Onboarding.tsx
-msgid "Connect a model"
-msgstr "Model bağla"
-
-#: src/pages/ModelBackupsSettings.tsx
-msgid "Connect a provider to add backups."
-msgstr "Yedek eklemek için bir sağlayıcı bağlayın."
-
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "Connect API key"
 msgstr "API anahtarıyla bağlan"
@@ -1352,18 +1313,6 @@ msgstr "API anahtarıyla bağlan"
 #: src/pages/shell/message-cards.tsx
 msgid "Connect MCP server “{name}”"
 msgstr "“{name}” MCP sunucusunu bağla"
-
-#: src/pages/McpServersOverlay.tsx
-msgid "Connect OAuth"
-msgstr "OAuth ile bağlan"
-
-#: src/pages/PluginsOverlay.tsx
-msgid "Connect Treg"
-msgstr "Treg'i bağla"
-
-#: src/pages/ModelSettingsOverlay.tsx
-msgid "Connect this provider to use it as your personal model."
-msgstr "Kişisel modelin olarak kullanmak için bu sağlayıcıyı bağla."
 
 #: src/components/integrations/ChoiceCard.tsx
 #: src/components/integrations/ConnectedStatus.tsx
@@ -1387,9 +1336,7 @@ msgid "Connected. Its tools are available from your next message."
 msgstr "Bağlandı. Araçları bir sonraki mesajından itibaren kullanılabilir."
 
 #: src/components/integrations/IntegrationSetup.tsx
-#: src/pages/McpServersOverlay.tsx
 #: src/pages/memory-providers/HonchoSettingsForm.tsx
-
 #: src/pages/memory-providers/SerenitySettingsForm.tsx
 #: src/pages/memory-providers/SupermemorySettingsForm.tsx
 #: src/pages/PluginsOverlay.tsx
@@ -2265,13 +2212,13 @@ msgstr "Çoğalt"
 msgid "e.g. Hivenet Agent, Presales, Timesheets bot"
 msgstr "örn. Hivenet Agent, Presales, puantaj botu"
 
-#: src/pages/PluginsOverlay.tsx
-msgid "Edit {name}"
-msgstr "{name} düzenle"
-
 #: src/components/AskCard.tsx
 msgid "Edit"
 msgstr "Düzenle"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Edit {name}"
+msgstr "{name} düzenle"
 
 #: src/components/AskCard.tsx
 msgid "Edit first"
@@ -2457,13 +2404,13 @@ msgstr "Bilgisayardaki dosya veya klasörler"
 msgid "Files or folders, one per line"
 msgstr "Dosya veya klasörler, her satıra bir tane"
 
-#: src/pages/GroupPanel.tsx
-msgid "Filter bots"
-msgstr ""
-
 #: src/components/integrations/AddIntegration.tsx
 msgid "Fill in for:"
 msgstr "Şunun için doldur:"
+
+#: src/pages/GroupPanel.tsx
+msgid "Filter bots"
+msgstr ""
 
 #: src/pages/Artifacts.tsx
 msgid "Filter by date"
@@ -2732,10 +2679,6 @@ msgstr "Talimatlar"
 msgid "Instructions updated"
 msgstr "Talimatlar güncellendi"
 
-#: src/pages/PluginsOverlay.tsx
-msgid "Integration domain"
-msgstr ""
-
 #: src/components/integrations/IntegrationSetup.tsx
 msgid "Integration options"
 msgstr ""
@@ -2820,15 +2763,15 @@ msgstr ""
 msgid "Leave"
 msgstr ""
 
-#: src/pages/shell/bot-panel.tsx
-msgid "Lets this bot organize, retune and schedule the bots it creates. You approve each change."
-msgstr "Bu botun oluşturduğu botları düzenlemesine, ayarlamasına ve zamanlamasına izin verir. Her değişikliği siz onaylarsınız."
-
 #. placeholder {0}: bot.name
 #: src/components/integrations/AddIntegration.tsx
 #: src/pages/PluginsOverlay.tsx
 msgid "Let {0} use this server"
 msgstr "{0} bu sunucuyu kullanabilsin"
+
+#: src/pages/shell/bot-panel.tsx
+msgid "Lets this bot organize, retune and schedule the bots it creates. You approve each change."
+msgstr "Bu botun oluşturduğu botları düzenlemesine, ayarlamasına ve zamanlamasına izin verir. Her değişikliği siz onaylarsınız."
 
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Light"
@@ -2891,10 +2834,6 @@ msgstr "Etkinlik yükleniyor…"
 msgid "Loading memory settings…"
 msgstr "Hafıza ayarları yükleniyor…"
 
-#: src/pages/ModelSettingsOverlay.tsx
-msgid "Loading model catalog…"
-msgstr "Model kataloğu yükleniyor…"
-
 #: src/components/ArtifactFileCard.tsx
 msgid "Loading preview…"
 msgstr "Önizleme yükleniyor…"
@@ -2922,13 +2861,13 @@ msgstr "Yerel"
 msgid "Local access lets bots run commands without asking. Avoid it on shared or public servers."
 msgstr "Yerel erişim, botların sormadan komut çalıştırmasına izin verir. Paylaşılan veya herkese açık sunucularda bunu kullanma."
 
-#: src/pages/HostComputerPrompt.tsx
-msgid "Local computer access requires the latest desktop app."
-msgstr ""
-
 #: src/components/integrations/AddIntegration.tsx
 msgid "Local command"
 msgstr "Yerel komut"
+
+#: src/pages/HostComputerPrompt.tsx
+msgid "Local computer access requires the latest desktop app."
+msgstr ""
 
 #: src/pages/LocalSettings.tsx
 msgid "Local Server Settings"
@@ -2969,18 +2908,6 @@ msgstr ""
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Manage messaging settings"
 msgstr ""
-
-#: src/pages/PluginsOverlay.tsx
-msgid "Manual"
-msgstr ""
-
-#: src/pages/PluginsOverlay.tsx
-msgid "Manual setup required"
-msgstr ""
-
-#: src/pages/MemorySettingsOverlay.tsx
-msgid "Manage the Space semantic memory provider."
-msgstr "Çalışma alanının semantik hafıza sağlayıcısını yönet."
 
 #: src/pages/BotContextMenu.tsx
 msgid "Mark as Read"
@@ -3364,14 +3291,6 @@ msgstr ""
 msgid "No matching models"
 msgstr ""
 
-#: src/pages/PluginsOverlay.tsx
-msgid "No MCP or API tool sources installed yet."
-msgstr "Henüz MCP veya API araç kaynağı kurulmadı."
-
-#: src/pages/McpServersOverlay.tsx
-msgid "No MCP servers yet."
-msgstr "Henüz MCP sunucusu yok."
-
 #: src/pages/GroupPanel.tsx
 msgid "No members yet"
 msgstr ""
@@ -3489,15 +3408,6 @@ msgstr "OAuth yetkilendirmesi iptal edildi."
 #: src/pages/McpOAuthCallback.tsx
 msgid "OAuth connection failed"
 msgstr "OAuth bağlantısı başarısız"
-
-#: src/pages/McpServersOverlay.tsx
-msgid "OAuth expired"
-msgstr ""
-
-#. placeholder {0}: call.botName
-#: src/components/call/CallCard.tsx
-msgid "On a call with {0}"
-msgstr "{0} ile görüşmede"
 
 #: src/pages/RoutineEditor.tsx
 msgid "On a schedule"
@@ -3850,10 +3760,6 @@ msgstr "Son"
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "Reconnect"
 msgstr ""
-
-#: src/pages/McpServersOverlay.tsx
-msgid "Reconnect OAuth"
-msgstr "OAuth'u yeniden bağla"
 
 #: src/App.tsx
 #: src/components/ComputerUpdateProgress.tsx
@@ -4414,13 +4320,13 @@ msgstr ""
 msgid "Send reset link"
 msgstr "Sıfırlama bağlantısı gönder"
 
-#: src/pages/AccountSettingsOverlay.tsx
-msgid "Send with Enter"
-msgstr "Enter ile gönder"
-
 #: src/pages/RoutineEditor.tsx
 msgid "Send to {linkedChat}"
 msgstr "{linkedChat} üzerinden gönder"
+
+#: src/pages/AccountSettingsOverlay.tsx
+msgid "Send with Enter"
+msgstr "Enter ile gönder"
 
 #: src/components/AskCard.tsx
 msgid "Sending…"
@@ -4749,14 +4655,6 @@ msgstr "Öğretmeyi durdur"
 #: src/lib/browser-notifications.ts
 msgid "Stopped."
 msgstr "Durduruldu."
-
-#: src/pages/McpServersOverlay.tsx
-msgid "Stored encrypted"
-msgstr "Şifreli saklanıyor"
-
-#: src/pages/ModelSettingsOverlay.tsx
-msgid "Stored securely. Never shown here."
-msgstr "Güvenle saklanır. Burada gösterilmez."
 
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Stream replies"
@@ -5111,10 +5009,6 @@ msgstr ""
 msgid "Undo"
 msgstr "Geri al"
 
-#: src/pages/PluginsOverlay.tsx
-msgid "Uninstall"
-msgstr ""
-
 #: src/pages/shell/bot-panel.tsx
 msgid "Unknown tool"
 msgstr ""
@@ -5366,13 +5260,13 @@ msgstr "Bu botun amacı"
 msgid "What to return"
 msgstr "Ne döndürülecek"
 
-#: src/components/integrations/AddIntegration.tsx
-msgid "What your bots will call it"
-msgstr "Botlarınızın ona vereceği ad"
-
 #: src/pages/RoutineEditor.tsx
 msgid "What to watch"
 msgstr "İzlenecek öğe"
+
+#: src/components/integrations/AddIntegration.tsx
+msgid "What your bots will call it"
+msgstr "Botlarınızın ona vereceği ad"
 
 #: src/pages/RoutineEditor.tsx
 msgid "When a webhook fires"
@@ -5475,7 +5369,3 @@ msgstr "OpenAI sağlayıcınız"
 #: src/lib/run-error.ts
 msgid "Your OpenRouter"
 msgstr "OpenRouter sağlayıcınız"
-
-#: src/pages/Welcome.tsx
-msgid "Your team of always-on agents<0/>that you can give real work to."
-msgstr "Gerçek işler verebileceğin,<0/>her zaman açık agent takımın."

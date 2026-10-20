@@ -17,11 +17,6 @@ msgstr ""
 msgid " (unread)"
 msgstr " (अपठित)"
 
-#. placeholder {0}: group.entries.length
-#: src/pages/ModelSettingsOverlay.tsx
-msgid "{0, plural, one {# model} other {# models}}"
-msgstr "{0, plural, one {# मॉडल} other {# मॉडल}}"
-
 #. placeholder {0}: tools.length
 #: src/pages/PluginsOverlay.tsx
 msgid "{0, plural, one {# tool} other {# tools}}"
@@ -154,6 +149,10 @@ msgstr "{hours} घंटे पहले"
 msgid "{minutes}m ago"
 msgstr "{minutes} मिनट पहले"
 
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "{modelLabel} isn't available to this server's {source} credentials."
+msgstr "{modelLabel} इस सर्वर के {source} क्रेडेंशियल के लिए उपलब्ध नहीं है।"
+
 #: src/lib/activity-list-filters.ts
 msgid "{name} asked"
 msgstr "{name} का अनुरोध"
@@ -161,10 +160,6 @@ msgstr "{name} का अनुरोध"
 #: src/lib/activity-list-filters.ts
 msgid "{name} asked: {text}"
 msgstr "{name} का अनुरोध: {text}"
-
-#: src/components/ServerCredentialsUnavailable.tsx
-msgid "{modelLabel} isn't available to this server's {source} credentials."
-msgstr "{modelLabel} इस सर्वर के {source} क्रेडेंशियल के लिए उपलब्ध नहीं है।"
 
 #. js-lingui-explicit-id
 #: src/lib/browser-notifications.ts
@@ -408,34 +403,14 @@ msgstr ""
 msgid "Add a run time for this one-shot."
 msgstr ""
 
-#: src/pages/McpServersOverlay.tsx
-msgid "Add a server name."
-msgstr "सर्वर का नाम दर्ज करें।"
-
-#: src/pages/McpServersOverlay.tsx
-msgid "Add a stdio command."
-msgstr "एक stdio कमांड दर्ज करें।"
+#: src/pages/PluginsOverlay.tsx
+msgid "Add a server"
+msgstr "सर्वर जोड़ें"
 
 #: src/pages/RoutineEditor.tsx
 #: src/pages/Shell.tsx
 msgid "Add a trigger to run this routine."
 msgstr "इस रूटीन को चलाने के लिए ट्रिगर जोड़ें।"
-
-#: src/pages/McpServersOverlay.tsx
-msgid "Add an HTTPS server URL."
-msgstr "एक HTTPS सर्वर URL दर्ज करें।"
-
-#: src/pages/Shell.tsx
-msgid "Add a schedule, webhook, GitHub, or message trigger"
-msgstr ""
-
-#: src/pages/RoutineEditor.tsx
-msgid "Add a schedule, webhook, GitHub, or message trigger to run this routine."
-msgstr ""
-
-#: src/pages/PluginsOverlay.tsx
-msgid "Add a server"
-msgstr "सर्वर जोड़ें"
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Add another"
@@ -1111,10 +1086,6 @@ msgstr "नया पासवर्ड चुनें"
 msgid "Choose file"
 msgstr "फ़ाइल चुनें"
 
-#: src/pages/ModelSettingsOverlay.tsx
-msgid "Choose which connected model Rakazo uses."
-msgstr "चुनें कि Rakazo किस कनेक्टेड मॉडल का उपयोग करे।"
-
 #: src/pages/Onboarding.tsx
 msgid "Choose your default model"
 msgstr "अपना डिफ़ॉल्ट मॉडल चुनें"
@@ -1249,10 +1220,8 @@ msgstr ""
 msgid "Coming soon"
 msgstr ""
 
-#: src/pages/McpServersOverlay.tsx
-#: src/pages/RoutineEditor.tsx
-
 #: src/components/integrations/AddIntegration.tsx
+#: src/pages/RoutineEditor.tsx
 msgid "Command"
 msgstr "कमांड"
 
@@ -1337,14 +1306,6 @@ msgstr ""
 msgid "Connect"
 msgstr "कनेक्ट करें"
 
-#: src/pages/Onboarding.tsx
-msgid "Connect a model"
-msgstr "एक मॉडल कनेक्ट करें"
-
-#: src/pages/ModelBackupsSettings.tsx
-msgid "Connect a provider to add backups."
-msgstr "बैकअप जोड़ने के लिए किसी प्रदाता को कनेक्ट करें।"
-
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "Connect API key"
 msgstr "API कुंजी कनेक्ट करें"
@@ -1352,18 +1313,6 @@ msgstr "API कुंजी कनेक्ट करें"
 #: src/pages/shell/message-cards.tsx
 msgid "Connect MCP server “{name}”"
 msgstr "MCP सर्वर “{name}” कनेक्ट करें"
-
-#: src/pages/McpServersOverlay.tsx
-msgid "Connect OAuth"
-msgstr "OAuth कनेक्ट करें"
-
-#: src/pages/PluginsOverlay.tsx
-msgid "Connect Treg"
-msgstr "Treg कनेक्ट करें"
-
-#: src/pages/ModelSettingsOverlay.tsx
-msgid "Connect this provider to use it as your personal model."
-msgstr "इस प्रोवाइडर को अपने व्यक्तिगत मॉडल के रूप में उपयोग करने के लिए कनेक्ट करें।"
 
 #: src/components/integrations/ChoiceCard.tsx
 #: src/components/integrations/ConnectedStatus.tsx
@@ -1387,9 +1336,7 @@ msgid "Connected. Its tools are available from your next message."
 msgstr "कनेक्टेड। इसके टूल आपके अगले संदेश से उपलब्ध हैं।"
 
 #: src/components/integrations/IntegrationSetup.tsx
-#: src/pages/McpServersOverlay.tsx
 #: src/pages/memory-providers/HonchoSettingsForm.tsx
-
 #: src/pages/memory-providers/SerenitySettingsForm.tsx
 #: src/pages/memory-providers/SupermemorySettingsForm.tsx
 #: src/pages/PluginsOverlay.tsx
@@ -2265,13 +2212,13 @@ msgstr "डुप्लिकेट"
 msgid "e.g. Hivenet Agent, Presales, Timesheets bot"
 msgstr "उदा. Hivenet Agent, Presales, टाइमशीट बॉट"
 
-#: src/pages/PluginsOverlay.tsx
-msgid "Edit {name}"
-msgstr "{name} संपादित करें"
-
 #: src/components/AskCard.tsx
 msgid "Edit"
 msgstr "संपादित करें"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Edit {name}"
+msgstr "{name} संपादित करें"
 
 #: src/components/AskCard.tsx
 msgid "Edit first"
@@ -2457,13 +2404,13 @@ msgstr "कंप्यूटर पर फ़ाइलें या फ़ो�
 msgid "Files or folders, one per line"
 msgstr "फ़ाइलें या फ़ोल्डर, हर पंक्ति में एक"
 
-#: src/pages/GroupPanel.tsx
-msgid "Filter bots"
-msgstr ""
-
 #: src/components/integrations/AddIntegration.tsx
 msgid "Fill in for:"
 msgstr "इसके लिए भरें:"
+
+#: src/pages/GroupPanel.tsx
+msgid "Filter bots"
+msgstr ""
 
 #: src/pages/Artifacts.tsx
 msgid "Filter by date"
@@ -2732,10 +2679,6 @@ msgstr "निर्देश"
 msgid "Instructions updated"
 msgstr "निर्देश अपडेट किए गए"
 
-#: src/pages/PluginsOverlay.tsx
-msgid "Integration domain"
-msgstr ""
-
 #: src/components/integrations/IntegrationSetup.tsx
 msgid "Integration options"
 msgstr ""
@@ -2820,15 +2763,15 @@ msgstr ""
 msgid "Leave"
 msgstr ""
 
-#: src/pages/shell/bot-panel.tsx
-msgid "Lets this bot organize, retune and schedule the bots it creates. You approve each change."
-msgstr "इस बॉट को अपने बनाए बॉट व्यवस्थित करने, समायोजित करने और शेड्यूल करने देता है। हर बदलाव को आप मंज़ूरी देते हैं।"
-
 #. placeholder {0}: bot.name
 #: src/components/integrations/AddIntegration.tsx
 #: src/pages/PluginsOverlay.tsx
 msgid "Let {0} use this server"
 msgstr "{0} को इस सर्वर का उपयोग करने दें"
+
+#: src/pages/shell/bot-panel.tsx
+msgid "Lets this bot organize, retune and schedule the bots it creates. You approve each change."
+msgstr "इस बॉट को अपने बनाए बॉट व्यवस्थित करने, समायोजित करने और शेड्यूल करने देता है। हर बदलाव को आप मंज़ूरी देते हैं।"
 
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Light"
@@ -2891,10 +2834,6 @@ msgstr "गतिविधि लोड हो रही है…"
 msgid "Loading memory settings…"
 msgstr "मेमोरी सेटिंग्स लोड हो रही हैं…"
 
-#: src/pages/ModelSettingsOverlay.tsx
-msgid "Loading model catalog…"
-msgstr "मॉडल कैटलॉग लोड हो रहा है…"
-
 #: src/components/ArtifactFileCard.tsx
 msgid "Loading preview…"
 msgstr "प्रीव्यू लोड हो रहा है…"
@@ -2922,13 +2861,13 @@ msgstr "लोकल"
 msgid "Local access lets bots run commands without asking. Avoid it on shared or public servers."
 msgstr "स्थानीय पहुँच मिलने पर बॉट्स बिना पूछे कमांड चला सकते हैं। साझा या सार्वजनिक सर्वर पर इससे बचें।"
 
-#: src/pages/HostComputerPrompt.tsx
-msgid "Local computer access requires the latest desktop app."
-msgstr ""
-
 #: src/components/integrations/AddIntegration.tsx
 msgid "Local command"
 msgstr "लोकल कमांड"
+
+#: src/pages/HostComputerPrompt.tsx
+msgid "Local computer access requires the latest desktop app."
+msgstr ""
 
 #: src/pages/LocalSettings.tsx
 msgid "Local Server Settings"
@@ -2969,18 +2908,6 @@ msgstr ""
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Manage messaging settings"
 msgstr ""
-
-#: src/pages/PluginsOverlay.tsx
-msgid "Manual"
-msgstr ""
-
-#: src/pages/PluginsOverlay.tsx
-msgid "Manual setup required"
-msgstr ""
-
-#: src/pages/MemorySettingsOverlay.tsx
-msgid "Manage the Space semantic memory provider."
-msgstr "वर्कस्पेस के सिमेंटिक मेमोरी प्रोवाइडर को प्रबंधित करें।"
 
 #: src/pages/BotContextMenu.tsx
 msgid "Mark as Read"
@@ -3364,14 +3291,6 @@ msgstr ""
 msgid "No matching models"
 msgstr ""
 
-#: src/pages/PluginsOverlay.tsx
-msgid "No MCP or API tool sources installed yet."
-msgstr "अभी तक कोई MCP या API टूल स्रोत इंस्टॉल नहीं है।"
-
-#: src/pages/McpServersOverlay.tsx
-msgid "No MCP servers yet."
-msgstr "अभी तक कोई MCP सर्वर नहीं।"
-
 #: src/pages/GroupPanel.tsx
 msgid "No members yet"
 msgstr ""
@@ -3489,15 +3408,6 @@ msgstr "OAuth ऑथराइज़ेशन रद्द कर दिया �
 #: src/pages/McpOAuthCallback.tsx
 msgid "OAuth connection failed"
 msgstr "OAuth कनेक्शन विफल"
-
-#: src/pages/McpServersOverlay.tsx
-msgid "OAuth expired"
-msgstr ""
-
-#. placeholder {0}: call.botName
-#: src/components/call/CallCard.tsx
-msgid "On a call with {0}"
-msgstr "{0} के साथ कॉल पर"
 
 #: src/pages/RoutineEditor.tsx
 msgid "On a schedule"
@@ -3850,10 +3760,6 @@ msgstr "हाल के"
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "Reconnect"
 msgstr ""
-
-#: src/pages/McpServersOverlay.tsx
-msgid "Reconnect OAuth"
-msgstr "OAuth पुनः कनेक्ट करें"
 
 #: src/App.tsx
 #: src/components/ComputerUpdateProgress.tsx
@@ -4414,13 +4320,13 @@ msgstr "रिकॉर्डिंग भेजें"
 msgid "Send reset link"
 msgstr "रीसेट लिंक भेजें"
 
-#: src/pages/AccountSettingsOverlay.tsx
-msgid "Send with Enter"
-msgstr "Enter से भेजें"
-
 #: src/pages/RoutineEditor.tsx
 msgid "Send to {linkedChat}"
 msgstr "{linkedChat} पर भेजें"
+
+#: src/pages/AccountSettingsOverlay.tsx
+msgid "Send with Enter"
+msgstr "Enter से भेजें"
 
 #: src/components/AskCard.tsx
 msgid "Sending…"
@@ -4749,14 +4655,6 @@ msgstr "सिखाना रोकें"
 #: src/lib/browser-notifications.ts
 msgid "Stopped."
 msgstr "रोक दिया गया।"
-
-#: src/pages/McpServersOverlay.tsx
-msgid "Stored encrypted"
-msgstr "एन्क्रिप्टेड रूप में संग्रहीत"
-
-#: src/pages/ModelSettingsOverlay.tsx
-msgid "Stored securely. Never shown here."
-msgstr "सुरक्षित रूप से संग्रहीत। यहां कभी नहीं दिखाया जाता।"
 
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Stream replies"
@@ -5111,10 +5009,6 @@ msgstr ""
 msgid "Undo"
 msgstr "पूर्ववत करें"
 
-#: src/pages/PluginsOverlay.tsx
-msgid "Uninstall"
-msgstr ""
-
 #: src/pages/shell/bot-panel.tsx
 msgid "Unknown tool"
 msgstr ""
@@ -5366,13 +5260,13 @@ msgstr "यह बॉट किस लिए है"
 msgid "What to return"
 msgstr "क्या लौटाना है"
 
-#: src/components/integrations/AddIntegration.tsx
-msgid "What your bots will call it"
-msgstr "आपके बॉट इसे किस नाम से बुलाएंगे"
-
 #: src/pages/RoutineEditor.tsx
 msgid "What to watch"
 msgstr "किसकी निगरानी करें"
+
+#: src/components/integrations/AddIntegration.tsx
+msgid "What your bots will call it"
+msgstr "आपके बॉट इसे किस नाम से बुलाएंगे"
 
 #: src/pages/RoutineEditor.tsx
 msgid "When a webhook fires"
@@ -5475,7 +5369,3 @@ msgstr "आपका OpenAI"
 #: src/lib/run-error.ts
 msgid "Your OpenRouter"
 msgstr "आपका OpenRouter"
-
-#: src/pages/Welcome.tsx
-msgid "Your team of always-on agents<0/>that you can give real work to."
-msgstr "हमेशा चालू रहने वाले एजेंटों की आपकी टीम<0/>जिन्हें आप असली काम सौंप सकते हैं।"

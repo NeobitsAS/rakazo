@@ -17,11 +17,6 @@ msgstr ""
 msgid " (unread)"
 msgstr " (non lu)"
 
-#. placeholder {0}: group.entries.length
-#: src/pages/ModelSettingsOverlay.tsx
-msgid "{0, plural, one {# model} other {# models}}"
-msgstr "{0, plural, one {# modèle} other {# modèles}}"
-
 #. placeholder {0}: tools.length
 #: src/pages/PluginsOverlay.tsx
 msgid "{0, plural, one {# tool} other {# tools}}"
@@ -154,6 +149,10 @@ msgstr "il y a {hours} h"
 msgid "{minutes}m ago"
 msgstr "il y a {minutes} min"
 
+#: src/components/ServerCredentialsUnavailable.tsx
+msgid "{modelLabel} isn't available to this server's {source} credentials."
+msgstr "{modelLabel} n'est pas disponible pour les identifiants {source} de ce serveur."
+
 #: src/lib/activity-list-filters.ts
 msgid "{name} asked"
 msgstr "{name} demande"
@@ -161,10 +160,6 @@ msgstr "{name} demande"
 #: src/lib/activity-list-filters.ts
 msgid "{name} asked: {text}"
 msgstr "{name} demande : {text}"
-
-#: src/components/ServerCredentialsUnavailable.tsx
-msgid "{modelLabel} isn't available to this server's {source} credentials."
-msgstr "{modelLabel} n'est pas disponible pour les identifiants {source} de ce serveur."
 
 #. js-lingui-explicit-id
 #: src/lib/browser-notifications.ts
@@ -408,34 +403,14 @@ msgstr "Ajoutez un modèle dans les Paramètres pour utiliser cette fonctionnali
 msgid "Add a run time for this one-shot."
 msgstr "Ajoutez un horaire d'exécution pour cet exécution unique."
 
-#: src/pages/McpServersOverlay.tsx
-msgid "Add a server name."
-msgstr "Ajoutez un nom de serveur."
-
-#: src/pages/McpServersOverlay.tsx
-msgid "Add a stdio command."
-msgstr "Ajoutez une commande stdio."
+#: src/pages/PluginsOverlay.tsx
+msgid "Add a server"
+msgstr "Ajouter un serveur"
 
 #: src/pages/RoutineEditor.tsx
 #: src/pages/Shell.tsx
 msgid "Add a trigger to run this routine."
 msgstr "Ajoutez un déclencheur pour exécuter cette routine."
-
-#: src/pages/McpServersOverlay.tsx
-msgid "Add an HTTPS server URL."
-msgstr "Ajoutez une URL de serveur HTTPS."
-
-#: src/pages/Shell.tsx
-msgid "Add a schedule, webhook, GitHub, or message trigger"
-msgstr "Ajoutez une planification, un webhook, GitHub ou un déclencheur de message"
-
-#: src/pages/RoutineEditor.tsx
-msgid "Add a schedule, webhook, GitHub, or message trigger to run this routine."
-msgstr "Ajoutez une planification, un webhook, GitHub ou un déclencheur de message pour exécuter cette routine."
-
-#: src/pages/PluginsOverlay.tsx
-msgid "Add a server"
-msgstr "Ajouter un serveur"
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Add another"
@@ -1111,10 +1086,6 @@ msgstr "Choisissez un nouveau mot de passe"
 msgid "Choose file"
 msgstr "Choisir un fichier"
 
-#: src/pages/ModelSettingsOverlay.tsx
-msgid "Choose which connected model Rakazo uses."
-msgstr "Choisissez le modèle connecté utilisé par Rakazo."
-
 #: src/pages/Onboarding.tsx
 msgid "Choose your default model"
 msgstr "Choisissez votre modèle par défaut"
@@ -1249,10 +1220,8 @@ msgstr ""
 msgid "Coming soon"
 msgstr "Bientôt disponible"
 
-#: src/pages/McpServersOverlay.tsx
-#: src/pages/RoutineEditor.tsx
-
 #: src/components/integrations/AddIntegration.tsx
+#: src/pages/RoutineEditor.tsx
 msgid "Command"
 msgstr "Commande"
 
@@ -1337,14 +1306,6 @@ msgstr ""
 msgid "Connect"
 msgstr "Connecter"
 
-#: src/pages/Onboarding.tsx
-msgid "Connect a model"
-msgstr "Connecter un modèle"
-
-#: src/pages/ModelBackupsSettings.tsx
-msgid "Connect a provider to add backups."
-msgstr "Connectez un fournisseur pour ajouter des modèles de secours."
-
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "Connect API key"
 msgstr "Connecter la clé API"
@@ -1352,18 +1313,6 @@ msgstr "Connecter la clé API"
 #: src/pages/shell/message-cards.tsx
 msgid "Connect MCP server “{name}”"
 msgstr "Connecter le serveur MCP « {name} »"
-
-#: src/pages/McpServersOverlay.tsx
-msgid "Connect OAuth"
-msgstr "Connecter OAuth"
-
-#: src/pages/PluginsOverlay.tsx
-msgid "Connect Treg"
-msgstr "Connecter Treg"
-
-#: src/pages/ModelSettingsOverlay.tsx
-msgid "Connect this provider to use it as your personal model."
-msgstr "Connectez ce fournisseur pour l'utiliser comme modèle personnel."
 
 #: src/components/integrations/ChoiceCard.tsx
 #: src/components/integrations/ConnectedStatus.tsx
@@ -1387,9 +1336,7 @@ msgid "Connected. Its tools are available from your next message."
 msgstr "Connecté. Ses outils sont disponibles dès votre prochain message."
 
 #: src/components/integrations/IntegrationSetup.tsx
-#: src/pages/McpServersOverlay.tsx
 #: src/pages/memory-providers/HonchoSettingsForm.tsx
-
 #: src/pages/memory-providers/SerenitySettingsForm.tsx
 #: src/pages/memory-providers/SupermemorySettingsForm.tsx
 #: src/pages/PluginsOverlay.tsx
@@ -2265,13 +2212,13 @@ msgstr "Dupliquer"
 msgid "e.g. Hivenet Agent, Presales, Timesheets bot"
 msgstr "ex. Agent Hivenet, Préventes, bot de feuilles de temps"
 
-#: src/pages/PluginsOverlay.tsx
-msgid "Edit {name}"
-msgstr "Modifier {name}"
-
 #: src/components/AskCard.tsx
 msgid "Edit"
 msgstr "Modifier"
+
+#: src/pages/PluginsOverlay.tsx
+msgid "Edit {name}"
+msgstr "Modifier {name}"
 
 #: src/components/AskCard.tsx
 msgid "Edit first"
@@ -2457,13 +2404,13 @@ msgstr "Fichiers ou dossiers de l’ordinateur"
 msgid "Files or folders, one per line"
 msgstr "Fichiers ou dossiers, un par ligne"
 
-#: src/pages/GroupPanel.tsx
-msgid "Filter bots"
-msgstr ""
-
 #: src/components/integrations/AddIntegration.tsx
 msgid "Fill in for:"
 msgstr "Pré-remplir pour :"
+
+#: src/pages/GroupPanel.tsx
+msgid "Filter bots"
+msgstr ""
 
 #: src/pages/Artifacts.tsx
 msgid "Filter by date"
@@ -2732,10 +2679,6 @@ msgstr "Instructions"
 msgid "Instructions updated"
 msgstr "Instructions mises à jour"
 
-#: src/pages/PluginsOverlay.tsx
-msgid "Integration domain"
-msgstr "Domaine d'intégration"
-
 #: src/components/integrations/IntegrationSetup.tsx
 msgid "Integration options"
 msgstr "Options d'intégration"
@@ -2820,15 +2763,15 @@ msgstr ""
 msgid "Leave"
 msgstr "Quitter"
 
-#: src/pages/shell/bot-panel.tsx
-msgid "Lets this bot organize, retune and schedule the bots it creates. You approve each change."
-msgstr "Permet à ce bot d’organiser, d’ajuster et de planifier les bots qu’il crée. Vous approuvez chaque modification."
-
 #. placeholder {0}: bot.name
 #: src/components/integrations/AddIntegration.tsx
 #: src/pages/PluginsOverlay.tsx
 msgid "Let {0} use this server"
 msgstr "Autoriser {0} à utiliser ce serveur"
+
+#: src/pages/shell/bot-panel.tsx
+msgid "Lets this bot organize, retune and schedule the bots it creates. You approve each change."
+msgstr "Permet à ce bot d’organiser, d’ajuster et de planifier les bots qu’il crée. Vous approuvez chaque modification."
 
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Light"
@@ -2891,10 +2834,6 @@ msgstr "Chargement de l'activité…"
 msgid "Loading memory settings…"
 msgstr "Chargement des paramètres de mémoire…"
 
-#: src/pages/ModelSettingsOverlay.tsx
-msgid "Loading model catalog…"
-msgstr "Chargement du catalogue de modèles…"
-
 #: src/components/ArtifactFileCard.tsx
 msgid "Loading preview…"
 msgstr "Chargement de l'aperçu…"
@@ -2922,13 +2861,13 @@ msgstr "Local"
 msgid "Local access lets bots run commands without asking. Avoid it on shared or public servers."
 msgstr "L'accès local permet aux bots d'exécuter des commandes sans demander. Évitez-le sur les serveurs partagés ou publics."
 
-#: src/pages/HostComputerPrompt.tsx
-msgid "Local computer access requires the latest desktop app."
-msgstr ""
-
 #: src/components/integrations/AddIntegration.tsx
 msgid "Local command"
 msgstr "Commande locale"
+
+#: src/pages/HostComputerPrompt.tsx
+msgid "Local computer access requires the latest desktop app."
+msgstr ""
 
 #: src/pages/LocalSettings.tsx
 msgid "Local Server Settings"
@@ -2969,18 +2908,6 @@ msgstr ""
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Manage messaging settings"
 msgstr "Gérer les paramètres de messagerie"
-
-#: src/pages/PluginsOverlay.tsx
-msgid "Manual"
-msgstr "Manuel"
-
-#: src/pages/PluginsOverlay.tsx
-msgid "Manual setup required"
-msgstr "Configuration manuelle requise"
-
-#: src/pages/MemorySettingsOverlay.tsx
-msgid "Manage the Space semantic memory provider."
-msgstr "Gérer le fournisseur de mémoire sémantique de l'espace."
 
 #: src/pages/BotContextMenu.tsx
 msgid "Mark as Read"
@@ -3364,14 +3291,6 @@ msgstr "Aucun artefact correspondant sur cette page."
 msgid "No matching models"
 msgstr "Aucun modèle correspondant"
 
-#: src/pages/PluginsOverlay.tsx
-msgid "No MCP or API tool sources installed yet."
-msgstr "Aucune source d'outils MCP ou API installée pour le moment."
-
-#: src/pages/McpServersOverlay.tsx
-msgid "No MCP servers yet."
-msgstr "Aucun serveur MCP pour le moment."
-
 #: src/pages/GroupPanel.tsx
 msgid "No members yet"
 msgstr ""
@@ -3489,15 +3408,6 @@ msgstr "L'autorisation OAuth a été annulée."
 #: src/pages/McpOAuthCallback.tsx
 msgid "OAuth connection failed"
 msgstr "Échec de la connexion OAuth"
-
-#: src/pages/McpServersOverlay.tsx
-msgid "OAuth expired"
-msgstr "OAuth expiré"
-
-#. placeholder {0}: call.botName
-#: src/components/call/CallCard.tsx
-msgid "On a call with {0}"
-msgstr "En appel avec {0}"
 
 #: src/pages/RoutineEditor.tsx
 msgid "On a schedule"
@@ -3850,10 +3760,6 @@ msgstr "Récent"
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "Reconnect"
 msgstr ""
-
-#: src/pages/McpServersOverlay.tsx
-msgid "Reconnect OAuth"
-msgstr "Reconnecter OAuth"
 
 #: src/App.tsx
 #: src/components/ComputerUpdateProgress.tsx
@@ -4414,13 +4320,13 @@ msgstr "Envoyer l’enregistrement"
 msgid "Send reset link"
 msgstr "Envoyer le lien de réinitialisation"
 
-#: src/pages/AccountSettingsOverlay.tsx
-msgid "Send with Enter"
-msgstr "Envoyer avec Entrée"
-
 #: src/pages/RoutineEditor.tsx
 msgid "Send to {linkedChat}"
 msgstr "Envoyer vers {linkedChat}"
+
+#: src/pages/AccountSettingsOverlay.tsx
+msgid "Send with Enter"
+msgstr "Envoyer avec Entrée"
 
 #: src/components/AskCard.tsx
 msgid "Sending…"
@@ -4749,14 +4655,6 @@ msgstr "Arrêter l'enseignement"
 #: src/lib/browser-notifications.ts
 msgid "Stopped."
 msgstr "Arrêté."
-
-#: src/pages/McpServersOverlay.tsx
-msgid "Stored encrypted"
-msgstr "Stocké chiffré"
-
-#: src/pages/ModelSettingsOverlay.tsx
-msgid "Stored securely. Never shown here."
-msgstr "Stocké en toute sécurité. Jamais affiché ici."
 
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Stream replies"
@@ -5111,10 +5009,6 @@ msgstr "Indisponible"
 msgid "Undo"
 msgstr "Annuler"
 
-#: src/pages/PluginsOverlay.tsx
-msgid "Uninstall"
-msgstr "Désinstaller"
-
 #: src/pages/shell/bot-panel.tsx
 msgid "Unknown tool"
 msgstr ""
@@ -5366,13 +5260,13 @@ msgstr "À quoi sert ce bot"
 msgid "What to return"
 msgstr "Que retourner"
 
-#: src/components/integrations/AddIntegration.tsx
-msgid "What your bots will call it"
-msgstr "Le nom que vos bots lui donneront"
-
 #: src/pages/RoutineEditor.tsx
 msgid "What to watch"
 msgstr "Élément à surveiller"
+
+#: src/components/integrations/AddIntegration.tsx
+msgid "What your bots will call it"
+msgstr "Le nom que vos bots lui donneront"
 
 #: src/pages/RoutineEditor.tsx
 msgid "When a webhook fires"
@@ -5475,7 +5369,3 @@ msgstr "Votre OpenAI"
 #: src/lib/run-error.ts
 msgid "Your OpenRouter"
 msgstr "Votre OpenRouter"
-
-#: src/pages/Welcome.tsx
-msgid "Your team of always-on agents<0/>that you can give real work to."
-msgstr "Votre équipe d'agents toujours actifs<0/>à qui vous pouvez confier de vrais travaux."
