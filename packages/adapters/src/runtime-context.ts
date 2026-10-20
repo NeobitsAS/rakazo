@@ -39,9 +39,30 @@ const REBUILD_MIN_SAVED_TOKENS = 16_384;
 const REBUILD_MAX_STALE_IMAGES = 16;
 /** A rebuild forced by the model's window leaves this share of it free for the next calls. */
 const REBUILD_HEADROOM = 0.25;
-interface Size {
+export interface Size {
   tokens: number;
   images: number;
+}
+/**
+ * Whether dropping an appended transcript's stale content is worth breaking the cache. A rebuild
+ * writes about the rebuilt size to the cache once; stale content is read again on every call.
+ * With cache writes at about 1.25 and reads at about 0.1 times the input price, rebuilding every
+ * k calls costs least once stale content reaches about 5 × √(rebuilt size × growth per call), so
+ * a run that adds a lot per call rebuilds rarely. `appends` counts calls appended since the
+ * transcript was last rebuilt at `rebuiltTokens`.
+ */
+export function rebuildPaysOff(
+  kept: Size,
+  fresh: Size,
+  rebuiltTokens: number,
+  appends: number,
+): boolean {
+  const stale = kept.tokens - fresh.tokens;
+  const growth = (kept.tokens - rebuiltTokens) / (appends + 1);
+  return (
+    (stale >= REBUILD_MIN_SAVED_TOKENS && stale * stale >= 25 * fresh.tokens * growth) ||
+    kept.images - fresh.images >= REBUILD_MAX_STALE_IMAGES
+  );
 }
 interface Prepared {
   context: Context;
@@ -494,30 +515,6 @@ export function createRuntimeContextPolicy(
       images: messages.reduce((count, message) => count + imagePartCount(message), 0),
     };
   }
-  function tooLarge(size: Size, model: Model<Api>): boolean {
-    const imageLimit = normalizedImageLimit(request.model.maxImagesPerPrompt);
-    return (
-      size.tokens >
-        (request.model.contextWindow ?? model.contextWindow) -
-          (request.model.maxTokens ?? model.maxTokens) ||
-      (imageLimit !== undefined && size.images > imageLimit)
-    );
-  }
-  /**
-   * Whether dropping the appended transcript's stale content is worth breaking the cache. A
-   * rebuild writes about the rebuilt size to the cache once; stale content is read again on every
-   * call. With cache writes at about 1.25 and reads at about 0.1 times the input price, rebuilding
-   * every k calls costs least once stale content reaches about 5 × √(rebuilt size × growth per
-   * call), so a run that adds a lot per call rebuilds rarely.
-   */
-  function rebuildPaysOff(kept: Size, fresh: Size, previous: SentTranscript): boolean {
-    const stale = kept.tokens - fresh.tokens;
-    const growth = (kept.tokens - previous.rebuiltTokens) / (previous.appends + 1);
-    return (
-      (stale >= REBUILD_MIN_SAVED_TOKENS && stale * stale >= 25 * fresh.tokens * growth) ||
-      kept.images - fresh.images >= REBUILD_MAX_STALE_IMAGES
-    );
-  }
   /** A rebuild that leaves part of the window free, or none when the run needs all of it. */
   function rebuildWithHeadroom(ctx: Context, model: Model<Api>): Prepared | undefined {
     const window = request.model.contextWindow ?? model.contextWindow;
@@ -541,8 +538,9 @@ export function createRuntimeContextPolicy(
      * Each model call in a run gets the transcript the previous call was sent, byte for byte,
      * followed by whatever the run appended since. Rewriting an earlier message breaks the
      * provider's cached prefix and invalidates every later signed thinking block, which
-     * providers that bind reasoning to its conversation reject. When a rebuild is worth it
-     * (see worthRebuilding), thinking from the first rewritten message on is dropped.
+     * providers that bind reasoning to its conversation reject. The context is rebuilt only when
+     * that fixes a limit the appended transcript breaks (the model's window or image limit) or
+     * when rebuildPaysOff; thinking from the first rewritten message on is then dropped.
      */
     prepareContext(ctx: Context, model: Model<Api>): Context {
       let built = rebuild(ctx, model);
@@ -559,11 +557,23 @@ export function createRuntimeContextPolicy(
           : undefined;
       let append = false;
       if (previous && appended) {
+        const available =
+          (request.model.contextWindow ?? model.contextWindow) -
+          (request.model.maxTokens ?? model.maxTokens);
+        const imageLimit = normalizedImageLimit(request.model.maxImagesPerPrompt);
+        const overTokens = (size: Size) => size.tokens > available;
+        const overImages = (size: Size) => imageLimit !== undefined && size.images > imageLimit;
         const kept = measure(ctx, appended);
         const fresh = measure(ctx, built.context.messages);
-        if (!tooLarge(kept, model)) append = !rebuildPaysOff(kept, fresh, previous);
-        else if (tooLarge(fresh, model)) append = true;
-        else built = rebuildWithHeadroom(ctx, model) ?? built;
+        // Each limit is enforced on its own: a rebuild that fixes the image count is still
+        // taken when the text stays too large for the window, and the other way round.
+        if (overTokens(kept) && !overTokens(fresh))
+          built = rebuildWithHeadroom(ctx, model) ?? built;
+        else if (!(overImages(kept) && !overImages(fresh)))
+          append =
+            overTokens(kept) ||
+            overImages(kept) ||
+            !rebuildPaysOff(kept, fresh, previous.rebuiltTokens, previous.appends);
       }
       if (previous && appended && append) {
         const projection = [
@@ -599,7 +609,8 @@ export function createRuntimeContextPolicy(
       sent = {
         head,
         source,
-        messages,
+        // A copy, so a caller that later grows the array it passed in cannot change the record.
+        messages: [...messages],
         projection,
         truncatedToolResults: built.decision.truncatedToolResults,
         rebuiltTokens: measure(ctx, messages).tokens,

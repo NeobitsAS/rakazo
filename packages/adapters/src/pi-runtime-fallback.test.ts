@@ -1608,6 +1608,36 @@ describe("Pi runtime ordered model fallback", () => {
     ).toEqual([primary.provider, backupB.provider]);
   });
 
+  it("skips a backup whose image limit is below the user's own images", async () => {
+    const input = request([
+      {
+        provider: backupA.provider,
+        id: backupA.id,
+        apiKey: "one-image-key",
+        maxImagesPerPrompt: 1,
+      },
+      { provider: backupB.provider, id: backupB.id, apiKey: "image-backup-key" },
+    ]);
+    input.currentTurnImages = [
+      { name: "first.png", mimeType: "image/png", data: new Uint8Array([1]) },
+      { name: "second.png", mimeType: "image/png", data: new Uint8Array([2]) },
+    ];
+    providerState.stream.mockImplementation((target: Model<"openai-completions">) =>
+      target.provider === primary.provider
+        ? stream(target, message(target, [], "error", "429 rate_limit_error"))
+        : stream(target, message(target, [{ type: "text", text: "both images seen" }], "stop")),
+    );
+
+    const events = await run(input);
+
+    expect(events.at(-1)).toEqual({ type: "done", text: "both images seen" });
+    expect(
+      providerState.stream.mock.calls.map(
+        ([target]) => (target as Model<"openai-completions">).provider,
+      ),
+    ).toEqual([primary.provider, backupB.provider]);
+  });
+
   it("uses a native vision backup with acceptsImages false after a 429", async () => {
     providerState.models.set(`${backupA.provider}/${backupA.id}`, {
       ...backupA,

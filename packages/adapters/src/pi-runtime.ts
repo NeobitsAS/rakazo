@@ -2368,14 +2368,12 @@ function fallbackSupportsContext(
   requestedThinkingLevel: AgentRunRequest["model"]["thinkingLevel"],
   tools: readonly ConnectorTool[],
 ): boolean {
-  // The backup's own context policy prunes on its first call; judge what it would send.
-  let messages: TranscriptContext["messages"];
-  try {
-    messages = pruneForRebuild(context.messages, candidate.config.maxImagesPerPrompt);
-  } catch {
-    return false;
-  }
-  context = { ...context, messages };
+  // The backup's own context policy prunes on its first call; judge what it would send. Too
+  // many user images for its limit throws, and the caller skips the backup.
+  context = {
+    ...context,
+    messages: pruneForRebuild(context.messages, candidate.config.maxImagesPerPrompt),
+  };
   const inputTokens = estimateModelContextTokens(context, estimatePiImageTokens);
   const outputTokens = resolveCompletionMaxTokens(
     candidate.model.maxTokens,
