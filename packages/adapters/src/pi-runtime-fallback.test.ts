@@ -1893,6 +1893,60 @@ describe("Pi runtime thinking blocks bound to a different conversation", () => {
     expect(providerState.delay).not.toHaveBeenCalled();
   });
 
+  it("leaves thinking from before a backup switch out, and keeps the backup's own", async () => {
+    const input = request([{ provider: backupA.provider, id: backupA.id, apiKey: "backup-key" }]);
+    let backupCalls = 0;
+    providerState.stream.mockImplementation((target: Model<"openai-completions">) => {
+      if (target.provider === primary.provider) {
+        return providerState.stream.mock.calls.length === 1
+          ? stream(
+              target,
+              message(
+                target,
+                [
+                  { type: "thinking", thinking: "Primary plan.", thinkingSignature: "primary" },
+                  {
+                    type: "toolCall",
+                    id: "call-1",
+                    name: "write_effect",
+                    arguments: { value: "a" },
+                  },
+                ],
+                "toolUse",
+              ),
+            )
+          : stream(target, message(target, [], "error", "429 rate_limit_error"));
+      }
+      backupCalls += 1;
+      return backupCalls === 1
+        ? stream(
+            target,
+            message(
+              target,
+              [
+                { type: "thinking", thinking: "Backup plan.", thinkingSignature: "backup" },
+                { type: "toolCall", id: "call-2", name: "write_effect", arguments: { value: "b" } },
+              ],
+              "toolUse",
+            ),
+          )
+        : stream(target, message(target, [{ type: "text", text: "Done." }], "stop"));
+    });
+
+    const events = await run(input);
+
+    expect(events.at(-1)).toEqual({ type: "done", text: "Done." });
+    const contexts = providerState.stream.mock.calls.map(([, context]) => context as Context);
+    expect(contexts).toHaveLength(4);
+    expect(thinkingParts(contexts[1]!)).toEqual([
+      expect.objectContaining({ thinkingSignature: "primary" }),
+    ]);
+    expect(thinkingParts(contexts[2]!)).toEqual([]);
+    expect(thinkingParts(contexts[3]!)).toEqual([
+      expect.objectContaining({ thinkingSignature: "backup" }),
+    ]);
+  });
+
   it("surfaces the error when the retry without thinking blocks fails the same way", async () => {
     providerState.stream.mockImplementation(() =>
       stream(primary, message(primary, [], "error", mismatch)),

@@ -84,7 +84,11 @@ import { createRuntimeContextPolicy, VERBATIM_TOOL_RESULTS } from "./runtime-con
 import { SCHEDULE_TOOL_NAMES } from "./schedule-tools.js";
 import type { FinishedShellCommand } from "./shell-command-stream.js";
 import { deliverFinishedShells } from "./shell-command-stream.js";
-import { isThinkingSignatureMismatch, withoutThinkingBlocks } from "./thinking-signatures.js";
+import {
+  isThinkingSignatureMismatch,
+  withoutThinkingBlocks,
+  withoutThinkingFrom,
+} from "./thinking-signatures.js";
 import { textContentArg } from "./tool-text.js";
 import { argumentGiven } from "./update-bot-patch.js";
 
@@ -2309,6 +2313,12 @@ interface FallbackStreamState {
   isProviderFailure(message: AssistantMessage): boolean;
   /** Set once a provider rejected replayed thinking signatures; see thinking-signatures.ts. */
   dropThinkingBlocks?: boolean;
+  /**
+   * Messages written before the last switch to a backup model. Their thinking is bound to the
+   * model and transcript it was written for, and the backup's policy starts with a rebuild that
+   * can rewrite earlier messages, so requests leave that thinking out from the switch on.
+   */
+  messagesBeforeSwitch?: number;
   stream(
     target: RuntimeModelTarget,
     context: TranscriptContext,
@@ -2419,8 +2429,12 @@ function fallbackAwareModelStream(
   const signal = options?.signal ? AbortSignal.any([state.signal, options.signal]) : state.signal;
   // Once a signature is rejected, requests omit those thinking blocks. Backup fit
   // must use that same context, or a usable backup can be skipped on discarded text.
-  const requestContext = () =>
-    state.dropThinkingBlocks ? withoutThinkingBlocks(context) : context;
+  const requestContext = () => {
+    if (state.dropThinkingBlocks) return withoutThinkingBlocks(context);
+    if (!state.messagesBeforeSwitch) return context;
+    const messages = withoutThinkingFrom(context.messages, 0, state.messagesBeforeSwitch);
+    return messages === context.messages ? context : { ...context, messages };
+  };
   const signalAborted = () => signal.aborted;
   const finishWithThrownError = (target: RuntimeModelTarget, error: unknown) => {
     const message = error instanceof Error ? error.message : String(error);
@@ -2580,6 +2594,7 @@ function fallbackAwareModelStream(
               const next = await resolveNext(target);
               if (failIfAborted(target)) return;
               if (next) {
+                state.messagesBeforeSwitch = context.messages.length;
                 await state.onSwitch(next);
                 if (failIfAborted(target)) return;
                 buffered = [];
