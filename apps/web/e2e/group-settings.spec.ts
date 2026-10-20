@@ -20,7 +20,7 @@ test("group settings shows members first, roster behind Show all", async ({ page
   await createNamedBot(page, "Runner");
 
   await openNewGroup(page);
-  await page.locator("label:has-text('Name') input").fill("Settings team");
+  await page.getByLabel("Name", { exact: true }).fill("Settings team");
   const panel = page.getByTestId("side-panel");
   await panel.getByRole("checkbox", { name: "Add Researcher to the group" }).click();
   await panel.getByRole("checkbox", { name: "Add Research Writer to the group" }).click();
