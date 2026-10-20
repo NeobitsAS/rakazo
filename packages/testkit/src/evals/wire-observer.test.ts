@@ -179,7 +179,13 @@ it("observes actual Pi post-selection JSON controls through twelve dependent com
         record.results?.every((r) => r.jsonValid && r.controlsValidated && r.nextCursorPresent),
       ).toBe(true);
       expect(record.results?.at(-1)?.bytes).toBeLessThanOrEqual(12000);
-      expect(record.results?.slice(0, -1).every((r) => r.bytes <= 1024)).toBe(true);
+      // Earlier results go out as first sent until a rebuild compresses them all at once.
+      const earlier = record.results?.slice(0, -1).map((r) => r.bytes) ?? [];
+      const sentBefore = records[index]!.results?.map((r) => r.bytes) ?? [];
+      expect(
+        earlier.every((bytes, i) => bytes === sentBefore[i]) ||
+          earlier.every((bytes) => bytes <= 1024),
+      ).toBe(true);
     }
     expect(records.at(-1)?.results?.at(-1)?.nextCursor).toBeNull();
     expect(JSON.stringify(records)).not.toMatch(/private|Synthetic detailed|ledger-indexer/);
