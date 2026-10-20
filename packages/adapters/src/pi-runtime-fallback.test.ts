@@ -1868,6 +1868,41 @@ describe("Pi runtime thinking blocks bound to a different conversation", () => {
     ]);
   });
 
+  it("uses a backup that fits only without the thinking written before the switch", async () => {
+    const thinking = "x".repeat(12_000);
+    const input = request([
+      { provider: backupA.provider, id: backupA.id, apiKey: "small-backup-key", maxTokens: 512 },
+    ]);
+    providerState.stream.mockImplementation((target: Model<"openai-completions">) => {
+      if (target.provider !== primary.provider)
+        return stream(target, message(target, [{ type: "text", text: "backup answer" }], "stop"));
+      return providerState.stream.mock.calls.length === 1
+        ? stream(
+            target,
+            message(
+              target,
+              [
+                { type: "thinking", thinking, thinkingSignature: "primary" },
+                { type: "toolCall", id: "call-1", name: "write_effect", arguments: { value: "a" } },
+              ],
+              "toolUse",
+            ),
+          )
+        : stream(target, message(target, [], "error", "429 rate_limit_error"));
+    });
+
+    const events = await run(input);
+
+    expect(events.at(-1)).toEqual({ type: "done", text: "backup answer" });
+    const contexts = providerState.stream.mock.calls.map(([, context]) => context as Context);
+    expect(
+      providerState.stream.mock.calls.map(
+        ([target]) => (target as Model<"openai-completions">).provider,
+      ),
+    ).toEqual([primary.provider, primary.provider, backupA.provider]);
+    expect(thinkingParts(contexts[2]!)).toEqual([]);
+  });
+
   it("surfaces the error when the retry without thinking blocks fails the same way", async () => {
     providerState.stream.mockImplementation(() =>
       stream(primary, message(primary, [], "error", mismatch)),
