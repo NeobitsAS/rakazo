@@ -4,11 +4,11 @@ import { BotAvatar } from "@rakazo/ui-web";
 /** The palette's blue, the same as the link colour. */
 const BLUE = BOT_COLOR_LIST.find((color) => color.id === "blue")?.hex ?? "";
 
-/** The Rakazo mark on the entry pages: the head new bots get. */
-export function BrandMark() {
+/** The Rakazo mark on the entry pages and in onboarding: the head new bots get. */
+export function BrandMark({ size = 74 }: { size?: number }) {
   return (
     <span aria-hidden="true" className="shrink-0">
-      <BotAvatar activity="idle" avatarSet="rakazo" color={BLUE} identity="rakazo" size={74} />
+      <BotAvatar activity="idle" avatarSet="rakazo" color={BLUE} identity="rakazo" size={size} />
     </span>
   );
 }

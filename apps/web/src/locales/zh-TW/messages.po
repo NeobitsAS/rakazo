@@ -2609,6 +2609,7 @@ msgstr "還沒有帳號？"
 #: src/components/ToolActivityDisclosure.tsx
 #: src/lib/ticket-status.ts
 #: src/pages/ActivityList.tsx
+#: src/pages/Onboarding.tsx
 #: src/pages/shell/avatar-studio-popover.tsx
 #: src/pages/shell/import-setup-card.tsx
 msgid "Done"
@@ -4169,6 +4170,10 @@ msgstr "{day} 日 {time}"
 #: src/lib/cron.ts
 msgid "on the 1st at {0}"
 msgstr "每月 1 日 {0}"
+
+#: src/pages/Onboarding.tsx
+msgid "Onboarding steps"
+msgstr "開始使用的步驟"
 
 #: src/lib/cron.ts
 msgid "One-time"
@@ -5981,6 +5986,10 @@ msgstr "重試"
 msgid "Try the test again."
 msgstr "請重試測試。"
 
+#: src/pages/Onboarding.tsx
+msgid "Try your agent"
+msgstr "試用你的代理程式"
+
 #: src/lib/cron.ts
 msgid "Tuesday"
 msgstr "週二"
@@ -6286,6 +6295,7 @@ msgid "Weekends"
 msgstr "週末"
 
 #: src/components/SignupSurvey.tsx
+#: src/pages/Onboarding.tsx
 msgid "Welcome to Rakazo"
 msgstr "歡迎使用 Rakazo"
 

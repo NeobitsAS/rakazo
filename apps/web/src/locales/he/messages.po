@@ -2608,6 +2608,7 @@ msgstr "אין חשבון?"
 #: src/components/ToolActivityDisclosure.tsx
 #: src/lib/ticket-status.ts
 #: src/pages/ActivityList.tsx
+#: src/pages/Onboarding.tsx
 #: src/pages/shell/avatar-studio-popover.tsx
 #: src/pages/shell/import-setup-card.tsx
 msgid "Done"
@@ -4168,6 +4169,10 @@ msgstr "ביום {day} בשעה {time}"
 #: src/lib/cron.ts
 msgid "on the 1st at {0}"
 msgstr "ב-1 לחודש בשעה {0}"
+
+#: src/pages/Onboarding.tsx
+msgid "Onboarding steps"
+msgstr "שלבי ההתחלה"
 
 #: src/lib/cron.ts
 msgid "One-time"
@@ -5980,6 +5985,10 @@ msgstr "לנסות שוב"
 msgid "Try the test again."
 msgstr "אפשר לנסות את הבדיקה שוב."
 
+#: src/pages/Onboarding.tsx
+msgid "Try your agent"
+msgstr "התנסות בסוכן"
+
 #: src/lib/cron.ts
 msgid "Tuesday"
 msgstr "יום שלישי"
@@ -6285,8 +6294,9 @@ msgid "Weekends"
 msgstr "סופי שבוע"
 
 #: src/components/SignupSurvey.tsx
+#: src/pages/Onboarding.tsx
 msgid "Welcome to Rakazo"
-msgstr ""
+msgstr "ברוכים הבאים ל-Rakazo"
 
 #: src/pages/shell/dialogs.tsx
 msgid "What about its memories?"
