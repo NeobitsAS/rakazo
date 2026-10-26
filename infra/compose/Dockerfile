@@ -1,4 +1,4 @@
-FROM node:22-bookworm@sha256:363e1587494626837fa7f9a23bdb453d13b0ff3c67c705c2805cfc69c2d2fad7
+FROM node:24.22.1-bookworm@sha256:6449e19d8184d84062525b6a7524def03146c2cb04a7f08b076680d0e8e4240a
 # Debian publishes security fixes before the Node image is rebuilt with them.
 RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
 # Corepack keeps pnpm here instead of in root's home, so USER node finds the copy installed below
