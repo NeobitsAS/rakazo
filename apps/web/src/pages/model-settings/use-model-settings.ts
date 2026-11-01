@@ -655,6 +655,7 @@ export function useModelSettings(onClose: () => void, scope: SettingsScope) {
   return {
     intentRef,
     refresh,
+    rpc,
     resetOpenAiCompatibleProbe,
     headerRows,
     setHeaderRows,

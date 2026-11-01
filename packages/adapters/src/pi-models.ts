@@ -7,6 +7,7 @@ import {
   canonicalPiProviderId,
   MODEL_KEY_REJECTED_ERROR,
 } from "@rakazo/contracts";
+import { supportedHostCredentialSource } from "./deployment-model.js";
 import { LOCAL_PROVIDER_ID, registerLocalProvider } from "./pi-local-provider.js";
 import { applyPiModelCompatibility } from "./pi-model-compat.js";
 import { loadProviderOAuth, SUBSCRIPTION_SIGN_IN_PROVIDERS } from "./pi-oauth.js";
@@ -38,6 +39,7 @@ export type PiCatalogEntry = {
   placeholder?: boolean;
   /** Provider models share one pinned HTTPS models-list base URL. */
   catalogProbe?: boolean;
+  hostCredentialSource?: string;
   live?: true;
 };
 
@@ -283,6 +285,7 @@ function buildPiCatalog(): PiCatalogEntry[] {
     const providerModels = provider.getModels();
     const probeBaseUrl = pinnedCatalogProbeBaseUrl(provider.id, providerModels);
     if (probeBaseUrl) catalogProbeBaseUrls.set(provider.id, probeBaseUrl);
+    const hostCredentialSource = supportedHostCredentialSource(provider.id);
     catalogBaseUrls.set(
       provider.id,
       new Set(
@@ -315,6 +318,7 @@ function buildPiCatalog(): PiCatalogEntry[] {
           ? { placeholder: true }
           : { images: model.input.includes("image") }),
         ...(probeBaseUrl ? { catalogProbe: true } : {}),
+        ...(hostCredentialSource ? { hostCredentialSource } : {}),
       });
     }
   }

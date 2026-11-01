@@ -119,6 +119,7 @@ import {
   ScratchpadItemSchema,
   ScratchpadItemStatusSchema,
   ServerUpdateCheckSchema,
+  ServerCredentialStateSchema,
   ServerUpdateRequestSchema,
   ServerUpdateRunSchema,
   ServerUpdateStatusSchema,
@@ -447,6 +448,8 @@ export const appContract = {
     disconnect: oc
       .input(z.object({ provider: z.string().trim().min(1), credentialId: Id.optional() }))
       .output(z.object({ ok: z.literal(true) })),
+    /** Invokes the deployment default once on the server's own credentials; null when it doesn't use them. */
+    checkServerCredentials: oc.output(ServerCredentialStateSchema.nullable()),
   },
   bots: {
     list: oc.output(z.array(BotSchema)),

@@ -225,6 +225,7 @@ const subscriptionMe: Me = {
   defaultModel: "claude-sonnet-5-5",
   hostCredentialProvider: null,
   hostCredentialSource: null,
+  serverCredentials: null,
   computerHost: "docker",
   canChooseHostComputer: true,
   sandboxProvider: "docker",

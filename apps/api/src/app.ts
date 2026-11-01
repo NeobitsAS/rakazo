@@ -88,9 +88,11 @@ import {
   removePiUserSessions,
   resolveDeploymentModel,
   ScriptedAgentRuntime,
+  ServerCredentialCheck,
   SpaceMemoryProviderResolver,
   StripeBillingProvider,
   sandboxProviderOptionsFromEnv,
+  serverCredentialSetup,
   stripeBillingConfigFromEnv,
   toTeamChatInbound,
   UserDeviceHub,
@@ -713,6 +715,11 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
       })
     : undefined;
   reconciler?.start();
+
+  // One check at startup, so onboarding can explain a deployment default that can't run on the
+  // server's credentials before anyone hits it in a run.
+  const serverCredentials = new ServerCredentialCheck(serverCredentialSetup());
+  void serverCredentials.refresh();
   const stopReferralEmails =
     email && env.welcomeEmailEnabled && billing?.referralsEnabled
       ? startReferralEmails(
@@ -729,6 +736,7 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
       : undefined;
 
   const router = createRouter({
+    serverCredentials,
     speechSummary:
       env.voiceSummaryMinChars === undefined
         ? undefined

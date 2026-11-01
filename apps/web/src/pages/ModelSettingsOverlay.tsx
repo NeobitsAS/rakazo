@@ -28,6 +28,10 @@ import {
 } from "@rakazo/ui-web";
 import { X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import {
+  ServerCredentialsUnavailable,
+  serverCredentialsBlocker,
+} from "../components/ServerCredentialsUnavailable";
 import type { ModelCredential } from "../lib/model-auth";
 import type { ModelRoleConnectIntent } from "./ModelRoleSettings";
 import { ModelRoleSettings } from "./ModelRoleSettings";
@@ -79,6 +83,7 @@ export function ModelSettingsOverlay({
     pending,
     provider,
     refresh,
+    rpc,
     selected,
     selectedConnectionName,
     selectedProviderName,
@@ -87,6 +92,18 @@ export function ModelSettingsOverlay({
     setNotice,
     settingsDirty,
   } = model;
+  const serverCredentialsSource = isOpenAiCompatible ? undefined : selected?.hostCredentialSource;
+  const serverCredentialsBlocked = serverCredentialsSource
+    ? serverCredentialsBlocker(me?.serverCredentials, provider)
+    : null;
+  const serverModelLabel =
+    catalog.find(
+      (entry) =>
+        entry.provider === me?.serverCredentials?.provider &&
+        entry.id === me?.serverCredentials?.model,
+    )?.label ??
+    me?.serverCredentials?.model ??
+    "";
   // Where the connection form opens: under a role's list, under a provider row, or at the
   // end of Providers when adding one. The rest of the page stays where it was.
   const [connectionAt, setConnectionAt] = useState<string | null>(null);
@@ -221,6 +238,19 @@ export function ModelSettingsOverlay({
               {selectedProviderName}.
             </Trans>
           </p>
+        ) : null}
+        {serverCredentialsSource && serverCredentialsBlocked ? (
+          <div className="mb-5">
+            <ServerCredentialsUnavailable
+              blocker={serverCredentialsBlocked}
+              source={serverCredentialsSource}
+              modelLabel={serverModelLabel}
+              onCheck={async () => {
+                await rpc.models.checkServerCredentials();
+                await refresh();
+              }}
+            />
+          </div>
         ) : null}
         <ConnectionControls {...model} />
       </>

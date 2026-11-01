@@ -26,6 +26,7 @@ import type {
   ProviderCatalogCache,
   PushTokenStore,
   RemoteConnectorDependencies,
+  ServerCredentialCheck,
   TicketChangeNotifier,
   verifyModelServesAgents,
 } from "@rakazo/adapters";
@@ -60,6 +61,8 @@ export interface RouterDeps {
   pushTokens: PushTokenStore;
   analytics?: ProductAnalytics;
   cloudAgent?: CloudAgentConnection | null;
+  /** Set when the operator runs the deployment default on the server's own credentials. */
+  serverCredentials?: ServerCredentialCheck;
   /** The deployment's wallet provider; absent hides purchases. */
   paymentWallet?: PaymentWalletProvider | null;
   prisma: PrismaClient;

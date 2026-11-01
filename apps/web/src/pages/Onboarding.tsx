@@ -1,5 +1,5 @@
 import { Plural, Trans, useLingui } from "@lingui/react/macro";
-import type { ModelHeaderRow, ThinkingLevel } from "@rakazo/contracts";
+import type { ModelHeaderRow, ServerCredentialState, ThinkingLevel } from "@rakazo/contracts";
 import {
   CLOUDFLARE_AI_GATEWAY_PROVIDER_ID,
   cloudflareModelRouting,
@@ -48,6 +48,10 @@ import {
 } from "../components/ModelConnectionPreflightNotice";
 import { ModelHeadersEditor } from "../components/ModelHeadersEditor";
 import { PageLoading } from "../components/PageLoading";
+import {
+  ServerCredentialsUnavailable,
+  serverCredentialsBlocker,
+} from "../components/ServerCredentialsUnavailable";
 import { SignupSurvey } from "../components/SignupSurvey";
 import { useCopyText } from "../lib/copy-text";
 import { providerDisplayName } from "../lib/localized-provider-hint";
@@ -152,6 +156,7 @@ export function OnboardingPage() {
   // The step after the survey; null until me loads.
   const [afterSurvey, setAfterSurvey] = useState<"model" | "bot" | null>(null);
   const [catalog, setCatalog] = useState<ModelCatalogEntry[]>([]);
+  const [serverCredentials, setServerCredentials] = useState<ServerCredentialState | null>(null);
   const [provider, setProvider] = useState("");
   const [providerAuth, setProviderAuth] = useState<ProviderAuth | undefined>();
   const [credits, setCredits] = useState(false);
@@ -205,6 +210,7 @@ export function OnboardingPage() {
       .then(([me, models]) => {
         setBillingEnabled(me.billingEnabled);
         setCatalog(models);
+        setServerCredentials(me.serverCredentials);
         const next = me.needsModel ? "model" : "bot";
         setAfterSurvey(next);
         if (!linkedStep) goTo(me.needsSignupSurvey ? "survey" : next);
@@ -250,6 +256,17 @@ export function OnboardingPage() {
     !isCloudflare || cloudflareModelRouting({ provider, accountId, gatewayId }) !== undefined;
   const subscriptionSignIn = selected?.signIn !== undefined && providerAuth !== "key";
   const acceptsKey = selected?.auth !== "oauth" && providerAuth !== "sign-in";
+  const serverCredentialsSource = isOpenAiCompatible ? undefined : selected?.hostCredentialSource;
+  const serverCredentialsBlocked = serverCredentialsSource
+    ? serverCredentialsBlocker(serverCredentials, provider)
+    : null;
+  const serverModelLabel =
+    catalog.find(
+      (entry) =>
+        entry.provider === serverCredentials?.provider && entry.id === serverCredentials?.model,
+    )?.label ??
+    serverCredentials?.model ??
+    "";
   const signInLabel = selected?.oauthLabel ?? t`Sign in`;
   const openAiCompatibleReady = openAiCompatibleConnectReady({
     apiKey,
@@ -553,6 +570,18 @@ export function OnboardingPage() {
   }, [step]);
 
   // Loading, and creating the first bot, both wait on one spinner until the chat opens.
+  /** A check that now passes means the deployment default runs, so onboarding moves on. */
+  async function checkServerCredentials() {
+    setError(null);
+    try {
+      setServerCredentials(await rpc.models.checkServerCredentials());
+      const me = await rpc.me();
+      if (!me.needsModel) goTo("bot");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t`Could not check the server's credentials`);
+    }
+  }
+
   if (step === "loading" || (step === "bot" && !error)) return <PageLoading />;
 
   return (
@@ -909,6 +938,16 @@ export function OnboardingPage() {
                         />
                       </label>
                     ) : null}
+                  </div>
+                ) : null}
+                {serverCredentialsSource && serverCredentialsBlocked ? (
+                  <div className="mt-6">
+                    <ServerCredentialsUnavailable
+                      blocker={serverCredentialsBlocked}
+                      source={serverCredentialsSource}
+                      modelLabel={serverModelLabel}
+                      onCheck={checkServerCredentials}
+                    />
                   </div>
                 ) : null}
                 {acceptsKey ? (

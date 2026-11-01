@@ -581,6 +581,9 @@ export function modelsRoutes(ctx: RouterContext) {
           throw new ORPCError("NOT_FOUND", { message: "Connection not found" });
         return { ok: true as const };
       }),
+      checkServerCredentials: authed.models.checkServerCredentials.handler(
+        async () => (await deps.serverCredentials?.refresh()) ?? null,
+      ),
       disconnect: authed.models.disconnect.handler(async ({ context, input }) => {
         // Retire pending sign-ins in every space first — the credentials are
         // account-wide, so a finishing OAuth session anywhere could otherwise
