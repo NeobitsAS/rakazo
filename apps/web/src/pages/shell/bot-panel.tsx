@@ -176,10 +176,10 @@ export function BotSettings({
   const [memoryScope, setMemoryScope] = useState(bot.memoryScope);
   const [autoSpeak, setAutoSpeak] = useState(bot.autoSpeak);
   const [crossSpaceCommunication, setCrossSpaceCommunication] = useState(
-    bot.crossSpaceCommunication ?? true,
+    bot.crossSpaceCommunication ?? false,
   );
   useEffect(
-    () => setCrossSpaceCommunication(bot.crossSpaceCommunication ?? true),
+    () => setCrossSpaceCommunication(bot.crossSpaceCommunication ?? false),
     [bot.crossSpaceCommunication],
   );
   const [fleetManagement, setFleetManagement] = useState(bot.fleetManagement);
