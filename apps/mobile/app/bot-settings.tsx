@@ -84,8 +84,8 @@ export default function BotSettingsScreen() {
   const [notifyOnFinish, setNotifyOnFinish] = useState(true);
   const [autoSpeak, setAutoSpeak] = useState(false);
   const [dailyCheckIns, setDailyCheckIns] = useState(true);
-  const [crossSpaceCommunication, setCrossSpaceCommunication] = useState(true);
-  const [fleetManagement, setFleetManagement] = useState(true);
+  const [crossSpaceCommunication, setCrossSpaceCommunication] = useState(false);
+  const [fleetManagement, setFleetManagement] = useState(false);
   const [replyMode, setReplyMode] = useState<ReplyMode>("chat");
   const [credentials, setCredentials] = useState<MobileModelCredential[]>([]);
   const [catalog, setCatalog] = useState<MobileModel[]>([]);
@@ -212,8 +212,8 @@ export default function BotSettingsScreen() {
         setNotifyOnFinish(next.notifyOnFinish ?? true);
         setDailyCheckIns(next.dailyCheckIns ?? true);
         dailyCheckInsSave.reset(next.dailyCheckIns ?? true);
-        setCrossSpaceCommunication(next.crossSpaceCommunication ?? true);
-        crossSpaceSave.reset(next.crossSpaceCommunication ?? true);
+        setCrossSpaceCommunication(next.crossSpaceCommunication ?? false);
+        crossSpaceSave.reset(next.crossSpaceCommunication ?? false);
         setFleetManagement(next.fleetManagement);
         fleetSave.reset(next.fleetManagement);
         setReplyMode(next.replyMode);

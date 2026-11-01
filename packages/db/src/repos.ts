@@ -152,9 +152,9 @@ function mapBot(
     thinkingLevel: (bot.thinkingLevel as Bot["thinkingLevel"]) ?? null,
     teamChatAmbientEnabled: bot.teamChatAmbientEnabled ?? false,
     teamChatRules: bot.teamChatRules ?? "",
-    crossSpaceCommunication: bot.crossSpaceCommunication ?? true,
+    crossSpaceCommunication: bot.crossSpaceCommunication ?? false,
     dailyCheckIns: bot.dailyCheckIns ?? true,
-    fleetManagement: bot.fleetManagement ?? true,
+    fleetManagement: bot.fleetManagement ?? false,
     replyMode: bot.replyMode === "messages" ? "messages" : "chat",
     // Stored lists may name a tool that no longer exists; settings resend what they read.
     disabledBuiltinTools: [...disabledBuiltinToolSet(bot.disabledBuiltinTools)],
