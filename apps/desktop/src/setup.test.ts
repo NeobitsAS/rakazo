@@ -115,7 +115,7 @@ function mount(saved: DesktopSetup | null): Harness {
       saveCalls.push(call);
       return call.promise;
     },
-    quit: () => Promise.resolve(),
+    cancel: () => Promise.resolve(),
     openLink: () => Promise.resolve(),
     stack: {
       state: () => {
@@ -134,7 +134,12 @@ function mount(saved: DesktopSetup | null): Harness {
   new Function(setupScript)();
 
   const initState = stateCalls.shift();
-  initState?.resolve({ defaultLocalUrl: DEFAULT_LOCAL_URL, cloudUrl: CLOUD_URL, saved });
+  initState?.resolve({
+    defaultLocalUrl: DEFAULT_LOCAL_URL,
+    cloudUrl: CLOUD_URL,
+    saved,
+    canCancel: false,
+  });
   return {
     nextCheck: () => {
       const call = checkCalls.shift();
@@ -144,9 +149,12 @@ function mount(saved: DesktopSetup | null): Harness {
     resolveCheck: (result) => checkCalls.shift()?.resolve(result),
     startResult,
     resolveAppState: (next) =>
-      stateCalls
-        .shift()
-        ?.resolve({ defaultLocalUrl: DEFAULT_LOCAL_URL, cloudUrl: CLOUD_URL, saved: next }),
+      stateCalls.shift()?.resolve({
+        defaultLocalUrl: DEFAULT_LOCAL_URL,
+        cloudUrl: CLOUD_URL,
+        saved: next,
+        canCancel: false,
+      }),
     resolveStackState: (state) => stackStateCalls.shift()?.resolve(state),
     pushStackState: (state) => {
       for (const listener of pushListeners) listener(state);

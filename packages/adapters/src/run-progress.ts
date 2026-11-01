@@ -1,3 +1,4 @@
+import { messagingDeliverJob } from "@rakazo/adapter-kit";
 import type { MessageBlock } from "@rakazo/contracts";
 import {
   appendTextSegment,
@@ -9,7 +10,6 @@ import {
   redactSecretsAfter,
 } from "@rakazo/core";
 import type { Run } from "@rakazo/db";
-import { messagingDeliverJob } from "@rakazo/adapter-kit";
 import { getLogger } from "@rakazo/logging";
 import type { ExecutorDeps } from "./executor-deps.js";
 import { mirrorMessagingProgress } from "./messaging-delivery.js";

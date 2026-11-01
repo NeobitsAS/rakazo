@@ -18,12 +18,12 @@ import { ConsoleLogger, convertEmojiPlaceholders, markdownToPlainText } from "ch
 import { createSendblueAdapter } from "chat-adapter-sendblue";
 import type { ClientOptions as SendblueClientOptions } from "sendblue";
 import type { MessagingPlatform } from "./chat-sdk-surface.js";
-import { LazyLarkAdapter } from "./lark/lazy-adapter.js";
-import { Domain } from "./lark/thread-id.js";
-import { LazyPhotonAdapter } from "./photon/lazy-adapter.js";
 import type { GoogleChatCredentials } from "./gchat-auth.js";
 import { createGoogleChatAuthClient } from "./gchat-auth.js";
 import { GoogleChatPubSubAdapter } from "./gchat-pubsub.js";
+import { LazyLarkAdapter } from "./lark/lazy-adapter.js";
+import { Domain } from "./lark/thread-id.js";
+import { LazyPhotonAdapter } from "./photon/lazy-adapter.js";
 import { isVitestRuntime } from "./test-runtime.js";
 
 /**

@@ -73,8 +73,8 @@ import {
   isRendererAssetMiss,
 } from "./renderer-assets.js";
 import { revealSecondInstanceWindow, secondInstanceWindow } from "./second-instance.js";
-import { installServerHeaders } from "./server-request-headers.js";
 import { ServerMonitor } from "./server-monitor.js";
+import { installServerHeaders } from "./server-request-headers.js";
 import { installSessionPermissions } from "./session-permissions.js";
 import { SettingsButton } from "./settings-button.js";
 import {
@@ -97,9 +97,9 @@ import {
 } from "./setup-config.js";
 import { clearSetup, readSetup, writeSetup } from "./setup-store.js";
 import { createSystemSpeech } from "./system-speech.js";
+import { type TunnelPhase, type TunnelState, TunnelSupervisor } from "./tunnel.js";
 import type { UserDeviceAccess } from "./user-device.js";
 import { createUserDeviceAccess, deviceName } from "./user-device.js";
-import { type TunnelPhase, type TunnelState, TunnelSupervisor } from "./tunnel.js";
 import { oauthPopupSessionPreferences, shouldOpenInAppPopup } from "./window-open.js";
 import {
   browserWindowOptions,

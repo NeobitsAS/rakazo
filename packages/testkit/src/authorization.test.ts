@@ -260,6 +260,7 @@ describeWithDatabase("API authorization and resource isolation", () => {
       ["models/probeCatalog"],
       ["models/rename"],
       ["models/disconnect"],
+      ["models/checkServerCredentials"],
       ["spaces/list"],
       ["spaces/create", { name: "Nope" }],
       ["spaces/rename", { spaceId: "missing-space", name: "Nope" }],
