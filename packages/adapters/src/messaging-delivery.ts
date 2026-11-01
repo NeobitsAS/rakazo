@@ -96,11 +96,7 @@ async function mirrorRun(deps: MessagingDeliveryDeps, runId: string): Promise<vo
   if (!run) return;
 
   if (run.trigger === "messaging") {
-    const sourceBlocks = (run.sourceMessage?.blocks ?? []) as MessageBlock[];
-    const channelBlock = sourceBlocks.find(
-      (block): block is Extract<MessageBlock, { kind: "channel_message" }> =>
-        block.kind === "channel_message",
-    );
+    const channelBlock = channelBlockOf(run.sourceMessage?.blocks);
     if (channelBlock) {
       await mirrorChannelRun(deps, run, channelBlock);
       return;
@@ -132,16 +128,8 @@ async function mirrorRun(deps: MessagingDeliveryDeps, runId: string): Promise<vo
   const createdAt = Date.now();
   const rows = messages
     .flatMap((message) => {
-      const body = extractText(message.blocks);
-      const parts = body ? splitOutboundBody(identity.provider, body) : [];
       return [
-        ...parts.map((part, index) => ({
-          idempotencyKey: index === 0 ? `msg:${message.id}` : `msg:${message.id}:${index + 1}`,
-          kind: "dm",
-          identityId: identity.id,
-          body: part,
-          sourceMessageId: message.id,
-        })),
+        ...directTextRows(identity, message),
         ...(sendsFiles ? extractArtifactIds(message.blocks) : []).map((artifactId) => ({
           idempotencyKey: `msg:${message.id}:file:${artifactId}`,
           kind: "dm",
@@ -156,6 +144,62 @@ async function mirrorRun(deps: MessagingDeliveryDeps, runId: string): Promise<vo
   // Atomic dedupe: a concurrent messaging.deliver for the same run loses on
   // the idempotencyKey unique key instead of throwing P2002.
   await deps.prisma.messagingOutbound.createMany({ data: rows, skipDuplicates: true });
+}
+
+/**
+ * Queue one mid-turn progress message (message_user, promoted narration) of
+ * a 1:1 messaging run right away. Chat apps show no typing state, so "I'll
+ * look into that" only helps while the work is still running; the run's own
+ * mirror would send it together with the final reply. The rows have the same
+ * idempotency keys the run mirror uses, so that mirror skips them later. Group
+ * runs keep mirroring at the end, behind their own ask-answer check.
+ * Returns true when a row was queued and the outbox needs a drain.
+ */
+export async function mirrorMessagingProgress(
+  prisma: PrismaClient,
+  input: { runId: string; messageId: string },
+): Promise<boolean> {
+  const run = await prisma.run.findUnique({
+    where: { id: input.runId },
+    include: { sourceMessage: true },
+  });
+  if (run?.trigger !== "messaging" || channelBlockOf(run.sourceMessage?.blocks)) return false;
+  const identity = await prisma.messagingIdentity.findUnique({ where: { botId: run.botId } });
+  if (!identity) return false;
+  const message = await prisma.message.findUnique({ where: { id: input.messageId } });
+  if (!message) return false;
+  const createdAt = Date.now();
+  const rows = directTextRows(identity, message).map((row, index) => ({
+    ...row,
+    createdAt: new Date(createdAt + index),
+  }));
+  if (rows.length === 0) return false;
+  await prisma.messagingOutbound.createMany({ data: rows, skipDuplicates: true });
+  return true;
+}
+
+function channelBlockOf(
+  blocks: unknown,
+): Extract<MessageBlock, { kind: "channel_message" }> | undefined {
+  return ((blocks ?? []) as MessageBlock[]).find(
+    (block): block is Extract<MessageBlock, { kind: "channel_message" }> =>
+      block.kind === "channel_message",
+  );
+}
+
+function directTextRows(
+  identity: { id: string; provider: string },
+  message: { id: string; blocks: unknown },
+) {
+  const body = extractText(message.blocks);
+  const parts = body ? splitOutboundBody(identity.provider, body) : [];
+  return parts.map((part, index) => ({
+    idempotencyKey: index === 0 ? `msg:${message.id}` : `msg:${message.id}:${index + 1}`,
+    kind: "dm",
+    identityId: identity.id,
+    body: part,
+    sourceMessageId: message.id,
+  }));
 }
 
 /**

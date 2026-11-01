@@ -53,8 +53,8 @@ import {
   canPublishDurableNarration,
   flushPendingTools,
   flushProgress,
-  nextProgressNonce,
   publishMidTurnNarration,
+  publishUserProgress,
   recordExplicitNoResponse,
   showNarrationStatus,
   tryFlushPendingTools,
@@ -325,16 +325,7 @@ async function onSteered(ctx: RunContext, event: RuntimeEvent<"steered">) {
     reply.hasStreamedText = false;
     reply.pendingProgress = "";
     reply.redactor.skip();
-    await publishMessage(
-      deps,
-      run,
-      "bot",
-      [{ kind: "text", text }],
-      undefined,
-      nextProgressNonce(ctx),
-    );
-    reply.midTurnUserTexts.push(text);
-    reply.publishedMidTurnUserMessage = true;
+    await publishUserProgress(ctx, text);
   }
   reply.progressBudgetStart = reply.midTurnProgressCount;
   reply.turnStartedAtMs = now;
@@ -402,16 +393,7 @@ async function pauseForTakeover(ctx: RunContext, event: RuntimeEvent<"takeover">
   if (reply.assembled.trim()) {
     const narration = clampUserProgressMessage(redactSecrets(reply.assembled, ctx.secrets));
     if (narration && canPublishDurableNarration(ctx)) {
-      await publishMessage(
-        deps,
-        run,
-        "bot",
-        [{ kind: "text", text: narration }],
-        undefined,
-        nextProgressNonce(ctx),
-      );
-      reply.midTurnUserTexts.push(narration);
-      reply.publishedMidTurnUserMessage = true;
+      await publishUserProgress(ctx, narration);
     } else if (narration) {
       reply.discardedMidTurnNarration = true;
       reply.lastDiscardedMidTurnNarration = narration;

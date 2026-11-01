@@ -9,7 +9,10 @@ import {
   redactSecretsAfter,
 } from "@rakazo/core";
 import type { Run } from "@rakazo/db";
+import { messagingDeliverJob } from "@rakazo/adapter-kit";
+import { getLogger } from "@rakazo/logging";
 import type { ExecutorDeps } from "./executor-deps.js";
+import { mirrorMessagingProgress } from "./messaging-delivery.js";
 import type { ReplyState, RunContext } from "./run-context.js";
 import { publishMessage } from "./run-messages.js";
 import { runPromotesMidTurnNarration } from "./run-replies.js";
@@ -102,6 +105,34 @@ export function nextProgressNonce(ctx: RunContext) {
   return userProgressClientNonce(ctx.run.id, reply.midTurnProgressCount++);
 }
 
+/** Post an interim message, and send it to a 1:1 messaging chat while the run still works. */
+export async function publishUserProgress(ctx: RunContext, text: string, markUnread?: boolean) {
+  const { deps, run } = ctx;
+  const { reply } = ctx.state;
+  const message = await publishMessage(
+    deps,
+    run,
+    "bot",
+    [{ kind: "text", text }],
+    markUnread,
+    nextProgressNonce(ctx),
+  );
+  reply.midTurnUserTexts.push(text);
+  reply.publishedMidTurnUserMessage = true;
+  if (message) await sendProgressToChat(deps, run.id, message.id);
+}
+
+/** Best effort: a progress message missed here still goes out with the run's final reply. */
+async function sendProgressToChat(deps: ExecutorDeps, runId: string, messageId: string) {
+  try {
+    if (await mirrorMessagingProgress(deps.prisma, { runId, messageId })) {
+      await deps.jobs.enqueue(messagingDeliverJob());
+    }
+  } catch (error) {
+    getLogger().error("messaging progress mirror", error);
+  }
+}
+
 export function canPublishDurableNarration(ctx: RunContext) {
   return runPromotesMidTurnNarration(ctx.run.trigger) && canPublishDurableProgress(ctx.state.reply);
 }
@@ -177,16 +208,7 @@ export async function publishMidTurnNarration(ctx: RunContext, beforeConnectCard
   ) {
     reply.workingNotes.length = 0;
     reply.narrationStatusShowing = false;
-    await publishMessage(
-      deps,
-      run,
-      "bot",
-      [{ kind: "text", text }],
-      undefined,
-      nextProgressNonce(ctx),
-    );
-    reply.midTurnUserTexts.push(text);
-    reply.publishedMidTurnUserMessage = true;
+    await publishUserProgress(ctx, text);
     return undefined;
   }
   reply.discardedMidTurnNarration = true;

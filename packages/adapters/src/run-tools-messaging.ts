@@ -7,13 +7,12 @@ import {
 import { messageBot } from "./bot-messages.js";
 import { endCallFromTool, requestUserCall } from "./call-request.js";
 import { handoffToGroupBot } from "./group-handoff.js";
-import { publishMessage } from "./run-messages.js";
 import {
   canPublishDurableProgress,
   flushProgress,
-  nextProgressNonce,
   progressSinceBudgetStart,
   publishMidTurnNarration,
+  publishUserProgress,
   showNarrationStatus,
 } from "./run-progress.js";
 import type { ToolHandlers } from "./run-tool-gate.js";
@@ -95,9 +94,7 @@ export const messagingTools: ToolHandlers = {
           : `This update was not posted because the turn just started. Keep working and put anything the person needs in your final reply. Once the turn has run ${MID_TURN_PROGRESS_MIN_TURN_AGE_MS / 1000} seconds, a later update can be posted.`,
       });
     }
-    await publishMessage(deps, run, "bot", [{ kind: "text", text }], true, nextProgressNonce(ctx));
-    reply.midTurnUserTexts.push(text);
-    reply.publishedMidTurnUserMessage = true;
+    await publishUserProgress(ctx, text, true);
     return call.finish(
       truncated
         ? {
