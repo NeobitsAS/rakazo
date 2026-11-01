@@ -129,6 +129,7 @@ function mount(saved: DesktopSetup | null, locale = ENGLISH, platform = "linux")
       return call.promise;
     },
     quit: () => Promise.resolve(),
+    cancel: () => Promise.resolve(),
     openLink: (link) => {
       links.push(link);
       return Promise.resolve();
@@ -153,7 +154,12 @@ function mount(saved: DesktopSetup | null, locale = ENGLISH, platform = "linux")
   new Function(setupScript)();
 
   const initState = stateCalls.shift();
-  initState?.resolve({ defaultLocalUrl: DEFAULT_LOCAL_URL, cloudUrl: CLOUD_URL, saved });
+  initState?.resolve({
+    defaultLocalUrl: DEFAULT_LOCAL_URL,
+    cloudUrl: CLOUD_URL,
+    saved,
+    canCancel: false,
+  });
   return {
     nextCheck: () => {
       const call = checkCalls.shift();
@@ -165,9 +171,12 @@ function mount(saved: DesktopSetup | null, locale = ENGLISH, platform = "linux")
     starts: () => starts,
     links,
     resolveAppState: (next) =>
-      stateCalls
-        .shift()
-        ?.resolve({ defaultLocalUrl: DEFAULT_LOCAL_URL, cloudUrl: CLOUD_URL, saved: next }),
+      stateCalls.shift()?.resolve({
+        defaultLocalUrl: DEFAULT_LOCAL_URL,
+        cloudUrl: CLOUD_URL,
+        saved: next,
+        canCancel: false,
+      }),
     resolveStackState: (state) => stackStateCalls.shift()?.resolve(state),
     rejectStackState: (reason) => stackStateCalls.shift()?.reject(reason),
     pushStackState: (state) => {
@@ -392,6 +401,32 @@ describe("setup", () => {
     await flush();
 
     expect(ui.saves).toEqual([{ mode: "existing", serverUrl: "https://one.example", headers }]);
+  });
+
+  it("shows a saved tunnel and saves it only while its switch is on", async () => {
+    const tunnel = { command: "ssh -N -L 18080:localhost:80 host", signInCommand: "login" };
+    const ui = await boot({ mode: "existing", serverUrl: "http://127.0.0.1:18080", tunnel });
+    expect(element("heading").textContent).toBe("Server settings");
+    // Nothing to go back to without an app window behind setup.
+    expect(element("cancel").hidden).toBe(true);
+    expect(element<HTMLInputElement>("tunnel-toggle").checked).toBe(true);
+    expect(element("tunnel-fields").hidden).toBe(false);
+    expect(element<HTMLInputElement>("tunnel-command").value).toBe(tunnel.command);
+    expect(element<HTMLInputElement>("tunnel-sign-in").value).toBe(tunnel.signInCommand);
+
+    submitForm();
+    await flush();
+    ui.resolveSave({ ok: false, error: "no" });
+    await flush();
+    element<HTMLInputElement>("tunnel-toggle").click();
+    submitForm();
+    await flush();
+
+    expect(ui.saves).toEqual([
+      { mode: "existing", serverUrl: "http://127.0.0.1:18080", headers: {}, tunnel },
+      { mode: "existing", serverUrl: "http://127.0.0.1:18080", headers: {} },
+    ]);
+    expect(ui.saves[1]?.tunnel).toBeUndefined();
   });
 
   it("refuses a header line without a name before saving", async () => {

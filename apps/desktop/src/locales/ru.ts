@@ -227,4 +227,26 @@ export const RU_MESSAGES: Record<string, string> = {
   "Waiting for Docker…": "Ожидание Docker…",
   "Docker is installed but not running. Start the Docker service to continue.":
     "Docker установлен, но не запущен. Запустите службу Docker, чтобы продолжить.",
+  "A tunnel needs its local server address, such as http://127.0.0.1:18080, and a command.":
+    "Туннелю нужен локальный адрес сервера, например http://127.0.0.1:18080, и команда.",
+  "Connect through a tunnel": "Подключаться через туннель",
+  Connected: "Подключено",
+  "Connection command": "Команда подключения",
+  "Connection lost": "Соединение потеряно",
+  Reconnect: "Переподключиться",
+  "Reconnect Tunnel": "Переподключить туннель",
+  "Reconnecting…": "Переподключение…",
+  "Server settings": "Настройки сервера",
+  "Sign-in command": "Команда входа",
+  "Starting the tunnel…": "Запуск туннеля…",
+  "The connection command stopped before the server answered.":
+    "Команда подключения завершилась до ответа сервера.",
+  "The connection dropped.": "Соединение прервалось.",
+  "The tunnel did not connect. {detail}": "Туннель не подключился. {detail}",
+  "The tunnel was stopped.": "Туннель остановлен.",
+  "Tunnel: Connected": "Туннель: подключен",
+  "Tunnel: Disconnected": "Туннель: отключен",
+  "Tunnel: Off": "Туннель: выключен",
+  "Tunnel: Signing In…": "Туннель: вход…",
+  "Tunnel: Starting…": "Туннель: запуск…",
 };

@@ -20,7 +20,7 @@ import { PL_MESSAGES } from "./locales/pl.js";
 import { readUiLocale, writeUiLocale } from "./setup-store.js";
 
 const srcDir = import.meta.dirname;
-/** Product and vendor names the setup page shows as they are. */
+/** Product and vendor names, and example commands, the setup page shows as they are. */
 const UNTRANSLATED = new Set([
   "Rakazo",
   "Rakazo Cloud",
@@ -28,6 +28,8 @@ const UNTRANSLATED = new Set([
   "OrbStack",
   "Docker Engine",
   "https://rakazo.example.com",
+  "aws ssm start-session --target i-… --document-name AWS-StartPortForwardingSessionToRemoteHost …",
+  "aws sso login --profile …",
 ]);
 
 /** Literal `t("…")` ids; the formatter keeps every string double-quoted. */

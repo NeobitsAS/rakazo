@@ -92,8 +92,10 @@ import {
 import { NativeStackController } from "./native-stack.js";
 import { associatedPasskeyRpIds } from "./passkeys.js";
 import { revealSecondInstanceWindow, secondInstanceWindow } from "./second-instance.js";
+import { createServerConnection } from "./server-connection.js";
 import { installServerHeaders } from "./server-request-headers.js";
 import { installSessionPermissions } from "./session-permissions.js";
+import { SettingsButton } from "./settings-button.js";
 import {
   DEFAULT_LOCAL_WEB_URL,
   desktopStackImageTag,
@@ -171,6 +173,10 @@ const revokeLocalComputerAccess = localComputerChoice.revoke;
 const installApplicationMenu = applicationMenuInstaller({
   revokeLocalComputerAccess,
   updaterEnvironment,
+});
+desktop.serverConnection = createServerConnection({
+  healthy: async (url, headers) => (await probeServer(url, undefined, headers)).ok,
+  menuChanged: () => installApplicationMenu(),
 });
 async function probeServer(
   rawUrl: string,
@@ -356,6 +362,8 @@ async function openAppOnce(targetUrl: string, switching: boolean) {
     );
     const created = createWindow(targetUrl, target.partition);
     win = created.win;
+    const targetOrigin = safeOrigin(targetUrl);
+    if (targetOrigin !== null) new SettingsButton(win, targetOrigin, () => showSetupWindow());
     // On launch the window stays up: the web app shows its own loading, reconnecting or error
     // screen and recovers from it. Switching to a server that is not ready keeps the previous one.
     const state = await created.loaded;
@@ -962,6 +970,7 @@ app.whenReady().then(async () => {
       if (await appOpener.open(managedUrl)) {
         commitPendingAppSwitch();
         destroySetupWindow();
+        void desktop.serverConnection.connect(desktop.currentSetup);
       }
     } else {
       // Missing, stale, foreign, or owned by another process: reconcile the
@@ -970,7 +979,11 @@ app.whenReady().then(async () => {
       showSetupWindow();
     }
   } else if (target.source !== "env") {
-    const reachability = await probeServer(target.url, undefined, desktop.currentSetup?.headers);
+    const tunnelError = await desktop.serverConnection.connect(desktop.currentSetup);
+    const reachability =
+      tunnelError === null
+        ? await probeServer(target.url, undefined, desktop.currentSetup?.headers)
+        : { ok: false, error: tunnelError };
     if (reachability.ok) {
       if (await appOpener.open(target.url)) {
         commitPendingAppSwitch();
@@ -990,6 +1003,7 @@ app.whenReady().then(async () => {
     if (await appOpener.open(target.url)) {
       commitPendingAppSwitch();
       destroySetupWindow();
+      void desktop.serverConnection.connect({ mode: "existing", serverUrl: target.url });
     }
   }
 });
@@ -1017,4 +1031,5 @@ app.on("before-quit", (event) => {
   desktop.userDevices?.close();
   void hostScreen?.close();
   desktop.localStack?.abort();
+  desktop.serverConnection.stop();
 });

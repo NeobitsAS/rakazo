@@ -228,4 +228,26 @@ export const JA_MESSAGES: Record<string, string> = {
   "Waiting for Docker…": "Dockerを待っています…",
   "Docker is installed but not running. Start the Docker service to continue.":
     "Dockerはインストールされていますが、実行されていません。続行するにはDockerサービスを起動してください。",
+  "A tunnel needs its local server address, such as http://127.0.0.1:18080, and a command.":
+    "トンネルには、http://127.0.0.1:18080 のようなローカルのサーバアドレスとコマンドが必要です。",
+  "Connect through a tunnel": "トンネル経由で接続",
+  Connected: "接続済み",
+  "Connection command": "接続コマンド",
+  "Connection lost": "接続が切れました",
+  Reconnect: "再接続",
+  "Reconnect Tunnel": "トンネルを再接続",
+  "Reconnecting…": "再接続しています…",
+  "Server settings": "サーバ設定",
+  "Sign-in command": "サインインコマンド",
+  "Starting the tunnel…": "トンネルを開始しています…",
+  "The connection command stopped before the server answered.":
+    "サーバが応答する前に接続コマンドが終了しました。",
+  "The connection dropped.": "接続が切れました。",
+  "The tunnel did not connect. {detail}": "トンネルに接続できませんでした。{detail}",
+  "The tunnel was stopped.": "トンネルを停止しました。",
+  "Tunnel: Connected": "トンネル: 接続済み",
+  "Tunnel: Disconnected": "トンネル: 切断",
+  "Tunnel: Off": "トンネル: オフ",
+  "Tunnel: Signing In…": "トンネル: サインインしています…",
+  "Tunnel: Starting…": "トンネル: 開始しています…",
 };

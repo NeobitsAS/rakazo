@@ -8,7 +8,12 @@ import { developmentIcon, handleOnlyFrom, markOnce } from "./app-window.js";
 import { desktop } from "./desktop-state.js";
 import { dockerDownloadUrl, isDesktopSetupLink } from "./docker-cli.js";
 import { desktopDirection, desktopLocale, desktopMessages, t } from "./i18n.js";
-import { managedLocalOpenUrl, parseSetupInput, RAKAZO_CLOUD_URL } from "./setup-config.js";
+import {
+  managedLocalOpenUrl,
+  parseSetupInput,
+  parseTunnelInput,
+  RAKAZO_CLOUD_URL,
+} from "./setup-config.js";
 import { writeSetup } from "./setup-store.js";
 import { setupWindowOptions } from "./window-options.js";
 
@@ -57,6 +62,8 @@ export function showSetupWindow(error: string | null = null) {
 function restoreAppWindowAfterSetup() {
   if (desktop.quitting) return;
   if (desktop.setupWindow !== null && !desktop.setupWindow.isDestroyed()) return;
+  // A connection check may have replaced the tunnel of the server still in use.
+  void desktop.serverConnection.connect(desktop.currentSetup);
   if (
     desktop.mainWindow === null ||
     desktop.mainWindow.isDestroyed() ||
@@ -89,6 +96,14 @@ function watchRendererUntilCommitted(win: BrowserWindow) {
     },
   };
 }
+/** Cancel needs an app window to go back to; without one it would leave the app windowless. */
+function canCancelSetup() {
+  return (
+    desktop.mainWindow !== null &&
+    !desktop.mainWindow.isDestroyed() &&
+    desktop.currentTargetUrl !== null
+  );
+}
 export function destroySetupWindow() {
   const setup = desktop.setupWindow;
   desktop.setupWindow = null;
@@ -117,6 +132,8 @@ type SetupIpcDeps = {
 };
 
 const SETUP_NOT_ACTIVE = () => ({ ok: false, error: "Setup is not active." });
+const tunnelSetupError = () =>
+  t("A tunnel needs its local server address, such as http://127.0.0.1:18080, and a command.");
 
 /** The setup window's IPC. Every channel answers the setup window only. */
 export function registerSetupIpc({
@@ -143,6 +160,7 @@ export function registerSetupIpc({
       cloudUrl: RAKAZO_CLOUD_URL,
       saved: desktop.currentSetup,
       error: desktop.setupError ?? undefined,
+      canCancel: canCancelSetup(),
     }),
     () => null,
   );
@@ -150,10 +168,16 @@ export function registerSetupIpc({
   handleOnlyFrom(
     fromSetupWindow,
     "desktop.setup.test",
-    async (_event, url: unknown, headers: unknown) => {
+    async (_event, url: unknown, headers: unknown, tunnelInput: unknown) => {
       if (typeof url !== "string") return { ok: false, error: t("Enter a server address.") };
       const parsedHeaders = parseServerHeaders(headers ?? {});
       if (parsedHeaders === null) return { ok: false, error: t("Invalid custom headers") };
+      if (parseTunnelInput(tunnelInput) !== undefined) {
+        const setup = parseSetupInput({ mode: "existing", serverUrl: url, tunnel: tunnelInput });
+        if (setup === null) return { ok: false, error: tunnelSetupError() };
+        const error = await desktop.serverConnection.connect(setup);
+        if (error !== null) return { ok: false, url: setup.serverUrl, error };
+      }
       return probeServer(url, undefined, parsedHeaders);
     },
     SETUP_NOT_ACTIVE,
@@ -169,14 +193,21 @@ export function registerSetupIpc({
       setupSaveInProgress = true;
       const previousSetup = desktop.currentSetup;
       const previousUrl = desktop.currentTargetUrl;
+      let saved = false;
       try {
         const setup = parseSetupInput(payload);
         if (setup === null) {
           return {
             ok: false,
-            error: t(
-              "Enter a valid server address. Public servers require HTTPS; a new local instance must use localhost.",
-            ),
+            error:
+              typeof payload === "object" &&
+              payload !== null &&
+              "tunnel" in payload &&
+              parseTunnelInput(payload.tunnel) !== undefined
+                ? tunnelSetupError()
+                : t(
+                    "Enter a valid server address. Public servers require HTTPS; a new local instance must use localhost.",
+                  ),
           };
         }
 
@@ -192,6 +223,9 @@ export function registerSetupIpc({
           }
           openSetup = { mode: "new", serverUrl: managedUrl };
         }
+
+        const tunnelError = await desktop.serverConnection.connect(openSetup);
+        if (tunnelError !== null) return { ok: false, error: tunnelError };
 
         const reachability = await probeServer(openSetup.serverUrl, undefined, openSetup.headers);
         if (!reachability.ok) return { ok: false, error: reachability.error };
@@ -232,6 +266,7 @@ export function registerSetupIpc({
             const message = await recoverFromCrashedSave(userDataDir, previousSetup, previousUrl);
             return { ok: false, error: message };
           }
+          saved = true;
           return { ok: true };
         } catch {
           const outcome = abandonPendingAppSwitch(previousSetup, previousUrl);
@@ -246,6 +281,8 @@ export function registerSetupIpc({
           rendererWatch?.dispose();
         }
       } finally {
+        // A failed switch keeps the previous server, so it gets its tunnel back.
+        if (!saved) void desktop.serverConnection.connect(desktop.currentSetup);
         setupSaveInProgress = false;
       }
     },
@@ -254,6 +291,9 @@ export function registerSetupIpc({
 
   handleOnlyFrom(fromSetupWindow, "desktop.setup.quit", () => {
     app.quit();
+  });
+  handleOnlyFrom(fromSetupWindow, "desktop.setup.cancel", () => {
+    if (canCancelSetup() && !setupSaveInProgress) destroySetupWindow();
   });
   handleOnlyFrom(fromSetupWindow, "desktop.setup.openLink", async (_event, link: unknown) => {
     if (!isDesktopSetupLink(link)) return;

@@ -229,4 +229,26 @@ export const NL_MESSAGES: Record<string, string> = {
   "Waiting for Docker…": "Wachten op Docker…",
   "Docker is installed but not running. Start the Docker service to continue.":
     "Docker is geïnstalleerd maar draait niet. Start de Docker-service om door te gaan.",
+  "A tunnel needs its local server address, such as http://127.0.0.1:18080, and a command.":
+    "Een tunnel heeft zijn lokale serveradres nodig, zoals http://127.0.0.1:18080, en een opdracht.",
+  "Connect through a tunnel": "Verbinden via een tunnel",
+  Connected: "Verbonden",
+  "Connection command": "Verbindingsopdracht",
+  "Connection lost": "Verbinding verbroken",
+  Reconnect: "Opnieuw verbinden",
+  "Reconnect Tunnel": "Tunnel opnieuw verbinden",
+  "Reconnecting…": "Opnieuw verbinden…",
+  "Server settings": "Serverinstellingen",
+  "Sign-in command": "Aanmeldopdracht",
+  "Starting the tunnel…": "Tunnel starten…",
+  "The connection command stopped before the server answered.":
+    "De verbindingsopdracht stopte voordat de server antwoordde.",
+  "The connection dropped.": "De verbinding is verbroken.",
+  "The tunnel did not connect. {detail}": "De tunnel kon geen verbinding maken. {detail}",
+  "The tunnel was stopped.": "De tunnel is gestopt.",
+  "Tunnel: Connected": "Tunnel: verbonden",
+  "Tunnel: Disconnected": "Tunnel: verbroken",
+  "Tunnel: Off": "Tunnel: uit",
+  "Tunnel: Signing In…": "Tunnel: aanmelden…",
+  "Tunnel: Starting…": "Tunnel: starten…",
 };

@@ -3,6 +3,7 @@ import type { BrowserWindow } from "electron";
 import type { DesktopUpdateController } from "./auto-update.js";
 import type { prepareHostComputer } from "./host-computer.js";
 import type { StackController } from "./local-stack.js";
+import type { ServerConnection } from "./server-connection.js";
 import type { UserDeviceAccess } from "./user-device.js";
 
 /** Window, setup, and service state shared by the main process modules. */
@@ -34,6 +35,8 @@ export const desktop = {
   desktopUpdater: DesktopUpdateController;
   launchUpdateCheckScheduled: boolean;
   localStack: StackController;
+  /** The open server's tunnel or health monitor, and the pill that shows when it drops. */
+  serverConnection: ServerConnection;
   hostComputer: Awaited<ReturnType<typeof prepareHostComputer>> | undefined;
   userDevices: UserDeviceAccess | undefined;
 };

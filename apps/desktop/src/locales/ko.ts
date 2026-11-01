@@ -222,4 +222,26 @@ export const KO_MESSAGES: Record<string, string> = {
   "Waiting for Docker…": "Docker 기다리는 중…",
   "Docker is installed but not running. Start the Docker service to continue.":
     "Docker가 설치되어 있지만 실행 중이 아닙니다. 계속하려면 Docker 서비스를 시작하세요.",
+  "A tunnel needs its local server address, such as http://127.0.0.1:18080, and a command.":
+    "터널에는 http://127.0.0.1:18080 같은 로컬 서버 주소와 명령이 필요합니다.",
+  "Connect through a tunnel": "터널로 연결",
+  Connected: "연결됨",
+  "Connection command": "연결 명령",
+  "Connection lost": "연결 끊김",
+  Reconnect: "다시 연결",
+  "Reconnect Tunnel": "터널 다시 연결",
+  "Reconnecting…": "다시 연결 중…",
+  "Server settings": "서버 설정",
+  "Sign-in command": "로그인 명령",
+  "Starting the tunnel…": "터널 시작 중…",
+  "The connection command stopped before the server answered.":
+    "서버가 응답하기 전에 연결 명령이 중지되었습니다.",
+  "The connection dropped.": "연결이 끊겼습니다.",
+  "The tunnel did not connect. {detail}": "터널을 연결하지 못했습니다. {detail}",
+  "The tunnel was stopped.": "터널이 중지되었습니다.",
+  "Tunnel: Connected": "터널: 연결됨",
+  "Tunnel: Disconnected": "터널: 연결 끊김",
+  "Tunnel: Off": "터널: 꺼짐",
+  "Tunnel: Signing In…": "터널: 로그인 중…",
+  "Tunnel: Starting…": "터널: 시작 중…",
 };

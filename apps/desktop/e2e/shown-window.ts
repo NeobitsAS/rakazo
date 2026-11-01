@@ -1,5 +1,6 @@
 import type { ElectronApplication, Page } from "@playwright/test";
 import { expect } from "@playwright/test";
+import { appWindows } from "./windows.js";
 
 /**
  * The window the app shows. Before opening a saved server the app loads it in a hidden window
@@ -11,7 +12,8 @@ export async function shownWindow(app: ElectronApplication): Promise<Page> {
   await expect
     .poll(
       async () => {
-        for (const page of app.windows()) {
+        // The shell's overlays are views over a shown window, not windows of their own.
+        for (const page of await appWindows(app)) {
           const visible = await app
             .browserWindow(page)
             .then((window) => window.evaluate((win) => win.isVisible()))

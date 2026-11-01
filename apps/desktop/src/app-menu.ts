@@ -6,6 +6,7 @@ import { desktop } from "./desktop-state.js";
 import { desktopLocale, t } from "./i18n.js";
 import type { createLocalComputerChoice } from "./local-settings.js";
 import { showSetupWindow } from "./setup-window.js";
+import type { TunnelPhase } from "./tunnel.js";
 
 let menuUpdateCheck: Promise<void> | null = null;
 /** Works before sign-in, unlike the settings section, and answers with native alerts. */
@@ -68,6 +69,20 @@ export async function installUpdate() {
   if (state.phase !== "ready" || state.message !== null) desktop.quitting = false;
   return state;
 }
+function tunnelMenuLabel(phase: TunnelPhase) {
+  switch (phase) {
+    case "starting":
+      return t("Tunnel: Starting…");
+    case "signing-in":
+      return t("Tunnel: Signing In…");
+    case "connected":
+      return t("Tunnel: Connected");
+    case "failed":
+      return t("Tunnel: Disconnected");
+    case "stopped":
+      return t("Tunnel: Off");
+  }
+}
 type MenuActions = {
   revokeLocalComputerAccess: ReturnType<typeof createLocalComputerChoice>["revoke"];
   updaterEnvironment: Parameters<typeof updaterSupport>[0];
@@ -119,6 +134,19 @@ export function applicationMenuInstaller({
         }
       },
     };
+    const tunnelPhase = desktop.serverConnection.tunnelPhase();
+    const tunnelItems: Electron.MenuItemConstructorOptions[] =
+      tunnelPhase === null
+        ? []
+        : [
+            { type: "separator" },
+            { id: "tunnel-status", label: tunnelMenuLabel(tunnelPhase), enabled: false },
+            {
+              id: "reconnect-tunnel",
+              label: t("Reconnect Tunnel"),
+              click: () => void desktop.serverConnection.reconnect(),
+            },
+          ];
     const isMac = process.platform === "darwin";
     // The page handles these chords itself and stops them, so a key press runs them once; the menu
     // shows them and runs them on click. The page decides whether each one applies right now.
@@ -223,6 +251,7 @@ export function applicationMenuInstaller({
                 revokeComputerAccess,
                 changeServer,
                 stopStack,
+                ...tunnelItems,
                 { type: "separator" },
                 { role: "hide", label: t("Hide {name}", { name: app.name }) },
                 { role: "hideOthers", label: t("Hide Others") },
@@ -265,6 +294,7 @@ export function applicationMenuInstaller({
                 revokeComputerAccess,
                 changeServer,
                 stopStack,
+                ...tunnelItems,
                 { type: "separator" },
                 checkForUpdates,
                 { type: "separator" },

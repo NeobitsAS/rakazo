@@ -230,4 +230,26 @@ export const DE_MESSAGES: Record<string, string> = {
   "Waiting for Docker…": "Warte auf Docker …",
   "Docker is installed but not running. Start the Docker service to continue.":
     "Docker ist installiert, läuft aber nicht. Starte den Docker-Dienst, um fortzufahren.",
+  "A tunnel needs its local server address, such as http://127.0.0.1:18080, and a command.":
+    "Ein Tunnel braucht seine lokale Serveradresse, etwa http://127.0.0.1:18080, und einen Befehl.",
+  "Connect through a tunnel": "Über einen Tunnel verbinden",
+  Connected: "Verbunden",
+  "Connection command": "Verbindungsbefehl",
+  "Connection lost": "Verbindung unterbrochen",
+  Reconnect: "Neu verbinden",
+  "Reconnect Tunnel": "Tunnel neu verbinden",
+  "Reconnecting…": "Verbindung wird wiederhergestellt …",
+  "Server settings": "Servereinstellungen",
+  "Sign-in command": "Anmeldebefehl",
+  "Starting the tunnel…": "Tunnel wird gestartet …",
+  "The connection command stopped before the server answered.":
+    "Der Verbindungsbefehl wurde beendet, bevor der Server antwortete.",
+  "The connection dropped.": "Die Verbindung wurde unterbrochen.",
+  "The tunnel did not connect. {detail}": "Der Tunnel konnte keine Verbindung herstellen. {detail}",
+  "The tunnel was stopped.": "Der Tunnel wurde gestoppt.",
+  "Tunnel: Connected": "Tunnel: Verbunden",
+  "Tunnel: Disconnected": "Tunnel: Getrennt",
+  "Tunnel: Off": "Tunnel: Aus",
+  "Tunnel: Signing In…": "Tunnel: Anmeldung …",
+  "Tunnel: Starting…": "Tunnel: Wird gestartet …",
 };

@@ -170,11 +170,24 @@ export interface RakazoDesktop {
  */
 export type DesktopInstanceMode = "new" | "existing";
 
+/**
+ * A command the desktop app runs to reach a server in a private network, such as an SSH or
+ * cloud port-forwarding tunnel to a local port. Credentials stay with the command's own tool.
+ */
+export interface DesktopTunnel {
+  /** Started before connecting and restarted when it stops; the server address is its local port. */
+  command: string;
+  /** Run once when the tunnel cannot connect, for example to renew expired credentials. */
+  signInCommand?: string;
+}
+
 export interface DesktopSetup {
   mode: DesktopInstanceMode;
   serverUrl: string;
   /** Sent with every request to an existing server, such as an access proxy's credentials. */
   headers?: Record<string, string>;
+  /** Only for an existing instance reached on this computer. */
+  tunnel?: DesktopTunnel;
 }
 
 export interface DesktopSetupState {
@@ -184,6 +197,8 @@ export interface DesktopSetupState {
   saved: DesktopSetup | null;
   /** Present when a saved or newly selected server could not be reopened. */
   error?: string;
+  /** An app window is open behind setup, so Cancel can go back to it unchanged. */
+  canCancel: boolean;
 }
 
 export interface DesktopReachability {
@@ -242,9 +257,16 @@ export interface RakazoSetup {
   /** The page's language and its translations, keyed by the English text; empty for English. */
   locale: { lang: string; dir: "ltr" | "rtl"; messages: Readonly<Record<string, string>> };
   state: () => Promise<DesktopSetupState>;
-  test: (url: string, headers?: Record<string, string>) => Promise<DesktopReachability>;
+  /** Starts `tunnel` first when given, so the check reaches the server through it. */
+  test: (
+    url: string,
+    headers?: Record<string, string>,
+    tunnel?: DesktopTunnel,
+  ) => Promise<DesktopReachability>;
   save: (setup: DesktopSetup) => Promise<{ ok: boolean; error?: string }>;
   quit: () => Promise<void>;
+  /** Closes setup without saving and goes back to the app window. */
+  cancel: () => Promise<void>;
   /** Opens the Docker download in the system browser; the person runs the installer. */
   openLink: (link: DesktopSetupLink) => Promise<void>;
   /** The Docker Compose stack this app installs and runs for mode `new`. */

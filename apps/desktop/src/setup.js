@@ -35,6 +35,10 @@
   const serverUrl = document.getElementById("server-url");
   const serverHeaders = document.getElementById("server-headers");
   const serverHeadersSection = document.getElementById("server-headers-section");
+  const tunnelToggle = document.getElementById("tunnel-toggle");
+  const tunnelFields = document.getElementById("tunnel-fields");
+  const tunnelCommand = document.getElementById("tunnel-command");
+  const tunnelSignIn = document.getElementById("tunnel-sign-in");
   const panelNew = document.getElementById("panel-new");
   const panelExisting = document.getElementById("panel-existing");
   const stackSection = document.getElementById("stack");
@@ -51,6 +55,8 @@
   const checkButton = document.getElementById("check");
   const continueButton = document.getElementById("continue");
   const quitButton = document.getElementById("quit");
+  const cancelButton = document.getElementById("cancel");
+  const heading = document.getElementById("heading");
 
   const STACK_POLL_MS = 1000;
   /** How often setup looks for Docker again while it waits for the person to install or open it. */
@@ -107,6 +113,15 @@
     return checked === null ? "cloud" : checked.value;
   }
 
+  /** The tunnel to start before connecting; none while the switch is off or no command is entered. */
+  function tunnelValue() {
+    if (!tunnelToggle.checked) return undefined;
+    const command = tunnelCommand.value.trim();
+    if (command === "") return undefined;
+    const signInCommand = tunnelSignIn.value.trim();
+    return signInCommand === "" ? { command } : { command, signInCommand };
+  }
+
   function setStatus(message, tone) {
     status.textContent = message;
     if (tone === undefined) status.removeAttribute("data-tone");
@@ -115,6 +130,7 @@
 
   function setBusy(busy) {
     checkButton.disabled = busy;
+    cancelButton.disabled = busy;
     continueButton.disabled = busy;
   }
 
@@ -123,6 +139,9 @@
     for (const input of form.querySelectorAll('input[name="mode"]')) input.disabled = locked;
     serverUrl.disabled = locked;
     serverHeaders.disabled = locked;
+    tunnelToggle.disabled = locked;
+    tunnelCommand.disabled = locked;
+    tunnelSignIn.disabled = locked;
   }
 
   function syncPanels() {
@@ -280,7 +299,7 @@
     return headers;
   }
 
-  async function save(mode, url, headers) {
+  async function save(mode, url, headers, tunnel) {
     const generation = ++requestGeneration;
     // Locking the address blurs it; a failed save hands focus back so Enter can retry.
     const focused = document.activeElement;
@@ -288,7 +307,12 @@
     lockChoice(true);
     setStatus(t("Connecting…"));
     try {
-      const saved = await bridge.save({ mode, serverUrl: url, ...(headers ? { headers } : {}) });
+      const saved = await bridge.save({
+        mode,
+        serverUrl: url,
+        ...(headers ? { headers } : {}),
+        tunnel,
+      });
       if (!saved.ok) setStatus(saved.error ?? t("Could not save that address."), "error");
     } catch {
       setStatus(t("Could not save that address. Try again."), "error");
@@ -385,12 +409,13 @@
       return null;
     }
 
+    const tunnel = tunnelValue();
     const generation = ++requestGeneration;
     activeCheck = generation;
     setBusy(true);
-    setStatus(t("Checking…"));
+    setStatus(tunnel === undefined ? t("Checking…") : t("Starting the tunnel…"));
     try {
-      const result = await bridge.test(value, headers);
+      const result = await bridge.test(value, headers, tunnel);
       // The address or the mode changed under the test, so its result speaks for neither.
       if (generation !== requestGeneration) return result;
       if (result.ok) {
@@ -460,6 +485,14 @@
     void bridge.quit();
   });
 
+  // Cancel goes back to the app window without saving.
+  cancelButton.addEventListener("click", () => void bridge.cancel());
+
+  tunnelToggle.addEventListener("change", () => {
+    tunnelFields.hidden = !tunnelToggle.checked;
+    if (tunnelToggle.checked) tunnelCommand.focus();
+  });
+
   form.addEventListener("submit", (event) => {
     event.preventDefault();
     const mode = selectedMode();
@@ -467,12 +500,12 @@
     if (mode === "new" && lastStack?.phase === "docker-missing")
       void bridge.openLink("docker-download");
     else if (mode === "new") void runStack();
-    // Cloud is an existing server at a fixed address.
+    // Cloud is an existing server at a fixed address, reached without a tunnel.
     else if (mode === "cloud") void save("existing", cloudUrl);
     else {
       const headers = readHeaders();
       if (headers === null) setStatus(t("Invalid custom headers"), "error");
-      else void save("existing", serverUrl.value, headers);
+      else void save("existing", serverUrl.value, headers, tunnelValue());
     }
   });
 
@@ -504,13 +537,24 @@
       const state = await bridge.state();
       if (state === null) throw new Error("Setup is not active");
       defaultLocalUrl = state.defaultLocalUrl;
+      cancelButton.hidden = !state.canCancel;
       cloudUrl = state.cloudUrl;
       if (state.saved !== null) {
+        // Coming back to change the server rather than setting up for the first time.
+        heading.textContent = t("Server settings");
         const savedCloud = state.saved.mode === "existing" && state.saved.serverUrl === cloudUrl;
         const mode = savedCloud ? "cloud" : state.saved.mode;
         const modeInput = document.querySelector(`input[name="mode"][value="${mode}"]`);
         if (modeInput !== null) modeInput.checked = true;
-        if (mode === "existing") serverUrl.value = state.saved.serverUrl;
+        if (mode === "existing") {
+          serverUrl.value = state.saved.serverUrl;
+          if (state.saved.tunnel !== undefined) {
+            tunnelCommand.value = state.saved.tunnel.command;
+            tunnelSignIn.value = state.saved.tunnel.signInCommand ?? "";
+            tunnelToggle.checked = true;
+            tunnelFields.hidden = false;
+          }
+        }
         if (mode === "existing" && state.saved.headers) {
           serverHeaders.value = Object.entries(state.saved.headers)
             .map(([name, value]) => `${name}: ${value}`)

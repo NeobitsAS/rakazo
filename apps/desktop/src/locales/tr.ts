@@ -221,4 +221,26 @@ export const TR_MESSAGES: Record<string, string> = {
   "Waiting for Docker…": "Docker bekleniyor…",
   "Docker is installed but not running. Start the Docker service to continue.":
     "Docker yüklü ama çalışmıyor. Devam etmek için Docker hizmetini başlatın.",
+  "A tunnel needs its local server address, such as http://127.0.0.1:18080, and a command.":
+    "Tünel, http://127.0.0.1:18080 gibi yerel sunucu adresine ve bir komuta ihtiyaç duyar.",
+  "Connect through a tunnel": "Tünel üzerinden bağlan",
+  Connected: "Bağlandı",
+  "Connection command": "Bağlantı komutu",
+  "Connection lost": "Bağlantı koptu",
+  Reconnect: "Yeniden bağlan",
+  "Reconnect Tunnel": "Tüneli Yeniden Bağla",
+  "Reconnecting…": "Yeniden bağlanıyor…",
+  "Server settings": "Sunucu ayarları",
+  "Sign-in command": "Oturum açma komutu",
+  "Starting the tunnel…": "Tünel başlatılıyor…",
+  "The connection command stopped before the server answered.":
+    "Bağlantı komutu, sunucu yanıt vermeden önce durdu.",
+  "The connection dropped.": "Bağlantı koptu.",
+  "The tunnel did not connect. {detail}": "Tünel bağlanamadı. {detail}",
+  "The tunnel was stopped.": "Tünel durduruldu.",
+  "Tunnel: Connected": "Tünel: Bağlı",
+  "Tunnel: Disconnected": "Tünel: Bağlantı Kesik",
+  "Tunnel: Off": "Tünel: Kapalı",
+  "Tunnel: Signing In…": "Tünel: Oturum Açılıyor…",
+  "Tunnel: Starting…": "Tünel: Başlatılıyor…",
 };

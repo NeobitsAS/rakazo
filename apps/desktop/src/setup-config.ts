@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import type { DesktopSetup, DesktopStackProbeResponse } from "@rakazo/contracts";
+import type { DesktopSetup, DesktopStackProbeResponse, DesktopTunnel } from "@rakazo/contracts";
 import { parseServerHeaders } from "@rakazo/contracts";
 import { isLoopbackHost, isPrivateNetworkHost } from "@rakazo/contracts/network-host";
 import { t } from "./i18n.js";
@@ -11,6 +11,8 @@ export const RAKAZO_CLOUD_URL = "https://app.rakazo.com";
 export const PROBE_RESPONSE_LIMIT_BYTES = 64 * 1024;
 
 export const SETUP_FILE_NAME = "setup.json";
+
+const TUNNEL_COMMAND_MAX_LENGTH = 2000;
 
 export type StartupTarget =
   | { kind: "app"; url: string; source: "env" | "saved" | "cloud" }
@@ -78,23 +80,52 @@ export function maySendDesktopStackToken(serverUrl: string): boolean {
   }
 }
 
+function parseCommand(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const command = value.trim();
+  if (command === "" || command.length > TUNNEL_COMMAND_MAX_LENGTH) return null;
+  return command;
+}
+
+/** Validates an untrusted tunnel: undefined when none was given, null when it is unusable. */
+export function parseTunnelInput(value: unknown): DesktopTunnel | null | undefined {
+  if (value === undefined || value === null) return undefined;
+  if (typeof value !== "object") return null;
+  const { command, signInCommand } = value as Record<string, unknown>;
+  const parsedCommand = parseCommand(command);
+  if (parsedCommand === null) return null;
+  if (signInCommand === undefined) return { command: parsedCommand };
+  const parsedSignIn = parseCommand(signInCommand);
+  return parsedSignIn === null ? null : { command: parsedCommand, signInCommand: parsedSignIn };
+}
+
 /** Validates an untrusted value (saved file or IPC payload) into a usable setup. */
 export function parseSetupInput(value: unknown): DesktopSetup | null {
   if (typeof value !== "object" || value === null) return null;
 
-  const { mode, serverUrl, headers } = value as Record<string, unknown>;
+  const { mode, serverUrl, headers, tunnel } = value as Record<string, unknown>;
   if (mode !== "new" && mode !== "existing") return null;
   if (typeof serverUrl !== "string") return null;
 
   const normalized = normalizeServerUrl(serverUrl);
   if (normalized === null) return null;
-  if (mode === "new" && !isLoopbackHost(new URL(normalized).hostname)) return null;
-  if (headers === undefined) return { mode, serverUrl: normalized };
-  const parsed = parseServerHeaders(headers);
-  if (parsed === null || (mode === "new" && Object.keys(parsed).length > 0)) return null;
-  return Object.keys(parsed).length > 0
-    ? { mode, serverUrl: normalized, headers: parsed }
-    : { mode, serverUrl: normalized };
+  const local = isLoopbackHost(new URL(normalized).hostname);
+  if (mode === "new" && !local) return null;
+
+  const parsedHeaders = headers === undefined ? {} : parseServerHeaders(headers);
+  if (parsedHeaders === null || (mode === "new" && Object.keys(parsedHeaders).length > 0)) {
+    return null;
+  }
+  const parsedTunnel = parseTunnelInput(tunnel);
+  // A tunnel forwards a remote server to a port on this computer.
+  if (parsedTunnel === null) return null;
+  if (parsedTunnel !== undefined && (mode !== "existing" || !local)) return null;
+  return {
+    mode,
+    serverUrl: normalized,
+    ...(Object.keys(parsedHeaders).length > 0 ? { headers: parsedHeaders } : {}),
+    ...(parsedTunnel ? { tunnel: parsedTunnel } : {}),
+  };
 }
 
 /** Configured headers for a request to the saved server, including its websockets; none elsewhere. */

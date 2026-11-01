@@ -218,4 +218,26 @@ export const HI_MESSAGES: Record<string, string> = {
   "Waiting for Docker…": "Docker का इंतज़ार…",
   "Docker is installed but not running. Start the Docker service to continue.":
     "Docker इंस्टॉल है लेकिन चल नहीं रहा। जारी रखने के लिए Docker सेवा शुरू करें।",
+  "A tunnel needs its local server address, such as http://127.0.0.1:18080, and a command.":
+    "टनल को अपने लोकल सर्वर पते, जैसे http://127.0.0.1:18080, और एक कमांड की ज़रूरत है।",
+  "Connect through a tunnel": "टनल के ज़रिए कनेक्ट करें",
+  Connected: "कनेक्ट हो गया",
+  "Connection command": "कनेक्शन कमांड",
+  "Connection lost": "कनेक्शन टूट गया",
+  Reconnect: "फिर से कनेक्ट करें",
+  "Reconnect Tunnel": "टनल फिर से कनेक्ट करें",
+  "Reconnecting…": "फिर से कनेक्ट हो रहा है…",
+  "Server settings": "सर्वर सेटिंग्स",
+  "Sign-in command": "साइन-इन कमांड",
+  "Starting the tunnel…": "टनल शुरू हो रहा है…",
+  "The connection command stopped before the server answered.":
+    "सर्वर के जवाब देने से पहले कनेक्शन कमांड रुक गया।",
+  "The connection dropped.": "कनेक्शन टूट गया।",
+  "The tunnel did not connect. {detail}": "टनल कनेक्ट नहीं हुआ। {detail}",
+  "The tunnel was stopped.": "टनल रोक दिया गया।",
+  "Tunnel: Connected": "टनल: कनेक्टेड",
+  "Tunnel: Disconnected": "टनल: डिस्कनेक्टेड",
+  "Tunnel: Off": "टनल: बंद",
+  "Tunnel: Signing In…": "टनल: साइन इन हो रहा है…",
+  "Tunnel: Starting…": "टनल: शुरू हो रहा है…",
 };

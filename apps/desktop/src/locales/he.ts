@@ -219,4 +219,26 @@ export const HE_MESSAGES: Record<string, string> = {
   "Waiting for Docker…": "ממתין ל-Docker…",
   "Docker is installed but not running. Start the Docker service to continue.":
     "Docker מותקן אבל לא פועל. יש להפעיל את שירות Docker כדי להמשיך.",
+  "A tunnel needs its local server address, such as http://127.0.0.1:18080, and a command.":
+    "מנהרה צריכה את כתובת השרת המקומית שלה, למשל http://127.0.0.1:18080, ופקודה.",
+  "Connect through a tunnel": "חיבור דרך מנהרה",
+  Connected: "מחובר",
+  "Connection command": "פקודת חיבור",
+  "Connection lost": "החיבור אבד",
+  Reconnect: "התחברות מחדש",
+  "Reconnect Tunnel": "חיבור מחדש של המנהרה",
+  "Reconnecting…": "מתחבר מחדש…",
+  "Server settings": "הגדרות שרת",
+  "Sign-in command": "פקודת כניסה",
+  "Starting the tunnel…": "מפעיל את המנהרה…",
+  "The connection command stopped before the server answered.":
+    "פקודת החיבור הופסקה לפני שהשרת ענה.",
+  "The connection dropped.": "החיבור נותק.",
+  "The tunnel did not connect. {detail}": "המנהרה לא התחברה. {detail}",
+  "The tunnel was stopped.": "המנהרה נעצרה.",
+  "Tunnel: Connected": "מנהרה: מחוברת",
+  "Tunnel: Disconnected": "מנהרה: מנותקת",
+  "Tunnel: Off": "מנהרה: כבויה",
+  "Tunnel: Signing In…": "מנהרה: מתבצעת כניסה…",
+  "Tunnel: Starting…": "מנהרה: מופעלת…",
 };
