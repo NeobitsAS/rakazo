@@ -307,6 +307,8 @@ export interface SendUserMessageInput {
     modelId: string;
     thinkingLevel: string | null;
   };
+  /** Mirror the reply to the bot's linked messaging DM (an inbound routine opted in). */
+  deliverToMessaging?: boolean;
 }
 
 export interface SendUserMessageResult {
@@ -569,6 +571,7 @@ export async function sendUserMessage(
                   modelPinned: true,
                 }
               : {}),
+            ...(input.deliverToMessaging ? { deliverToMessaging: true } : {}),
           },
         });
         if (input.linkMessageToRun) {
@@ -586,6 +589,7 @@ export async function sendUserMessage(
             ...(input.trigger === "messaging" || input.trigger === "webhook"
               ? { originTrigger: input.trigger }
               : {}),
+            ...(held && input.deliverToMessaging ? { deliverToMessaging: true } : {}),
             ...(input.modelPin
               ? {
                   modelProvider: input.modelPin.modelProvider,
@@ -1989,6 +1993,7 @@ export async function createPendingSteeringRun(
             : "messaging",
       sourceMessageId: source.message.id,
       ...(modelPin ?? {}),
+      ...(batch.some((item) => item.deliverToMessaging) ? { deliverToMessaging: true } : {}),
     },
   });
   await tx.steeringMessage.updateMany({

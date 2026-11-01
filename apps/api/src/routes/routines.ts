@@ -250,6 +250,7 @@ export function routinesRoutes(ctx: RouterContext) {
               webhookEnabled: input.webhookEnabled,
               githubEnabled: input.githubEnabled,
               messageProvider: input.messageProvider,
+              deliverToMessaging: input.deliverToMessaging,
               ...(touchesModel ? { modelProvider, modelId, thinkingLevel } : {}),
               // A changed watch starts from a fresh baseline.
               ...(input.watch === undefined

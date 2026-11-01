@@ -410,6 +410,9 @@ function SpaceShell() {
     refreshThread,
     setPanel,
     messageProviders: messagingProviders,
+    linkedProvider:
+      messagingStatus?.identities.find((identity) => identity.botId === active?.id)?.provider ??
+      null,
   });
   // Until this visit's read lands, a bot shows the routines and skills it had last time.
   const activeRoutines =

@@ -280,6 +280,7 @@ export async function wakeMessageRoutines(
       modelProvider: true,
       modelId: true,
       thinkingLevel: true,
+      deliverToMessaging: true,
     },
     orderBy: { updatedAt: "desc" },
   });

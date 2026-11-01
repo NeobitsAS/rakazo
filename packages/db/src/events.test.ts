@@ -345,7 +345,7 @@ describe("finalizeRun", () => {
     });
   });
 
-  it("pins the continuation when every waited message chose the same model", async () => {
+  it("carries a waited delivery's model and chat delivery into the continuation", async () => {
     const tx = {
       externalEffect: { deleteMany: vi.fn(async () => ({ count: 0 })) },
       $queryRaw: vi.fn(async () => []),
@@ -376,6 +376,7 @@ describe("finalizeRun", () => {
             modelProvider: "openai-compatible",
             modelId: "private-model",
             thinkingLevel: "low",
+            deliverToMessaging: true,
             message: {
               id: "message-hook",
               seq: 4,
@@ -413,6 +414,7 @@ describe("finalizeRun", () => {
         modelId: "private-model",
         thinkingLevel: "low",
         modelPinned: true,
+        deliverToMessaging: true,
       }),
     });
   });

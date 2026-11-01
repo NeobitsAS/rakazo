@@ -101,9 +101,14 @@ async function mirrorRun(deps: MessagingDeliveryDeps, runId: string): Promise<vo
       await mirrorChannelRun(deps, run, channelBlock);
       return;
     }
+  } else if (run.deliverToMessaging) {
+    // A routine opted in, whether it ran on schedule or from a webhook. Only
+    // once the run is done: one paused on an ask or approval must not send
+    // its partial output.
+    if (run.status !== "completed") return;
   } else if (run.trigger !== "bot_message") {
     // Mirror inbound messaging runs and delegated bot_message replies only.
-    // Do not push in-app user/routine runs out to the linked chat.
+    // Do not push in-app user runs out to the linked chat.
     return;
   }
 
