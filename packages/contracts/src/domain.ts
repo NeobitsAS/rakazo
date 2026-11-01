@@ -1484,6 +1484,29 @@ export const ServerUpdateRequestSchema = z.object({
 });
 export type ServerUpdateRequest = z.infer<typeof ServerUpdateRequestSchema>;
 
+/**
+ * The deployment default on the server's own credentials: `missing` (no usable credentials on the
+ * server), `unchecked`, `ready`, `denied` (may not invoke the model) or `unavailable` (the model
+ * isn't offered to those credentials).
+ */
+export const ServerCredentialStatusSchema = z.enum([
+  "missing",
+  "unchecked",
+  "ready",
+  "denied",
+  "unavailable",
+]);
+export type ServerCredentialStatus = z.infer<typeof ServerCredentialStatusSchema>;
+
+export const ServerCredentialStateSchema = z.object({
+  provider: z.string(),
+  model: z.string(),
+  /** The kind of credentials, e.g. "AWS IAM". */
+  source: z.string(),
+  status: ServerCredentialStatusSchema,
+});
+export type ServerCredentialState = z.infer<typeof ServerCredentialStateSchema>;
+
 export const MeSchema = z.object({
   maxUploadSizeBytes: z.number().int().positive().optional(),
   maxAttachmentsPerMessage: z.number().int().positive().optional(),
@@ -1506,6 +1529,8 @@ export const MeSchema = z.object({
   hostCredentialProvider: z.string().nullable(),
   /** Kind of those credentials, e.g. "AWS IAM"; set with hostCredentialProvider. */
   hostCredentialSource: z.string().nullable(),
+  /** Set when the operator runs the deployment default on the server's own credentials. */
+  serverCredentials: ServerCredentialStateSchema.nullable(),
   computerHost: z.enum(["docker", "this-mac"]).nullable(),
   canChooseHostComputer: z.boolean(),
   sandboxProvider: z.string(),

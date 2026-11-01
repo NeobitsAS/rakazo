@@ -29,6 +29,7 @@ import type {
   ProviderCatalogCache,
   PushTokenStore,
   RemoteConnectorDependencies,
+  ServerCredentialCheck,
   TicketChangeNotifier,
   UserCloudAgents,
   verifyModelServesAgents,
@@ -76,6 +77,8 @@ export interface RouterDeps {
   analytics?: ProductAnalytics;
   cloudAgent?: CloudAgentConnection | null;
   userCloudAgents?: UserCloudAgents;
+  /** Set when the operator runs the deployment default on the server's own credentials. */
+  serverCredentials?: ServerCredentialCheck;
   /** The deployment's wallet provider; absent hides purchases. */
   paymentWallet?: PaymentWalletProvider | null;
   prisma: PrismaClient;

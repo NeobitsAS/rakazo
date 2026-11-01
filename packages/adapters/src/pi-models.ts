@@ -13,6 +13,7 @@ import {
   MODEL_KEY_REJECTED_ERROR,
 } from "@rakazo/contracts";
 import { cloudflareRoutingFields } from "./cloudflare-ai-gateway.js";
+import { supportedHostCredentialSource } from "./deployment-model.js";
 import { COMPATIBLE_ENDPOINT_PRESETS } from "./openai-compatible-url.js";
 import { LOCAL_PROVIDER_ID, registerLocalProvider } from "./pi-local-provider.js";
 import { applyPiModelCompatibility } from "./pi-model-compat.js";
@@ -48,6 +49,7 @@ export type PiCatalogEntry = {
   catalogProbe?: boolean;
   routingFields?: ModelRoutingField[];
   endpointPresets?: CompatibleEndpointPreset[];
+  hostCredentialSource?: string;
   live?: true;
 };
 
@@ -307,6 +309,7 @@ function buildPiCatalog(): PiCatalogEntry[] {
     const providerModels = provider.getModels();
     const probeBaseUrl = pinnedCatalogProbeBaseUrl(provider.id, providerModels);
     if (probeBaseUrl) catalogProbeBaseUrls.set(provider.id, probeBaseUrl);
+    const hostCredentialSource = supportedHostCredentialSource(provider.id);
     catalogBaseUrls.set(
       provider.id,
       new Set(
@@ -343,6 +346,7 @@ function buildPiCatalog(): PiCatalogEntry[] {
           : { images: model.input.includes("image") }),
         ...(probeBaseUrl ? { catalogProbe: true } : {}),
         ...(routingFields ? { routingFields } : {}),
+        ...(hostCredentialSource ? { hostCredentialSource } : {}),
       });
     }
   }

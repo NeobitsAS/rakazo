@@ -330,6 +330,8 @@ export const ModelCatalogEntrySchema = z.object({
   placeholder: z.boolean().optional(),
   /** Models share one pinned HTTPS models-list URL that can be probed. */
   catalogProbe: z.boolean().optional(),
+  /** Set when a server can run this provider on its own credentials, e.g. "AWS IAM". */
+  hostCredentialSource: z.string().optional(),
   /** Ids the provider needs besides a key; a connection cannot save without them. */
   routingFields: z.array(ModelRoutingFieldSchema).optional(),
   /** Hosted services this connection type offers by name. */

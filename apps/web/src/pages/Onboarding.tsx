@@ -1,4 +1,5 @@
 import { useLingui } from "@lingui/react/macro";
+import type { ServerCredentialState } from "@rakazo/contracts";
 import { useEffect, useId, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { AccountMenu } from "../components/AccountMenu";
@@ -26,6 +27,7 @@ export function OnboardingPage() {
   // The step after the survey; null until me loads.
   const [afterSurvey, setAfterSurvey] = useState<"model" | "bot" | null>(null);
   const [catalog, setCatalog] = useState<ModelCatalogEntry[]>([]);
+  const [serverCredentials, setServerCredentials] = useState<ServerCredentialState | null>(null);
   const model = useOnboardingModel({
     catalog,
     billingEnabled,
@@ -40,6 +42,7 @@ export function OnboardingPage() {
       .then(([me, models]) => {
         setBillingEnabled(me.billingEnabled);
         setCatalog(models);
+        setServerCredentials(me.serverCredentials);
         const next = me.needsModel ? "model" : "bot";
         setAfterSurvey(next);
         if (!linkedStep) goTo(me.needsSignupSurvey ? "survey" : next);
@@ -91,6 +94,25 @@ export function OnboardingPage() {
     void createFirstBot();
   }, [step]);
 
+  /** A check that now passes means the deployment default runs, so onboarding moves on. */
+  async function checkServerCredentials() {
+    setError(null);
+    try {
+      setServerCredentials(await rpc.models.checkServerCredentials());
+      const me = await rpc.me();
+      if (!me.needsModel) goTo("bot");
+    } catch (err) {
+      setError(errorText(err, t`Could not check the server's credentials`));
+    }
+  }
+  const serverModelLabel =
+    catalog.find(
+      (entry) =>
+        entry.provider === serverCredentials?.provider && entry.id === serverCredentials?.model,
+    )?.label ??
+    serverCredentials?.model ??
+    "";
+
   // Loading, and creating the first bot, both wait on one spinner until the chat opens.
   if (step === "loading" || (step === "bot" && !error)) return <PageLoading />;
 
@@ -99,7 +121,15 @@ export function OnboardingPage() {
       <AccountMenu signingOut={signingOut} onLogOut={() => void logOut()} />
       <div className="mx-auto w-full max-w-[560px]">
         {step === "survey" ? <SignupSurvey onDone={() => setSurveyDone(true)} /> : null}
-        {step === "model" ? <ModelStep model={model} fieldId={fieldId} /> : null}
+        {step === "model" ? (
+          <ModelStep
+            model={model}
+            fieldId={fieldId}
+            serverCredentials={serverCredentials}
+            serverModelLabel={serverModelLabel}
+            onCheckServerCredentials={checkServerCredentials}
+          />
+        ) : null}
         {step === "bot" ? (
           <FirstBotRetry error={error} onRetry={() => void createFirstBot()} />
         ) : null}

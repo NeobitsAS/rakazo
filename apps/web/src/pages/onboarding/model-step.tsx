@@ -1,5 +1,5 @@
 import { Plural, Trans, useLingui } from "@lingui/react/macro";
-import type { ThinkingLevel } from "@rakazo/contracts";
+import type { ServerCredentialState, ThinkingLevel } from "@rakazo/contracts";
 import {
   Button,
   Input,
@@ -19,12 +19,29 @@ import {
   modelPreflightTestingLabel,
 } from "../../components/ModelConnectionPreflightNotice";
 import { ModelHeadersEditor } from "../../components/ModelHeadersEditor";
+import {
+  ServerCredentialsUnavailable,
+  serverCredentialsBlocker,
+} from "../../components/ServerCredentialsUnavailable";
 import { CompatibleKeyField } from "../model-settings/compatible-key-field";
 import type { OnboardingModel } from "./use-onboarding-model";
 
 const CUSTOM_MODEL_OPTION = "__rakazo_custom_model__";
 
-export function ModelStep({ model, fieldId }: { model: OnboardingModel; fieldId: string }) {
+export function ModelStep({
+  model,
+  fieldId,
+  serverCredentials,
+  serverModelLabel,
+  onCheckServerCredentials,
+}: {
+  model: OnboardingModel;
+  fieldId: string;
+  /** The deployment default on the server's own credentials, when the operator set one up. */
+  serverCredentials: ServerCredentialState | null;
+  serverModelLabel: string;
+  onCheckServerCredentials: () => Promise<void>;
+}) {
   const { t } = useLingui();
   const {
     acceptsKey,
@@ -64,6 +81,10 @@ export function ModelStep({ model, fieldId }: { model: OnboardingModel; fieldId:
     testApiKeyConnection,
     updateApiKey,
   } = model;
+  const serverCredentialsSource = isOpenAiCompatible ? undefined : selected?.hostCredentialSource;
+  const serverCredentialsBlocked = serverCredentialsSource
+    ? serverCredentialsBlocker(serverCredentials, provider)
+    : null;
 
   return (
     <div>
@@ -142,6 +163,16 @@ export function ModelStep({ model, fieldId }: { model: OnboardingModel; fieldId:
                   />
                 </label>
               ) : null}
+            </div>
+          ) : null}
+          {serverCredentialsSource && serverCredentialsBlocked ? (
+            <div className="mt-6">
+              <ServerCredentialsUnavailable
+                blocker={serverCredentialsBlocked}
+                source={serverCredentialsSource}
+                modelLabel={serverModelLabel}
+                onCheck={onCheckServerCredentials}
+              />
             </div>
           ) : null}
           {acceptsKey ? (

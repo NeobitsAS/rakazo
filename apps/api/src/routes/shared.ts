@@ -61,11 +61,13 @@ export async function meDto(deps: RouterDeps, actor: Actor): Promise<Me> {
     needsModel: setup.needsModel,
     defaultProvider: canonicalPiProviderId(setup.model?.provider ?? deps.env.defaultProvider),
     defaultModel: setup.model?.modelId ?? deps.env.defaultModel,
+    serverCredentials: deps.serverCredentials?.state() ?? null,
     // Set only while the active default is the deployment's own, running on host credentials.
     ...hostCredentials(
       !setup.main &&
         !setup.settings?.defaultModelProvider &&
-        Boolean(deps.env.deploymentModelHostCredentials),
+        Boolean(deps.env.deploymentModelHostCredentials) &&
+        !deps.serverCredentials?.failed(),
       deps.env.defaultProvider,
     ),
     computerHost: computerHostFor(setup.settings?.computerHost, sandboxProvider),
@@ -118,8 +120,11 @@ export async function modelSetup(deps: RouterDeps, actor: Actor) {
       : null;
   const funding = deps.billing ? await deps.billing.status(actor) : null;
   const creditsAvailable = modelCreditsUsd(funding) !== null;
+  // A deployment default on server credentials that a check showed can't run doesn't count:
+  // onboarding then explains what the server is missing instead of every run failing.
   const hasDeployment =
     Boolean(deps.env.deploymentModelConfigured) &&
+    !deps.serverCredentials?.failed() &&
     (!funding?.creditPurchasesEnabled || creditsAvailable);
   return {
     main,

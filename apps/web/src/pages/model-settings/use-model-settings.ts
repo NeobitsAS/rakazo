@@ -491,6 +491,7 @@ export function useModelSettings(onClose: () => void, scope: SettingsScope) {
     ...form,
     intentRef,
     refresh,
+    rpc,
     savedHeaderEndpointMatches,
     acceptsKey,
     beginSelectedSubscriptionSignIn,
