@@ -8,6 +8,7 @@ import { promisify } from "node:util";
 import type { ElectronApplication, Page } from "@playwright/test";
 import { _electron as electron, expect, test } from "@playwright/test";
 import type { RakazoDesktop } from "@rakazo/contracts";
+import { firstWindow, nextWindow } from "./windows";
 
 const APP_MARKER = "Existing Rakazo instance ready";
 /** Outlasts the shell's 20s wait for a mounted app before it rejects the server. */
@@ -99,7 +100,7 @@ test("first run offers Rakazo Cloud first, with local and existing instances", a
   if (process.env.RAKAZO_E2E_EXECUTABLE) {
     expect(await app.evaluate(({ app }) => app.isPackaged)).toBe(true);
   }
-  const setup = await app.firstWindow();
+  const setup = await firstWindow(app);
 
   await expect(setup.getByRole("heading", { name: "Welcome to Rakazo" })).toBeVisible();
   await expect(setup.getByText("Choose which server this app should use.")).toBeVisible();
@@ -135,7 +136,8 @@ test("first run offers Rakazo Cloud first, with local and existing instances", a
     document.documentElement.dataset.platform = "darwin";
   });
   await expect(setup.locator(".titlebar")).toHaveCSS("padding-left", "88px");
-  expect((await setup.locator(".titlebar-name").boundingBox())?.x).toBeGreaterThanOrEqual(88);
+  // macOS draws the window's own close button; the title bar's close control is for other OSes.
+  await expect(setup.locator(".titlebar-close")).toBeHidden();
   if (process.platform === "darwin") {
     if (process.env.CI) {
       await execFileAsync("screencapture", [
@@ -161,7 +163,7 @@ test("first run offers Rakazo Cloud first, with local and existing instances", a
 
 test("Rakazo Cloud saves the hosted address and is reselected when saved", async () => {
   app = await launch();
-  const setup = await app.firstWindow();
+  const setup = await firstWindow(app);
   await expect(setup.getByRole("radio", { name: /Rakazo Cloud/ })).toBeChecked();
   await expect(setup.getByRole("button", { name: "Continue" })).toBeEnabled();
 
@@ -206,7 +208,7 @@ test("Rakazo Cloud saves the hosted address and is reselected when saved", async
 
 test("connecting to an existing instance verifies, saves, and opens it", async () => {
   app = await launch();
-  const setup = await app.firstWindow();
+  const setup = await firstWindow(app);
 
   await setup.getByRole("radio", { name: /Existing instance/ }).check();
   await expect(setup.locator("#panel-new")).toBeHidden();
@@ -221,7 +223,7 @@ test("connecting to an existing instance verifies, saves, and opens it", async (
   });
 
   const appWindow = await Promise.all([
-    app.waitForEvent("window"),
+    nextWindow(app),
     setup.getByRole("button", { name: "Continue" }).click(),
   ]).then(([window]) => window);
 
@@ -244,11 +246,11 @@ test("connecting to an existing instance verifies, saves, and opens it", async (
 
 test("Continue verifies and remembers the instance so setup does not run again", async () => {
   app = await launch();
-  const setup = await app.firstWindow();
+  const setup = await firstWindow(app);
   await setup.getByRole("radio", { name: /Existing instance/ }).check();
   await setup.locator("#server-url").fill(serverUrl);
   const firstRun = await Promise.all([
-    app.waitForEvent("window"),
+    nextWindow(app),
     setup.getByRole("button", { name: "Continue" }).click(),
   ]).then(([window]) => window);
   await expect(firstRun.getByText(APP_MARKER)).toBeVisible();
@@ -265,14 +267,14 @@ test("Continue verifies and remembers the instance so setup does not run again",
   await app.close();
 
   app = await launch();
-  const relaunched = await app.firstWindow();
+  const relaunched = await firstWindow(app);
   await expect(relaunched.getByText(APP_MARKER)).toBeVisible();
   await expect(relaunched.locator("#setup")).toHaveCount(0);
 });
 
 test("an unreachable address is reported instead of being saved", async () => {
   app = await launch();
-  const setup = await app.firstWindow();
+  const setup = await firstWindow(app);
 
   await setup.getByRole("radio", { name: /Existing instance/ }).check();
   await setup.locator("#server-url").fill(closedUrl);
@@ -306,7 +308,7 @@ test("an HTTP error document is not accepted after a healthy probe", async () =>
 
   try {
     app = await launch();
-    const setup = await app.firstWindow();
+    const setup = await firstWindow(app);
     await setup.getByRole("radio", { name: /Existing instance/ }).check();
     await setup.locator("#server-url").fill(`http://127.0.0.1:${address.port}`);
     await setup.getByRole("button", { name: "Continue" }).click();
@@ -342,7 +344,7 @@ test("a session-pending shell skeleton is not accepted as a ready app", async ()
 
   try {
     app = await launch();
-    const setup = await app.firstWindow();
+    const setup = await firstWindow(app);
     await setup.getByRole("radio", { name: /Existing instance/ }).check();
     await setup.locator("#server-url").fill(`http://127.0.0.1:${address.port}`);
     await setup.getByRole("button", { name: "Continue" }).click();
@@ -366,12 +368,20 @@ for (const { name, surface } of [
     surface: '<div data-testid="shell-root" data-ready="true">Workspace</div>',
   },
   {
-    name: "logged-out welcome",
-    surface: '<div data-rakazo-surface="welcome"><button>Sign up</button></div>',
+    name: "logged-out sign-in",
+    surface: '<div data-rakazo-surface="entry"><button>Sign up</button></div>',
   },
   {
-    name: "translated logged-out welcome",
-    surface: '<div data-rakazo-surface="welcome"><button>Créer un compte</button></div>',
+    name: "translated logged-out sign-in",
+    surface: '<div data-rakazo-surface="entry"><button>Créer un compte</button></div>',
+  },
+  {
+    name: "onboarding step that is not the model step",
+    surface: '<ol data-slot="stepper"><li>Server integrations</li></ol>',
+  },
+  {
+    name: "marked entry surface",
+    surface: '<div data-rakazo-surface="onboarding">Server integrations</div>',
   },
 ]) {
   test(`a post-session ${name} mount is accepted`, async () => {
@@ -394,11 +404,11 @@ for (const { name, surface } of [
 
     try {
       app = await launch();
-      const setup = await app.firstWindow();
+      const setup = await firstWindow(app);
       await setup.getByRole("radio", { name: /Existing instance/ }).check();
       await setup.locator("#server-url").fill(`http://127.0.0.1:${address.port}`);
       const appWindow = await Promise.all([
-        app.waitForEvent("window"),
+        nextWindow(app),
         setup.getByRole("button", { name: "Continue" }).click(),
       ]).then(([window]) => window);
 
@@ -443,7 +453,7 @@ test("a shell mount before workspace bootstrap is not accepted", async () => {
 
   try {
     app = await launch();
-    const setup = await app.firstWindow();
+    const setup = await firstWindow(app);
     await setup.getByRole("radio", { name: /Existing instance/ }).check();
     await setup.locator("#server-url").fill(`http://127.0.0.1:${address.port}`);
     await setup.getByRole("button", { name: "Continue" }).click();
@@ -481,7 +491,7 @@ test("a session-ready marker without a route surface is not accepted", async () 
 
   try {
     app = await launch();
-    const setup = await app.firstWindow();
+    const setup = await firstWindow(app);
     await setup.getByRole("radio", { name: /Existing instance/ }).check();
     await setup.locator("#server-url").fill(`http://127.0.0.1:${address.port}`);
     await setup.getByRole("button", { name: "Continue" }).click();
@@ -501,7 +511,7 @@ test("a session-ready marker without a route surface is not accepted", async () 
 
 test("a malformed address is rejected before anything is written", async () => {
   app = await launch();
-  const setup = await app.firstWindow();
+  const setup = await firstWindow(app);
 
   await setup.getByRole("radio", { name: /Existing instance/ }).check();
   await setup.locator("#server-url").fill("not a server");
@@ -524,7 +534,7 @@ test("a generic web page is not accepted as a Rakazo server", async () => {
 
   try {
     app = await launch();
-    const setup = await app.firstWindow();
+    const setup = await firstWindow(app);
     await setup.getByRole("radio", { name: /Existing instance/ }).check();
     await setup.locator("#server-url").fill(`http://127.0.0.1:${address.port}`);
     await setup.getByRole("button", { name: "Continue" }).click();
@@ -555,7 +565,7 @@ test("the setup probe refuses redirects instead of following them", async () => 
 
   try {
     app = await launch();
-    const setup = await app.firstWindow();
+    const setup = await firstWindow(app);
     await setup.getByRole("radio", { name: /Existing instance/ }).check();
     await setup.locator("#server-url").fill(`http://127.0.0.1:${address.port}`);
     await setup.getByRole("button", { name: "Continue" }).click();
@@ -581,9 +591,9 @@ test("an unreachable saved server falls back to setup with a recovery message", 
   );
 
   app = await launch();
-  const setup = await app.firstWindow();
+  const setup = await firstWindow(app);
 
-  await expect(setup.getByRole("heading", { name: "Welcome to Rakazo" })).toBeVisible();
+  await expect(setup.getByRole("heading", { name: "Server settings" })).toBeVisible();
   await expect(setup.getByRole("radio", { name: /Existing instance/ })).toBeChecked();
   await expect(setup.locator("#server-url")).toHaveValue(closedUrl);
   await expect(setup.locator("#status")).toContainText("Could not reconnect to the saved server.");
@@ -594,10 +604,10 @@ test("an unreachable saved server falls back to setup with a recovery message", 
 
 test("the native application menu can reopen setup without exposing setup IPC to the server", async () => {
   app = await launch({ RAKAZO_WEB_URL: serverUrl });
-  const appWindow = await app.firstWindow();
+  const appWindow = await firstWindow(app);
   await expect(appWindow.getByText(APP_MARKER)).toBeVisible();
 
-  const setupPromise = app.waitForEvent("window");
+  const setupPromise = nextWindow(app);
   await app.evaluate(({ Menu }) => {
     const item = Menu.getApplicationMenu()?.getMenuItemById("change-rakazo-server");
     if (!item) throw new Error("Change server menu item is missing");
@@ -608,9 +618,24 @@ test("the native application menu can reopen setup without exposing setup IPC to
   await expect(setup.getByRole("heading", { name: "Welcome to Rakazo" })).toBeVisible();
   await expect(setup.locator("#status")).toBeEmpty();
 
-  // Closing setup without saving restores the connected instance.
-  await setup.close();
+  // Cancel goes back to the connected instance without saving.
+  await setup.getByRole("button", { name: "Cancel" }).click();
   await expect(appWindow.getByText(APP_MARKER)).toBeVisible();
+});
+
+test("closing setup quits the app", async () => {
+  app = await launch({ RAKAZO_WEB_URL: serverUrl });
+  const appWindow = await firstWindow(app);
+  await expect(appWindow.getByText(APP_MARKER)).toBeVisible();
+
+  const setupPromise = nextWindow(app);
+  await app.evaluate(({ Menu }) => {
+    Menu.getApplicationMenu()?.getMenuItemById("change-rakazo-server")?.click();
+  });
+  const setup = await setupPromise;
+  const exited = new Promise<void>((resolve) => app.process().once("exit", () => resolve()));
+  await setup.close();
+  await exited;
 });
 
 test("servers on the same host but different ports do not share login cookies", async () => {
@@ -650,13 +675,13 @@ test("servers on the same host but different ports do not share login cookies", 
 
   try {
     app = await launch({ RAKAZO_WEB_URL: `http://127.0.0.1:${firstAddress.port}` });
-    const firstWindow = await app.firstWindow();
-    await expect(firstWindow.getByText("Cookie stored")).toBeVisible();
-    await expect.poll(() => firstWindow.evaluate(() => document.cookie)).toContain("fake-one");
+    const firstServer = await firstWindow(app);
+    await expect(firstServer.getByText("Cookie stored")).toBeVisible();
+    await expect.poll(() => firstServer.evaluate(() => document.cookie)).toContain("fake-one");
     await app.close();
 
     app = await launch({ RAKAZO_WEB_URL: `http://127.0.0.1:${secondAddress.port}` });
-    const secondWindow = await app.firstWindow();
+    const secondWindow = await firstWindow(app);
     await expect(secondWindow.getByText("Cookies: none")).toBeVisible();
   } finally {
     await app?.close();
@@ -674,7 +699,7 @@ test("servers on the same host but different ports do not share login cookies", 
 
 test("setup IPC is not reachable from the connected app window", async () => {
   app = await launch({ RAKAZO_WEB_URL: serverUrl });
-  const appWindow = await app.firstWindow();
+  const appWindow = await firstWindow(app);
   await expect(appWindow.getByText(APP_MARKER)).toBeVisible();
 
   const exposed = await appWindow.evaluate(() =>

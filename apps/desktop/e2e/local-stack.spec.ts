@@ -7,6 +7,7 @@ import path from "node:path";
 import type { ElectronApplication } from "@playwright/test";
 import { _electron as electron, expect, test } from "@playwright/test";
 import { prepareHostComputer } from "../src/host-computer.js";
+import { appWindows, firstWindow, nextWindow } from "./windows";
 
 const APP_MARKER = "Local Rakazo stack ready";
 const IMAGE_TAG = "v9.9.9";
@@ -158,7 +159,7 @@ async function readLog() {
 
 test("This computer installs and starts the stack, then opens the app", async () => {
   app = await launch("ok");
-  const setup = await app.firstWindow();
+  const setup = await firstWindow(app);
 
   await setup.getByRole("radio", { name: /This computer/ }).check();
   // The panel is empty until a start begins, so check the attribute rather than the box.
@@ -166,7 +167,7 @@ test("This computer installs and starts the stack, then opens the app", async ()
   await expect(setup.locator("#stack")).toBeHidden();
   await expect(setup.getByRole("button", { name: "Check connection" })).toBeHidden();
 
-  const appWindowPromise = app.waitForEvent("window");
+  const appWindowPromise = nextWindow(app);
   await setup.getByRole("button", { name: "Continue" }).click();
   await expect(setup.locator("#stack-phase")).toHaveText("Downloading Rakazo…");
   await expect(setup.getByRole("button", { name: "Continue" })).toBeDisabled();
@@ -214,7 +215,7 @@ test("This computer installs and starts the stack, then opens the app", async ()
 
 test("without Docker the app explains how to get it and offers to check again", async () => {
   app = await launch("missing");
-  const setup = await app.firstWindow();
+  const setup = await firstWindow(app);
   await setup.getByRole("radio", { name: /This computer/ }).check();
 
   await setup.getByRole("button", { name: "Continue" }).click();
@@ -239,7 +240,7 @@ test("without Docker the app explains how to get it and offers to check again", 
 
 test("switching to Existing instance while the stack starts keeps that choice", async () => {
   app = await launch("ok");
-  const setup = await app.firstWindow();
+  const setup = await firstWindow(app);
   await setup.getByRole("radio", { name: /This computer/ }).check();
 
   await setup.getByRole("button", { name: "Continue" }).click();
@@ -261,7 +262,7 @@ test("switching to Existing instance while the stack starts keeps that choice", 
 
   // Back on This computer, Continue starts (or re-follows) and opens the app.
   await setup.getByRole("radio", { name: /This computer/ }).check();
-  const appWindowPromise = app.waitForEvent("window");
+  const appWindowPromise = nextWindow(app);
   await setup.getByRole("button", { name: "Continue" }).click();
   await expect((await appWindowPromise).getByText(APP_MARKER)).toBeVisible();
   await expect.poll(savedSetup).toEqual({ mode: "new", serverUrl });
@@ -269,7 +270,7 @@ test("switching to Existing instance while the stack starts keeps that choice", 
 
 test("a stopped Docker daemon is reported and Check again asks Docker once more", async () => {
   app = await launch("daemon-down");
-  const setup = await app.firstWindow();
+  const setup = await firstWindow(app);
   await setup.getByRole("radio", { name: /This computer/ }).check();
 
   await setup.getByRole("button", { name: "Continue" }).click();
@@ -287,7 +288,7 @@ test("a stopped Docker daemon is reported and Check again asks Docker once more"
 
 test("unpublished images show the docker output and a Retry button", async () => {
   app = await launch("pull-fails");
-  const setup = await app.firstWindow();
+  const setup = await firstWindow(app);
   await setup.getByRole("radio", { name: /This computer/ }).check();
 
   await setup.getByRole("button", { name: "Continue" }).click();
@@ -318,12 +319,12 @@ test("a saved local stack that is down is started again without asking", async (
   );
 
   app = await launch("ok");
-  const setup = await app.firstWindow();
+  const setup = await firstWindow(app);
   await expect(setup.getByRole("radio", { name: /This computer/ })).toBeChecked();
   await expect(setup.locator("#stack")).toBeVisible();
   await expect(setup.locator("#status")).toBeEmpty();
 
-  const appWindow = await app.waitForEvent("window");
+  const appWindow = await nextWindow(app);
   await expect(appWindow.getByText(APP_MARKER)).toBeVisible();
   await expect.poll(savedSetup).toEqual({ mode: "new", serverUrl });
   expect((await readLog()).some((line) => line.includes(" pull"))).toBe(true);
@@ -349,7 +350,7 @@ test("a saved local stack is reused only after its private identity matches", as
   );
 
   app = await launch("ok");
-  const appWindow = await app.firstWindow();
+  const appWindow = await firstWindow(app);
   await expect(appWindow.getByText(APP_MARKER)).toBeVisible();
   expect(await readLog()).toEqual([]);
 });
@@ -387,7 +388,7 @@ test("a saved local target is the exact origin authenticated before reuse", asyn
     );
 
     app = await launch("ok");
-    const setup = await app.firstWindow();
+    const setup = await firstWindow(app);
     await expect(setup.getByRole("radio", { name: /This computer/ })).toBeChecked();
     await expect(setup.locator("#stack")).toBeVisible();
     await expect(setup.getByText("Unchecked listener")).toHaveCount(0);
@@ -405,9 +406,9 @@ test("an existing stack .env keeps its lines and gains only added secrets", asyn
   await writeFile(path.join(stackDir, ".env"), sentinel, { encoding: "utf8", mode: 0o600 });
 
   app = await launch("ok");
-  const setup = await app.firstWindow();
+  const setup = await firstWindow(app);
   await setup.getByRole("radio", { name: /This computer/ }).check();
-  const appWindowPromise = app.waitForEvent("window");
+  const appWindowPromise = nextWindow(app);
   await setup.getByRole("button", { name: "Continue" }).click();
   const appWindow = await appWindowPromise;
   await expect(appWindow.getByText(APP_MARKER)).toBeVisible();
@@ -419,7 +420,7 @@ test("an existing stack .env keeps its lines and gains only added secrets", asyn
 
 test("exhausted address pools explain recovery", async () => {
   app = await launch("pool-exhausted");
-  const setup = await app.firstWindow();
+  const setup = await firstWindow(app);
   await setup.getByRole("radio", { name: /This computer/ }).check();
   await setup.getByRole("button", { name: "Continue" }).click();
   await expect(setup.locator("#stack-phase")).toHaveText(
@@ -433,9 +434,9 @@ test("exhausted address pools explain recovery", async () => {
 
 test("a port conflict opens and saves the replacement managed origin", async () => {
   app = await launch("port-conflict");
-  const setup = await app.firstWindow();
+  const setup = await firstWindow(app);
   await setup.getByRole("radio", { name: /This computer/ }).check();
-  const appWindowPromise = app.waitForEvent("window");
+  const appWindowPromise = nextWindow(app);
   await setup.getByRole("button", { name: "Continue" }).click();
   const urlFile = path.join(userData, "stack", ".desktop-web-url");
   let replacementUrl = "";
@@ -465,7 +466,7 @@ test("a port conflict opens and saves the replacement managed origin", async () 
 
 test("repeated port conflicts stop with a retry action", async () => {
   app = await launch("ports-exhausted");
-  const setup = await app.firstWindow();
+  const setup = await firstWindow(app);
   await setup.getByRole("radio", { name: /This computer/ }).check();
   await setup.getByRole("button", { name: "Continue" }).click();
   await expect(setup.locator("#stack-phase")).toHaveText(
@@ -480,11 +481,11 @@ test("repeated port conflicts stop with a retry action", async () => {
 
 test("the desktop never exposes server administration or account impersonation", async () => {
   app = await launch("ok");
-  const setup = await app.firstWindow();
+  const setup = await firstWindow(app);
   await setup.getByRole("radio", { name: /This computer/ }).check();
-  const nextWindow = app.waitForEvent("window");
+  const mainOpened = nextWindow(app);
   await setup.getByRole("button", { name: "Continue", exact: true }).click();
-  const main = await nextWindow;
+  const main = await mainOpened;
   await expect(main.getByText(APP_MARKER)).toBeVisible();
   expect(await main.evaluate(() => "localSettings" in window.rakazoDesktop!)).toBe(false);
   expect(

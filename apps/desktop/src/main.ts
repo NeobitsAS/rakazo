@@ -9,6 +9,7 @@ import type {
   DesktopMenuCommand,
   DesktopReachability,
   DesktopSetup,
+  DesktopTunnel,
   RakazoDesktopDevice,
 } from "@rakazo/contracts";
 import { parseServerHeaders } from "@rakazo/contracts";
@@ -37,6 +38,8 @@ import type { ElectronAutoUpdater } from "./auto-update.js";
 import { DesktopUpdateController, LAUNCH_CHECK_DELAY_MS, updaterSupport } from "./auto-update.js";
 import { createBadgeHandler } from "./badge.js";
 import { openBrowserAuth } from "./browser-auth.js";
+import type { ConnectionStatus } from "./connection-pill.js";
+import { ConnectionPill } from "./connection-pill.js";
 import { DOCKER_INSTALL_LINKS, isDesktopSetupLink, runDocker } from "./docker-cli.js";
 import { prepareHostComputer } from "./host-computer.js";
 import {
@@ -71,7 +74,9 @@ import {
 } from "./renderer-assets.js";
 import { revealSecondInstanceWindow, secondInstanceWindow } from "./second-instance.js";
 import { installServerHeaders } from "./server-request-headers.js";
+import { ServerMonitor } from "./server-monitor.js";
 import { installSessionPermissions } from "./session-permissions.js";
+import { SettingsButton } from "./settings-button.js";
 import {
   DEFAULT_LOCAL_WEB_URL,
   desktopStackImageTag,
@@ -80,6 +85,7 @@ import {
   maySendDesktopStackToken,
   normalizeServerUrl,
   parseSetupInput,
+  parseTunnelInput,
   probeFailureMessage,
   RAKAZO_CLOUD_URL,
   readProbeJson,
@@ -93,6 +99,7 @@ import { clearSetup, readSetup, writeSetup } from "./setup-store.js";
 import { createSystemSpeech } from "./system-speech.js";
 import type { UserDeviceAccess } from "./user-device.js";
 import { createUserDeviceAccess, deviceName } from "./user-device.js";
+import { type TunnelPhase, type TunnelState, TunnelSupervisor } from "./tunnel.js";
 import { oauthPopupSessionPreferences, shouldOpenInAppPopup } from "./window-open.js";
 import {
   browserWindowOptions,
@@ -108,6 +115,8 @@ const PERFORMANCE_USER_DATA = process.env.RAKAZO_PERFORMANCE_USER_DATA;
 /** Test hook: where the app-managed stack answers. Mode `new` still requires loopback. */
 const LOCAL_WEB_URL = process.env.RAKAZO_LOCAL_WEB_URL?.trim() || DEFAULT_LOCAL_WEB_URL;
 const PROBE_TIMEOUT_MS = 8_000;
+const TUNNEL_SETUP_ERROR =
+  "A tunnel needs its local server address, such as http://127.0.0.1:18080, and a command.";
 const DESKTOP_STACK_PROBE_PATH = "/.well-known/rakazo-desktop-stack";
 const DESKTOP_STACK_TOKEN_HEADER = "x-rakazo-desktop-stack-token";
 let mainWindow: BrowserWindow | null = null;
@@ -123,6 +132,11 @@ let currentTargetUrl: string | null = null;
 let monitoringSession: Session | undefined;
 let monitoringTargetUrl: string | undefined;
 let stopMonitoringSession: (() => void) | undefined;
+/** The tunnel the open (or opening) server is reached through, if its setup has one. */
+let tunnel: { supervisor: TunnelSupervisor; serverUrl: string } | null = null;
+/** Watches the open (or opening) server when it is reached directly, without a tunnel. */
+let serverWatch: { monitor: ServerMonitor; serverUrl: string } | null = null;
+const connectionPills = new WeakMap<BrowserWindow, ConnectionPill>();
 let setupError: string | null = null;
 let setupSaveInProgress = false;
 const appOpener = createAppOpener(openAppOnce);
@@ -325,6 +339,7 @@ function createWindow(url: string, partition: string | null) {
   mainWindow = win;
   appWindowTargets.set(win, url);
   const targetOrigin = safeOrigin(url);
+  if (targetOrigin !== null) new SettingsButton(win, targetOrigin, () => showSetupWindow());
   // Intentional OAuth flows open the provider's authorize page via a named
   // window; give those and same-origin popups a normal frame. Everything else
   // opens in the system browser so a connected server cannot navigate us away.
@@ -603,8 +618,13 @@ function createSetupWindow() {
   setupWindow = win;
   win.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
   win.once("closed", () => {
-    if (setupWindow === win) setupWindow = null;
-    // Closing setup without saving restores a connected session (Change Server cancel).
+    // Continue and Cancel let go of the window before closing it; closing it any other way (its
+    // close button) quits the app.
+    if (setupWindow === win) {
+      setupWindow = null;
+      app.quit();
+      return;
+    }
     restoreAppWindowAfterSetup();
   });
   void win.loadFile(path.join(import.meta.dirname, "setup.html"));
@@ -632,6 +652,8 @@ function showSetupWindow(error: string | null = null) {
 function restoreAppWindowAfterSetup() {
   if (quitting) return;
   if (setupWindow !== null && !setupWindow.isDestroyed()) return;
+  // A connection check may have replaced the tunnel of the server still in use.
+  void connectServer(currentSetup);
   if (mainWindow === null || mainWindow.isDestroyed() || currentTargetUrl === null) return;
   clearTimeout(warmWindowTimer);
   mainWindow.show();
@@ -732,6 +754,24 @@ function installApplicationMenu() {
     accelerator: "CmdOrCtrl+Shift+K",
     click: () => showSetupWindow(),
   };
+  const tunnelItems: Electron.MenuItemConstructorOptions[] =
+    tunnel === null
+      ? []
+      : [
+          { type: "separator" },
+          {
+            id: "tunnel-status",
+            label: TUNNEL_MENU_LABELS[tunnel.supervisor.state().phase],
+            enabled: false,
+          },
+          {
+            id: "reconnect-tunnel",
+            label: "Reconnect Tunnel",
+            click: () => {
+              void reconnect();
+            },
+          },
+        ];
   const stopStack: Electron.MenuItemConstructorOptions = {
     id: "stop-local-stack",
     label: "Stop Local Stack",
@@ -824,6 +864,7 @@ function installApplicationMenu() {
               revokeComputerAccess,
               changeServer,
               stopStack,
+              ...tunnelItems,
               { type: "separator" },
               { role: "hide" },
               { role: "hideOthers" },
@@ -859,6 +900,7 @@ function installApplicationMenu() {
               revokeComputerAccess,
               changeServer,
               stopStack,
+              ...tunnelItems,
               { type: "separator" },
               checkForUpdates,
               { type: "separator" },
@@ -871,6 +913,127 @@ function installApplicationMenu() {
           { role: "windowMenu" },
         ];
   Menu.setApplicationMenu(Menu.buildFromTemplate(template));
+}
+
+const TUNNEL_MENU_LABELS: Record<TunnelPhase, string> = {
+  starting: "Tunnel: Starting…",
+  "signing-in": "Tunnel: Signing In…",
+  connected: "Tunnel: Connected",
+  failed: "Tunnel: Disconnected",
+  stopped: "Tunnel: Off",
+};
+
+function sameTunnel(a: DesktopTunnel, b: DesktopTunnel) {
+  return a.command === b.command && a.signInCommand === b.signInCommand;
+}
+
+/**
+ * Brings up what keeps a setup's server reachable and watched: its tunnel, or a health monitor
+ * when it is reached directly. Reuses what already serves it and stops what it does not need.
+ * Resolves with null once the server answers through a tunnel, or with why it could not.
+ */
+async function connectServer(setup: DesktopSetup | null): Promise<string | null> {
+  const wanted = setup?.mode === "existing" ? setup.tunnel : undefined;
+  if (
+    wanted !== undefined &&
+    tunnel !== null &&
+    tunnel.serverUrl === setup?.serverUrl &&
+    sameTunnel(tunnel.supervisor.tunnel, wanted) &&
+    tunnel.supervisor.state().phase === "connected"
+  ) {
+    return null;
+  }
+  if (wanted === undefined && serverWatch !== null && serverWatch.serverUrl === setup?.serverUrl) {
+    return null;
+  }
+  tunnel?.supervisor.stop();
+  tunnel = null;
+  serverWatch?.monitor.stop();
+  serverWatch = null;
+  showConnectionStatus(null, "hidden");
+  if (setup === null) {
+    installApplicationMenu();
+    return null;
+  }
+  const serverUrl = setup.serverUrl;
+  if (wanted === undefined) {
+    watchServer(serverUrl, setup.headers);
+    installApplicationMenu();
+    return null;
+  }
+  const supervisor: TunnelSupervisor = new TunnelSupervisor({
+    tunnel: wanted,
+    healthy: async () => (await probeServer(serverUrl, undefined, setup.headers)).ok,
+    onState: (state) => onTunnelState(supervisor, state),
+  });
+  tunnel = { supervisor, serverUrl };
+  const error = await supervisor.connect();
+  return error === null ? null : `The tunnel did not connect. ${error}`;
+}
+
+function watchServer(serverUrl: string, headers: Record<string, string> | undefined) {
+  const monitor: ServerMonitor = new ServerMonitor({
+    healthy: async () => (await probeServer(serverUrl, undefined, headers)).ok,
+    onDropped: () => {
+      if (serverWatch?.monitor !== monitor) return;
+      showConnectionStatus(serverUrl, "lost");
+    },
+  });
+  serverWatch = { monitor, serverUrl };
+  monitor.start();
+}
+
+const TUNNEL_CONNECTION_STATUS: Record<TunnelPhase, ConnectionStatus> = {
+  starting: "reconnecting",
+  "signing-in": "reconnecting",
+  connected: "connected",
+  failed: "lost",
+  stopped: "hidden",
+};
+
+function onTunnelState(supervisor: TunnelSupervisor, state: TunnelState) {
+  // A replaced tunnel can still report while it winds down.
+  if (tunnel?.supervisor !== supervisor) return;
+  installApplicationMenu();
+  showConnectionStatus(tunnel.serverUrl, TUNNEL_CONNECTION_STATUS[state.phase]);
+}
+
+/**
+ * Shows a connection change in the pill over the app window, when the change is about the
+ * server that window shows (setup can be trying another one). A null server hides any pill.
+ */
+function showConnectionStatus(serverUrl: string | null, status: ConnectionStatus) {
+  const win = mainWindow;
+  if (win === null || win.isDestroyed()) return;
+  if (serverUrl !== null && serverUrl !== currentTargetUrl) return;
+  let pill = connectionPills.get(win);
+  if (pill === undefined) {
+    if (status === "hidden") return;
+    pill = new ConnectionPill(win, () => void reconnect());
+    connectionPills.set(win, pill);
+  }
+  pill.show(status);
+}
+
+/**
+ * Tries the open server again, once: the pill's refresh button and the Reconnect menu item.
+ * Nothing reconnects in the background; a failure leaves the pill on "Connection lost".
+ */
+async function reconnect() {
+  if (tunnel !== null) {
+    // A fresh tunnel, with the sign-in command if the first attempt fails.
+    const setup = currentSetup;
+    tunnel.supervisor.stop();
+    tunnel = null;
+    await connectServer(setup);
+    return;
+  }
+  if (serverWatch === null) return;
+  const { monitor, serverUrl } = serverWatch;
+  showConnectionStatus(serverUrl, "reconnecting");
+  const healthy = await monitor.check();
+  if (serverWatch?.monitor !== monitor) return;
+  showConnectionStatus(serverUrl, healthy ? "connected" : "lost");
 }
 
 /** Setup IPC must only answer the setup window, never a connected Rakazo server. */
@@ -1182,6 +1345,11 @@ function watchRendererUntilCommitted(win: BrowserWindow) {
       if (!win.isDestroyed()) win.webContents.removeListener("render-process-gone", onGone);
     },
   };
+}
+
+/** Cancel needs an app window to go back to; without one it would leave the app windowless. */
+function canCancelSetup() {
+  return mainWindow !== null && !mainWindow.isDestroyed() && currentTargetUrl !== null;
 }
 
 function destroySetupWindow() {
@@ -1549,16 +1717,26 @@ app.whenReady().then(async () => {
       cloudUrl: RAKAZO_CLOUD_URL,
       saved: currentSetup,
       error: setupError ?? undefined,
+      canCancel: canCancelSetup(),
     };
   });
 
-  ipcMain.handle("desktop.setup.test", async (event, url: unknown, headers: unknown) => {
-    if (!fromSetupWindow(event)) return { ok: false, error: "Setup is not active." };
-    if (typeof url !== "string") return { ok: false, error: "Enter a server address." };
-    const parsedHeaders = parseServerHeaders(headers ?? {});
-    if (parsedHeaders === null) return { ok: false, error: "Invalid custom headers" };
-    return probeServer(url, undefined, parsedHeaders);
-  });
+  ipcMain.handle(
+    "desktop.setup.test",
+    async (event, url: unknown, headers: unknown, tunnelInput: unknown) => {
+      if (!fromSetupWindow(event)) return { ok: false, error: "Setup is not active." };
+      if (typeof url !== "string") return { ok: false, error: "Enter a server address." };
+      const parsedHeaders = parseServerHeaders(headers ?? {});
+      if (parsedHeaders === null) return { ok: false, error: "Invalid custom headers" };
+      if (parseTunnelInput(tunnelInput) !== undefined) {
+        const setup = parseSetupInput({ mode: "existing", serverUrl: url, tunnel: tunnelInput });
+        if (setup === null) return { ok: false, error: TUNNEL_SETUP_ERROR };
+        const error = await connectServer(setup);
+        if (error !== null) return { ok: false, url: setup.serverUrl, error };
+      }
+      return probeServer(url, undefined, parsedHeaders);
+    },
+  );
 
   ipcMain.handle("desktop.setup.save", async (event, payload: unknown) => {
     if (!fromSetupWindow(event)) return { ok: false, error: "Setup is not active." };
@@ -1568,13 +1746,19 @@ app.whenReady().then(async () => {
     setupSaveInProgress = true;
     const previousSetup = currentSetup;
     const previousUrl = currentTargetUrl;
+    let saved = false;
     try {
       const setup = parseSetupInput(payload);
       if (setup === null) {
         return {
           ok: false,
           error:
-            "Enter a valid server address. Public servers require HTTPS; a new local instance must use localhost.",
+            typeof payload === "object" &&
+            payload !== null &&
+            "tunnel" in payload &&
+            parseTunnelInput(payload.tunnel) !== undefined
+              ? TUNNEL_SETUP_ERROR
+              : "Enter a valid server address. Public servers require HTTPS; a new local instance must use localhost.",
         };
       }
 
@@ -1590,6 +1774,9 @@ app.whenReady().then(async () => {
         }
         openSetup = { mode: "new", serverUrl: managedUrl };
       }
+
+      const tunnelError = await connectServer(openSetup);
+      if (tunnelError !== null) return { ok: false, error: tunnelError };
 
       const reachability = await probeServer(openSetup.serverUrl, undefined, openSetup.headers);
       if (!reachability.ok) return { ok: false, error: reachability.error };
@@ -1630,6 +1817,7 @@ app.whenReady().then(async () => {
           const message = await recoverFromCrashedSave(userDataDir, previousSetup, previousUrl);
           return { ok: false, error: message };
         }
+        saved = true;
         return { ok: true };
       } catch {
         const outcome = abandonPendingAppSwitch(previousSetup, previousUrl);
@@ -1644,12 +1832,14 @@ app.whenReady().then(async () => {
         rendererWatch?.dispose();
       }
     } finally {
+      // A failed switch keeps the previous server, so it gets its tunnel back.
+      if (!saved) void connectServer(currentSetup);
       setupSaveInProgress = false;
     }
   });
 
-  ipcMain.handle("desktop.setup.quit", (event) => {
-    if (fromSetupWindow(event)) app.quit();
+  ipcMain.handle("desktop.setup.cancel", (event) => {
+    if (fromSetupWindow(event) && canCancelSetup() && !setupSaveInProgress) destroySetupWindow();
   });
   ipcMain.handle("desktop.setup.openLink", async (event, link: unknown) => {
     if (!fromSetupWindow(event) || !isDesktopSetupLink(link)) return;
@@ -1697,6 +1887,7 @@ app.whenReady().then(async () => {
         if (await appOpener.open(managedUrl)) {
           commitPendingAppSwitch();
           destroySetupWindow();
+          void connectServer(currentSetup);
         }
       } else {
         // Missing, stale, foreign, or owned by another process: reconcile the
@@ -1705,7 +1896,11 @@ app.whenReady().then(async () => {
         showSetupWindow();
       }
     } else {
-      const reachability = await probeServer(target.url, undefined, currentSetup?.headers);
+      const tunnelError = await connectServer(currentSetup);
+      const reachability =
+        tunnelError === null
+          ? await probeServer(target.url, undefined, currentSetup?.headers)
+          : { ok: false, error: tunnelError };
       if (reachability.ok) {
         if (await appOpener.open(target.url)) {
           commitPendingAppSwitch();
@@ -1719,6 +1914,7 @@ app.whenReady().then(async () => {
     if (await appOpener.open(target.url)) {
       commitPendingAppSwitch();
       destroySetupWindow();
+      void connectServer({ mode: "existing", serverUrl: target.url });
     }
   }
 });
@@ -1739,4 +1935,6 @@ app.on("before-quit", () => {
   userDevices?.close();
   void hostScreen?.close();
   localStack?.abort();
+  tunnel?.supervisor.stop();
+  serverWatch?.monitor.stop();
 });
