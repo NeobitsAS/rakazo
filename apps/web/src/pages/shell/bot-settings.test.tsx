@@ -486,12 +486,12 @@ it("uses section headings without repeating notification or model row labels", a
   expect(model?.className).toBe("sr-only");
 });
 
-it("treats cross-space communication as on unless turned off", async () => {
+it("keeps cross-space communication off until explicitly enabled", async () => {
   const onSave = vi.fn<(patch: SavePatch) => Promise<void>>(async () => undefined);
   await renderSettings(onSave);
   const toggle = container.querySelector<HTMLButtonElement>('[id$="-cross-space"]');
-  expect(toggle?.getAttribute("aria-checked")).toBe("true");
+  expect(toggle?.getAttribute("aria-checked")).toBe("false");
   await act(async () => toggle?.click());
   await flush();
-  expect(onSave).toHaveBeenCalledWith({ crossSpaceCommunication: false });
+  expect(onSave).toHaveBeenCalledWith({ crossSpaceCommunication: true });
 });
