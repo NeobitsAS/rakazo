@@ -98,6 +98,7 @@ export function MenuPicker({
   divider = false,
   plain = false,
   showLabel = true,
+  disabled = false,
 }: {
   label: string;
   choices: readonly MenuPickerChoice[];
@@ -107,15 +108,21 @@ export function MenuPicker({
   divider?: boolean;
   plain?: boolean;
   showLabel?: boolean;
+  disabled?: boolean;
 }) {
   const styles = useThemedStyles(createStyles);
   const tokens = useMobileTokens();
-  const rowStyle = [styles.row, plain && { paddingHorizontal: 0, minHeight: 44 }];
+  const rowStyle = [
+    styles.row,
+    plain && { paddingHorizontal: 0, minHeight: 44 },
+    disabled && styles.dimmed,
+  ];
   const current = choices.find((choice) => choice.key === value)?.label ?? choices[0]?.label ?? "";
   const row = {
     accessibilityLabel: label,
     accessibilityRole: "button",
     accessibilityValue: { text: current },
+    accessibilityState: { disabled },
     accessible: true,
   } as const;
   const content = (
@@ -151,6 +158,7 @@ export function MenuPicker({
     return (
       <Pressable
         {...row}
+        disabled={disabled}
         onPress={onPress}
         style={({ pressed }) => [rowStyle, divider && styles.divider, pressed && styles.pressed]}
       >
@@ -159,7 +167,13 @@ export function MenuPicker({
     );
   }
   const menu = (
-    <MenuPickerMenu choices={choices} label={label} onChange={onChange} value={value}>
+    <MenuPickerMenu
+      choices={choices}
+      disabled={disabled}
+      label={label}
+      onChange={onChange}
+      value={value}
+    >
       <View {...row} style={rowStyle}>
         {content}
       </View>
@@ -194,5 +208,6 @@ function createStyles() {
     pressed: {
       backgroundColor: native.fillPressed,
     },
+    dimmed: { opacity: 0.45 },
   });
 }
