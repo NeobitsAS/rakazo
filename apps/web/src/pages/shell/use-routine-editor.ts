@@ -29,12 +29,14 @@ export function useRoutineEditor({
   refreshThread,
   setPanel,
   messageProviders,
+  linkedProvider,
 }: {
   rpc: ReturnType<typeof createSpaceRpc>;
   active: Bot | undefined;
   activeBotId: RefObject<string | undefined>;
   timezone: string | null | undefined;
   messageProviders: string[];
+  linkedProvider: string | null;
   setBots: Dispatch<SetStateAction<Bot[]>>;
   refreshThread: (botId: string) => Promise<ThreadSnapshot>;
   setPanel: (panel: Panel) => void;
@@ -150,6 +152,7 @@ export function useRoutineEditor({
             ? `${window.location.origin}/api/v1/bots/${active.id}/github`
             : `/api/v1/bots/${active.id}/github`,
         messageProviders,
+        linkedProvider,
         saving: savingRoutine,
         running: runningRoutine,
         error: routineError,
@@ -270,6 +273,7 @@ export function useRoutineEditor({
                 githubEnabled: routineDraft.githubEnabled,
                 messageProvider: routineDraft.messageProvider,
                 emailSenders: routineDraft.emailSenders,
+                deliverToMessaging: routineDraft.deliverToMessaging,
                 watch,
                 ...(routineModel.modelProvider !== targetRoutine.modelProvider ||
                 routineModel.modelId !== targetRoutine.modelId ||
@@ -291,6 +295,7 @@ export function useRoutineEditor({
                 githubEnabled: routineDraft.githubEnabled,
                 messageProvider: routineDraft.messageProvider,
                 emailSenders: routineDraft.emailSenders,
+                deliverToMessaging: routineDraft.deliverToMessaging,
                 watch,
                 ...routineModel,
               });

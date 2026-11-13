@@ -199,6 +199,8 @@ export interface SendUserMessageInput {
     modelId: string;
     thinkingLevel: string | null;
   };
+  /** Mirror the reply to the bot's linked messaging DM (an inbound routine opted in). */
+  deliverToMessaging?: boolean;
   /**
    * Runs in the send's transaction once its message and run exist. Returning false rolls the
    * send back with SendClaimLostError, so a row the caller owns decides between two sends that
@@ -549,6 +551,7 @@ export async function sendUserMessage(
                   modelPinned: true,
                 }
               : {}),
+            ...(input.deliverToMessaging ? { deliverToMessaging: true } : {}),
           },
         });
         if (input.linkMessageToRun) {
@@ -566,6 +569,7 @@ export async function sendUserMessage(
             ...(input.trigger === "messaging" || input.trigger === "webhook"
               ? { originTrigger: input.trigger }
               : {}),
+            ...(held && input.deliverToMessaging ? { deliverToMessaging: true } : {}),
             ...(input.modelPin
               ? {
                   modelProvider: input.modelPin.modelProvider,

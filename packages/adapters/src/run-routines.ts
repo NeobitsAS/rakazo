@@ -286,6 +286,7 @@ export async function wakeRoutine(deps: ExecutorDeps, routineId: string, schedul
         status: "queued",
         trigger: "routine",
         routineId: routine.id,
+        deliverToMessaging: routine.deliverToMessaging,
         clientNonce: timerNonce,
         ...routineRunModelPin(current),
       },
@@ -483,6 +484,7 @@ export async function retryRoutineRun(deps: ExecutorDeps, runId: string) {
           trigger: "routine",
           routineId: failed.routineId,
           retryOfRunId: failed.id,
+          deliverToMessaging: failed.deliverToMessaging,
           ...(failed.modelPinned
             ? {
                 modelProvider: failed.modelProvider,

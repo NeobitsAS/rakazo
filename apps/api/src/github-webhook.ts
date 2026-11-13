@@ -211,6 +211,7 @@ export function mountGithubWebhookRoute(
         modelProvider: true,
         modelId: true,
         thinkingLevel: true,
+        deliverToMessaging: true,
       },
       orderBy: { updatedAt: "desc" },
       take: 5,

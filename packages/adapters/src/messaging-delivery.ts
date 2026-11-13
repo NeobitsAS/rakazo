@@ -321,6 +321,11 @@ export class MessagingDelivery {
           const delegated = await this.recordDelegatedReply(run);
           if (delegated) lanes.push(delegated);
         }
+      } else if (run.deliverToMessaging && !options.progress && run.status === "completed") {
+        // A routine opted in, whether it ran on schedule or from a webhook. Only once the run is
+        // done: one paused on an ask or approval must not send its partial output.
+        const direct = await this.recordDirectRun(run, false);
+        if (direct) lanes.push(direct);
       }
       if (!options.progress) {
         if (run.trigger === "messaging") {
@@ -329,8 +334,12 @@ export class MessagingDelivery {
             data: { messagingMirroredAt: new Date() },
           });
         }
-        // Recorded: the rows carry their own backups now. Only chat runs get a reply job.
-        if (terminal && (run.trigger === "messaging" || run.trigger === "bot_message"))
+        // Recorded: the rows carry their own backups now. Only chat runs, and routine runs that
+        // send to the chat, get a reply job.
+        if (
+          terminal &&
+          (run.trigger === "messaging" || run.trigger === "bot_message" || run.deliverToMessaging)
+        )
           await this.deps.jobs.cancel(messagingReplyJobKey(runId));
       }
       await this.send(lanes);

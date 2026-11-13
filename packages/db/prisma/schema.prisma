@@ -1277,6 +1277,8 @@ model Run {
   routine              Routine?          @relation(fields: [routineId], references: [id], onDelete: SetNull)
   // The failed routine run this run retries. Unique, so a run is retried at most once.
   retryOfRunId         String?           @unique
+  /// Mirror this run's reply to the bot's linked messaging DM; set from its routines when created.
+  deliverToMessaging   Boolean           @default(false)
   // Durable retry schedule; null means runnable immediately when queued.
   wakeAt               DateTime?
   // Server-side first visible output, preserved across attempts and resumes.
@@ -1328,6 +1330,8 @@ model SteeringMessage {
   modelProvider String?
   modelId       String?
   thinkingLevel String?
+  /// Carried to the continuation run when the delivery had to wait.
+  deliverToMessaging Boolean @default(false)
   claimedAt DateTime?
   createdAt DateTime @default(now())
 
@@ -1527,6 +1531,8 @@ model Routine {
   messageProvider String?
   /// Email trigger: whose authenticated mail starts it ("owner" or "domain"); null without one.
   emailSenders   String?
+  /// Mirror each completed run's reply to the bot's linked messaging DM.
+  deliverToMessaging Boolean @default(false)
   modelProvider  String?
   modelId        String?
   thinkingLevel  String?

@@ -54,6 +54,7 @@ export function routineRowData(actor: Actor, input: CreateRoutineInput, nextRunA
     githubEnabled: input.githubEnabled,
     messageProvider: input.messageProvider,
     emailSenders: input.emailSenders,
+    deliverToMessaging: input.deliverToMessaging,
     modelProvider: input.modelProvider,
     modelId: input.modelId,
     thinkingLevel: input.thinkingLevel,
@@ -91,6 +92,7 @@ export function mapRoutine(row: {
   githubEnabled: boolean;
   messageProvider: string | null;
   emailSenders: string | null;
+  deliverToMessaging: boolean;
   modelProvider: string | null;
   modelId: string | null;
   thinkingLevel: string | null;
@@ -113,6 +115,7 @@ export function mapRoutine(row: {
     githubEnabled: row.githubEnabled,
     messageProvider: row.messageProvider,
     emailSenders: RoutineEmailSendersSchema.safeParse(row.emailSenders).data ?? null,
+    deliverToMessaging: row.deliverToMessaging,
     modelProvider: row.modelProvider ? canonicalPiProviderId(row.modelProvider) : null,
     modelId: row.modelId ?? null,
     thinkingLevel: (row.thinkingLevel as Routine["thinkingLevel"]) ?? null,
@@ -216,6 +219,7 @@ export async function createRoutineTestRun(
       status: "queued",
       trigger: "routine",
       routineId: routine.id,
+      deliverToMessaging: routine.deliverToMessaging,
       ...routineRunModelPin(currentModel),
       clientNonce: nonce,
     },

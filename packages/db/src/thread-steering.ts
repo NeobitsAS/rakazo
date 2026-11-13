@@ -277,6 +277,7 @@ export async function createPendingSteeringRun(
             : "messaging",
       sourceMessageId: source.message.id,
       ...(modelPin ?? {}),
+      ...(batch.some((item) => item.deliverToMessaging) ? { deliverToMessaging: true } : {}),
     },
   });
   await tx.steeringMessage.updateMany({

@@ -7942,6 +7942,7 @@ describe("routines.update", () => {
     webhookEnabled: false,
     githubEnabled: false,
     messageProvider: null,
+    deliverToMessaging: false,
     modelProvider: null,
     modelId: null,
     thinkingLevel: null,

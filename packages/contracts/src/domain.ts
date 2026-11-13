@@ -580,6 +580,8 @@ export const RoutineSchema = z.object({
     .nullable(),
   /** Null unless mail to the bot's address starts this routine. Absent on older servers. */
   emailSenders: RoutineEmailSendersSchema.nullable().default(null),
+  /** Also send each completed run's reply to the bot's linked chat. Absent on older servers. */
+  deliverToMessaging: z.boolean().default(false),
   /** Null runs this routine on its bot's model. */
   modelProvider: z.string().nullable(),
   modelId: z.string().nullable(),
@@ -616,6 +618,7 @@ export const CreateRoutineInput = z
       .nullable()
       .default(null),
     emailSenders: RoutineEmailSendersSchema.nullable().default(null),
+    deliverToMessaging: z.boolean().default(false),
     modelProvider: z.string().trim().min(1).max(80).nullable().default(null),
     modelId: z.string().trim().min(1).max(200).nullable().default(null),
     thinkingLevel: ThinkingLevelSchema.nullable().default(null),

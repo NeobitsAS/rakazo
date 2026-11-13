@@ -141,6 +141,7 @@ function createWorld() {
       status: string;
       sourceMessageId: string | null;
       messagingMirroredAt: Date | null;
+      deliverToMessaging?: boolean;
       /** The previous release's marker for a delegated reply it posted itself. */
       teamChatMirroredAt?: Date | null;
     }>,
@@ -612,6 +613,7 @@ function addRun(
     source?: unknown[];
     replyTo?: string;
     replies?: Reply[];
+    deliverToMessaging?: boolean;
   } = {},
 ) {
   const id = input.id ?? "run-1";
@@ -636,6 +638,7 @@ function addRun(
     status: input.status ?? "completed",
     sourceMessageId: `src-${id}`,
     messagingMirroredAt: null,
+    deliverToMessaging: input.deliverToMessaging ?? false,
   });
   for (const reply of input.replies ?? []) addReply(world, id, reply);
 }
@@ -948,6 +951,53 @@ describe("deliverRun to a 1:1 chat", () => {
     await unlinked.delivery.deliverRun("run-1");
     expect(unlinked.world.outbound).toEqual([]);
     expect(unlinked.sendToThread).not.toHaveBeenCalled();
+  });
+
+  it.each(["routine", "webhook"])(
+    "sends a completed %s run's reply to the linked chat when its routine opted in",
+    async (trigger) => {
+      const t = setup();
+      addRun(t.world, {
+        trigger,
+        deliverToMessaging: true,
+        replies: [text("m-1", "Morning brief")],
+      });
+      t.jobs.scheduled.set(messagingReplyJobKey("run-1"), messagingReplyJob("run-1"));
+      await t.delivery.deliverRun("run-1");
+
+      expect(requests(t)).toEqual([
+        { threadId: "sendblue:dm-1", body: "Morning brief", idempotencyKey: "msg:m-1" },
+      ]);
+      expect([...t.jobs.scheduled.keys()]).toEqual([]);
+    },
+  );
+
+  it("keeps a routine run in the app unless it opted in and has completed", async () => {
+    const optedOut = setup();
+    addRun(optedOut.world, { trigger: "routine", replies: [text("m-1", "Brief")] });
+    await optedOut.delivery.deliverRun("run-1");
+    expect(optedOut.world.outbound).toEqual([]);
+
+    const paused = setup();
+    addRun(paused.world, {
+      trigger: "routine",
+      status: "waiting_input",
+      deliverToMessaging: true,
+      replies: [text("m-1", "Partial")],
+    });
+    await paused.delivery.deliverRun("run-1");
+    await paused.delivery.deliverRun("run-1", { progress: true });
+    expect(paused.world.outbound).toEqual([]);
+
+    const otherMember = setup();
+    addRun(otherMember.world, {
+      trigger: "routine",
+      userId: "user-2",
+      deliverToMessaging: true,
+      replies: [text("m-1", "For user 2")],
+    });
+    await otherMember.delivery.deliverRun("run-1");
+    expect(otherMember.world.outbound).toEqual([]);
   });
 
   it("sends a delegated run's reply to its owner's chat", async () => {

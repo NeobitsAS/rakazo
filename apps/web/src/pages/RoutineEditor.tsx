@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft, X } from "lucide-react";
 import { useId } from "react";
 import { useIdentityConfirmation } from "../components/ConfirmIdentityDialog";
+import { providerLabel } from "../lib/messaging";
 import { useSpaceQueries } from "../lib/query";
 import type { RoutineDraftState } from "../lib/routine-draft";
 import { routineNeedsOneShotArm } from "../lib/routine-draft";
@@ -29,6 +30,7 @@ export function RoutineEditor({
   webhook,
   githubPath,
   messageProviders,
+  linkedProvider,
   saving,
   running,
   error,
@@ -49,6 +51,8 @@ export function RoutineEditor({
   webhook: { path: string; secret: string | null; configured: boolean };
   githubPath: string;
   messageProviders: string[];
+  /** Messaging provider of this bot's linked chat, if any. */
+  linkedProvider: string | null;
   saving: boolean;
   running: boolean;
   error: string | null;
@@ -63,6 +67,7 @@ export function RoutineEditor({
 }) {
   const { t } = useLingui();
   const fieldId = useId();
+  const linkedChat = linkedProvider ? providerLabel(linkedProvider) : null;
   const { withIdentityConfirmation, identityDialog } = useIdentityConfirmation();
   // Closing the confirmation is a choice, and other failures show as the editor's error.
   const revealWebhook = () => void withIdentityConfirmation(onRevealWebhook).catch(() => undefined);
@@ -277,6 +282,20 @@ export function RoutineEditor({
           onEnsureWebhook={onEnsureWebhook}
         />
       </div>
+
+      {linkedChat ? (
+        <label
+          htmlFor={`${fieldId}-deliver`}
+          className="mt-5 flex items-center gap-2.5 text-body text-foreground/75"
+        >
+          <Switch
+            id={`${fieldId}-deliver`}
+            checked={draft.deliverToMessaging}
+            onCheckedChange={(deliverToMessaging) => onChange({ ...draft, deliverToMessaging })}
+          />
+          {t`Send to ${linkedChat}`}
+        </label>
+      ) : null}
 
       <div className="mt-5">
         <Button disabled={saving || running || !hasTriggers} onClick={onSave}>

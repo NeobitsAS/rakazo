@@ -272,6 +272,7 @@ export function routinesRoutes(ctx: RouterContext) {
               githubEnabled: input.githubEnabled,
               messageProvider: input.messageProvider,
               emailSenders: input.emailSenders,
+              deliverToMessaging: input.deliverToMessaging,
               ...(touchesModel ? { modelProvider, modelId, thinkingLevel } : {}),
               // A changed watch starts from a fresh baseline, and so does one that now reads
               // a different person's accounts.

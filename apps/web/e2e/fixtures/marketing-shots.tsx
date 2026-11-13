@@ -169,6 +169,7 @@ function RoutineShot() {
     githubEnabled: false,
     messageProvider: null,
     emailSenders: null,
+    deliverToMessaging: false,
     active: true,
     runAtLocal: "",
     modelKey: "",
@@ -186,6 +187,7 @@ function RoutineShot() {
         webhook={{ path: "/hooks/demo", secret: null, configured: false }}
         githubPath=""
         messageProviders={[]}
+        linkedProvider={null}
         saving={false}
         running={false}
         error={null}
