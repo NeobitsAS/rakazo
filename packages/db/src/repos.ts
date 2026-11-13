@@ -153,7 +153,7 @@ function mapBot(
     teamChatAmbientEnabled: bot.teamChatAmbientEnabled ?? false,
     teamChatRules: bot.teamChatRules ?? "",
     crossSpaceCommunication: bot.crossSpaceCommunication ?? false,
-    dailyCheckIns: bot.dailyCheckIns ?? true,
+    dailyCheckIns: bot.dailyCheckIns ?? false,
     fleetManagement: bot.fleetManagement ?? false,
     replyMode: bot.replyMode === "messages" ? "messages" : "chat",
     // Stored lists may name a tool that no longer exists; settings resend what they read.

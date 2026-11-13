@@ -83,7 +83,7 @@ export default function BotSettingsScreen() {
   const [thinkingLevel, setThinkingLevel] = useState("");
   const [notifyOnFinish, setNotifyOnFinish] = useState(true);
   const [autoSpeak, setAutoSpeak] = useState(false);
-  const [dailyCheckIns, setDailyCheckIns] = useState(true);
+  const [dailyCheckIns, setDailyCheckIns] = useState(false);
   const [crossSpaceCommunication, setCrossSpaceCommunication] = useState(false);
   const [fleetManagement, setFleetManagement] = useState(false);
   const [replyMode, setReplyMode] = useState<ReplyMode>("chat");
@@ -210,8 +210,8 @@ export default function BotSettingsScreen() {
         setThinkingLevel(next.thinkingLevel ?? "");
         setAutoSpeak(next.autoSpeak);
         setNotifyOnFinish(next.notifyOnFinish ?? true);
-        setDailyCheckIns(next.dailyCheckIns ?? true);
-        dailyCheckInsSave.reset(next.dailyCheckIns ?? true);
+        setDailyCheckIns(next.dailyCheckIns ?? false);
+        dailyCheckInsSave.reset(next.dailyCheckIns ?? false);
         setCrossSpaceCommunication(next.crossSpaceCommunication ?? false);
         crossSpaceSave.reset(next.crossSpaceCommunication ?? false);
         setFleetManagement(next.fleetManagement);

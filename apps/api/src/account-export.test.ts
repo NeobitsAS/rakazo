@@ -152,7 +152,7 @@ describe("account export archive", () => {
       dailyCheckIns: false,
     });
     const { dailyCheckIns: _dailyCheckIns, ...olderRecord } = botRecord("bot-1");
-    expect(AccountExportRecordSchema.parse(olderRecord)).toMatchObject({ dailyCheckIns: true });
+    expect(AccountExportRecordSchema.parse(olderRecord)).toMatchObject({ dailyCheckIns: false });
   });
 
   it("streams manifest, then each space's records, artifacts and homes", async () => {

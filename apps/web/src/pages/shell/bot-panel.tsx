@@ -150,8 +150,8 @@ export function BotSettings({
     () => setCrossSpaceCommunication(bot.crossSpaceCommunication ?? false),
     [bot.crossSpaceCommunication],
   );
-  const [dailyCheckIns, setDailyCheckIns] = useState(bot.dailyCheckIns ?? true);
-  useEffect(() => setDailyCheckIns(bot.dailyCheckIns ?? true), [bot.dailyCheckIns]);
+  const [dailyCheckIns, setDailyCheckIns] = useState(bot.dailyCheckIns ?? false);
+  useEffect(() => setDailyCheckIns(bot.dailyCheckIns ?? false), [bot.dailyCheckIns]);
   const [fleetManagement, setFleetManagement] = useState(bot.fleetManagement);
   useEffect(() => setFleetManagement(bot.fleetManagement), [bot.fleetManagement]);
   const [replyMode, setReplyMode] = useState(bot.replyMode);

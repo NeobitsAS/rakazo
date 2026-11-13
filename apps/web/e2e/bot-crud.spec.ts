@@ -181,7 +181,7 @@ test("bot creation, editing, and deletion persist", async ({ page }, testInfo) =
     exact: true,
   });
   await dailyCheckIns.scrollIntoViewIfNeeded();
-  await expect(dailyCheckIns).toBeChecked();
+  await expect(dailyCheckIns).not.toBeChecked();
   await captureScreenshot(page, testInfo, "bot-settings-daily-check-ins");
   await captureScreenshot(page, testInfo, "bot-settings-sections-advanced");
   await rpc(page, "scratchpad/create", {

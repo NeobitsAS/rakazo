@@ -1010,7 +1010,7 @@ model Bot {
   teamChatAmbientEnabled Boolean @default(false)
   teamChatRules          String  @default("")
   crossSpaceCommunication Boolean @default(false)
-  dailyCheckIns Boolean @default(true)
+  dailyCheckIns Boolean @default(false)
   fleetManagement        Boolean @default(false)
   replyMode              String  @default("chat")
   routines          Routine[]

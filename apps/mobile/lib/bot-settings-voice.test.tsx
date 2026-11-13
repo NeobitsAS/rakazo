@@ -389,16 +389,16 @@ describe("bot settings device voice menu", () => {
   };
   const menu = () => container.querySelector('[data-menu="Device voice"]');
 
-  it("defaults daily check-ins on and saves an opt-out", async () => {
+  it("defaults daily check-ins off and saves an opt-in", async () => {
     await render();
     const toggle = container.querySelector<HTMLButtonElement>(
       '[aria-label="Daily check-ins on unfinished work"]',
     )!;
-    expect(toggle.getAttribute("aria-checked")).toBe("true");
+    expect(toggle.getAttribute("aria-checked")).toBe("false");
     await act(async () => toggle.click());
     expect(mocks.rpc).toHaveBeenCalledWith("bots/update", {
       botId: "bot-fixture",
-      dailyCheckIns: false,
+      dailyCheckIns: true,
     });
   });
 
