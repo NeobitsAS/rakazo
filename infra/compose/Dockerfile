@@ -64,8 +64,10 @@ RUN find . -name node_modules -type d -prune -exec rm -rf {} + \
 FROM node:24.22.2-bookworm-slim@sha256:01d566e8d94d8c619591d78652babfccd3c6992a3dffa9ed5ab39e11cf6c70e9
 COPY infra/sandboxes/computer/apt-security.sh /tmp/apt-security.sh
 RUN /tmp/apt-security.sh
-# Prisma's migration engine detects and links against OpenSSL.
-RUN apt-get update && apt-get install -y --no-install-recommends openssl \
+# Prisma's migration engine detects and links against OpenSSL. Debian publishes security fixes
+# before the Node image is rebuilt with them, so upgrade the base packages too.
+RUN apt-get update && apt-get upgrade -y \
+  && apt-get install -y --no-install-recommends openssl \
   && rm -rf /var/lib/apt/lists/*
 ENV COREPACK_HOME=/usr/local/share/corepack
 COPY --from=manifests /usr/local/share/corepack /usr/local/share/corepack
